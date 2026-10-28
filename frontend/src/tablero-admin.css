@@ -1,0 +1,645 @@
+.marco-sesion main:has(.vista-inicio) {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.85rem 1.5rem 0.75rem 5.5rem;
+  background: #e8eef4;
+}
+
+[data-tema="oscuro"] .marco-sesion main:has(.vista-inicio) {
+  background: #0d1116;
+}
+
+.vista-inicio {
+  --radio: 18px;
+  --sombra: 0 10px 30px rgb(53 115 164 / 8%);
+  --alerta: #b45309;
+  --critico: #9f1239;
+  --ok: #166534;
+  --fondo-dash: #e8eef4;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  font-family: Manrope, "Segoe UI", sans-serif;
+  color: var(--texto);
+}
+
+[data-tema="oscuro"] .vista-inicio {
+  --sombra: 0 10px 30px rgb(0 0 0 / 35%);
+  --alerta: #fbbf24;
+  --critico: #fb7185;
+  --ok: #86efac;
+  --fondo-dash: #0d1116;
+}
+
+.vista-inicio .cabecera-dash {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 2.6rem;
+  margin-bottom: 0.15rem;
+}
+
+.vista-inicio .marca {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: clamp(1.6rem, 2.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  pointer-events: none;
+}
+
+.vista-inicio .error {
+  margin: 0 0 0.35rem;
+}
+
+.vista-inicio .escenas-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.vista-inicio .escena {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  padding: 3.15rem 0 0.55rem;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    filter 0.35s ease;
+}
+
+.vista-inicio .escena-solicitudes {
+  z-index: 2;
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+.vista-inicio .escena-solicitudes:not(.activa) {
+  z-index: 1;
+  opacity: 0;
+  transform: scale(0.97);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.vista-inicio .escena-usuarios {
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.vista-inicio .escena-usuarios.activa {
+  z-index: 2;
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+.vista-inicio .pista-scroll {
+  position: absolute;
+  top: 0.35rem;
+  left: 50%;
+  z-index: 3;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  margin: 0;
+  padding: 0.15rem 0.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--texto-suave);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+  opacity: 0.75;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.vista-inicio .pista-scroll:hover {
+  opacity: 1;
+  color: var(--cerulean);
+}
+
+.vista-inicio .pista-scroll svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.vista-inicio .fila-arriba,
+.vista-inicio .fila-abajo {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.vista-inicio .escena-solicitudes .fila-arriba {
+  flex: 1 1 auto;
+}
+
+.vista-inicio .escena-solicitudes .fila-abajo,
+.vista-inicio .escena-usuarios .fila-usuarios-kpis {
+  flex-shrink: 0;
+}
+
+.vista-inicio .escena-usuarios .fila-usuarios-bento {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.vista-inicio .col-arriba-izq,
+.vista-inicio .col-usuarios-der {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+  min-height: 0;
+}
+
+.vista-inicio .escena-solicitudes .col-arriba-izq,
+.vista-inicio .col-usuarios-der {
+  height: 100%;
+}
+
+@media (min-width: 980px) {
+  .vista-inicio .fila-arriba,
+  .vista-inicio .fila-abajo,
+  .vista-inicio .escena-usuarios .fila-usuarios-kpis,
+  .vista-inicio .escena-usuarios .fila-usuarios-bento {
+    grid-template-columns: 1.35fr 1fr;
+  }
+}
+
+.vista-inicio .card {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 0.7rem 0.85rem;
+  min-height: 0;
+}
+
+.vista-inicio .card-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.vista-inicio .card-cab h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.vista-inicio .card-cab a,
+.vista-inicio .card-link {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--cerulean);
+}
+
+.vista-inicio button.card-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.72rem;
+}
+
+.vista-inicio .card.celda-kpis {
+  --celda-kpis-h: 8.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+  padding: 0.85rem 1rem;
+  min-height: var(--celda-kpis-h);
+  height: var(--celda-kpis-h);
+}
+
+.vista-inicio .celda-kpis .card-cab {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.vista-inicio .celda-kpis .card-link {
+  font-size: 0.72rem;
+}
+
+.vista-inicio .kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+  align-content: stretch;
+}
+
+.vista-inicio .kpi {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.3rem;
+  height: 100%;
+  min-height: 3.6rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  background: var(--superficie-suave);
+}
+
+.vista-inicio .kpi-etiqueta {
+  display: block;
+  flex-shrink: 0;
+  height: auto;
+  min-height: 1.1rem;
+  overflow: hidden;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.1rem;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.vista-inicio .kpi strong {
+  display: block;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.vista-inicio .card-comision {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.vista-inicio .comision-total {
+  margin: 0 0 0.15rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.vista-inicio .comision-meta {
+  margin: 0 0 0.4rem;
+  color: var(--texto-suave);
+  font-size: 0.7rem;
+}
+
+.vista-inicio .card-cab-crecimiento {
+  align-items: center;
+  gap: 1rem;
+}
+
+.vista-inicio .card-cab-crecimiento h2 {
+  flex: 1;
+  min-width: 0;
+}
+
+.vista-inicio .crecimiento-resumen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.vista-inicio .crecimiento-resumen .comision-total {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.vista-inicio .crecimiento-resumen .comision-meta {
+  max-width: 14rem;
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+}
+
+.vista-inicio .chart-line {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 64px;
+  height: auto;
+}
+
+.vista-inicio .chart-line .eje {
+  stroke: var(--borde);
+  stroke-width: 1;
+}
+
+.vista-inicio .chart-line .area {
+  fill: rgb(53 115 164 / 14%);
+}
+
+.vista-inicio .chart-line .linea {
+  fill: none;
+  stroke: var(--cerulean);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.vista-inicio .chart-line .punto {
+  fill: var(--cerulean);
+  stroke: var(--superficie);
+  stroke-width: 2;
+}
+
+.vista-inicio .chart-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.2rem;
+  color: var(--texto-suave);
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.vista-inicio .escena-solicitudes .col-arriba-izq > .card:not(.celda-kpis) {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.vista-inicio .barras-cat,
+.vista-inicio .barras-mix {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 0;
+}
+
+.vista-inicio .barras-cat {
+  flex: 1;
+  align-content: space-evenly;
+}
+
+.vista-inicio .barras-mix {
+  flex: 1;
+  align-content: center;
+  gap: 0.45rem;
+}
+
+.vista-inicio .barra-cat,
+.vista-inicio .barra-mix {
+  display: grid;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.vista-inicio .barra-cat {
+  grid-template-columns: 7.5rem 1fr 2.2rem;
+  gap: 0.55rem;
+  padding: 0.2rem 0.3rem;
+}
+
+.vista-inicio .barra-mix {
+  grid-template-columns: 6.5rem 1fr 2rem;
+  gap: 0.55rem;
+  padding: 0.4rem 0.45rem;
+}
+
+.vista-inicio .barra-cat:hover,
+.vista-inicio .barra-mix:hover {
+  background: var(--superficie-suave);
+}
+
+.vista-inicio .barra-cat[aria-pressed="true"],
+.vista-inicio .barra-mix[aria-pressed="true"] {
+  background: rgb(53 115 164 / 10%);
+  border-color: var(--cerulean);
+}
+
+.vista-inicio .barra-cat span,
+.vista-inicio .barra-mix span {
+  overflow: hidden;
+  color: var(--texto-suave);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.vista-inicio .barra-pista {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie-suave);
+}
+
+.vista-inicio .barra-mix .barra-pista {
+  height: 12px;
+}
+
+.vista-inicio .barra-lleno {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cerulean), var(--powder));
+}
+
+.vista-inicio .barra-cat strong,
+.vista-inicio .barra-mix strong {
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.vista-inicio .barra-mix strong {
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+}
+
+.vista-inicio .riesgos-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.vista-inicio .riesgos-grid[data-cols="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.vista-inicio .riesgos-grid[data-cols="4"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.vista-inicio .col-usuarios-der > .card {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.vista-inicio .col-usuarios-der .card-cab {
+  flex-shrink: 0;
+  margin-bottom: 0.45rem;
+}
+
+.vista-inicio .col-usuarios-der .riesgos-grid {
+  flex: 1 1 auto;
+  align-content: center;
+  gap: 0.4rem;
+}
+
+.vista-inicio .riesgo-tile {
+  padding: 0.55rem 0.45rem;
+  border-radius: 14px;
+  background: var(--superficie-suave);
+  text-align: center;
+}
+
+.vista-inicio .riesgo-tile span {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vista-inicio .riesgo-tile strong {
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.vista-inicio .riesgo-tile[data-nivel="critico"] span,
+.vista-inicio .riesgo-tile[data-nivel="critico"] strong {
+  color: var(--critico);
+}
+
+.vista-inicio .riesgo-tile[data-nivel="alto"] span,
+.vista-inicio .riesgo-tile[data-nivel="alto"] strong {
+  color: var(--alerta);
+}
+
+.vista-inicio .riesgo-tile[data-nivel="medio"] span,
+.vista-inicio .riesgo-tile[data-nivel="medio"] strong {
+  color: #8a6a00;
+}
+
+[data-tema="oscuro"] .vista-inicio .riesgo-tile[data-nivel="medio"] span,
+[data-tema="oscuro"] .vista-inicio .riesgo-tile[data-nivel="medio"] strong {
+  color: var(--pollen);
+}
+
+.vista-inicio .riesgo-tile[data-nivel="ok"] span,
+.vista-inicio .riesgo-tile[data-nivel="ok"] strong {
+  color: var(--ok);
+}
+
+.vista-inicio .riesgo-tile[data-nivel="info"] span,
+.vista-inicio .riesgo-tile[data-nivel="info"] strong {
+  color: var(--cerulean);
+}
+
+.vista-inicio .vacio {
+  margin: 0;
+  padding: 1.5rem 0.5rem;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vista-inicio .escena {
+    transition: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .vista-inicio .escena {
+    overflow-y: auto;
+  }
+
+  .vista-inicio .escena-solicitudes .fila-arriba,
+  .vista-inicio .escena-usuarios .fila-usuarios-bento,
+  .vista-inicio .escena-usuarios .fila-usuarios-kpis {
+    flex: none;
+  }
+
+  .vista-inicio .escena-solicitudes .col-arriba-izq,
+  .vista-inicio .col-usuarios-der,
+  .vista-inicio .card-comision,
+  .vista-inicio .card.celda-kpis {
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  .vista-inicio .chart-line {
+    flex: none;
+    height: 120px;
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 720px) {
+  .vista-inicio .card.celda-kpis {
+    height: auto;
+    min-height: 0;
+  }
+
+  .vista-inicio .kpis {
+    flex: none;
+  }
+
+  .vista-inicio .kpis,
+  .vista-inicio .riesgos-grid[data-cols="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vista-inicio .barra-cat,
+  .vista-inicio .barra-mix {
+    grid-template-columns: 5.5rem 1fr 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .marco-sesion main:has(.vista-inicio) {
+    padding: 0.75rem 0.9rem 0.6rem 4.15rem;
+  }
+}

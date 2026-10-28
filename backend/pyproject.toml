@@ -1,0 +1,31 @@
+[project]
+name = "nexora"
+version = "0.1.0"
+description = "API de intermediación de soporte técnico Nexora"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sqlmodel>=0.0.22",
+  "greenlet>=3.1",
+  "alembic>=1.14",
+  "asyncpg>=0.30",
+  "psycopg2-binary>=2.9",
+  "pydantic-settings>=2.6",
+  "email-validator>=2.2",
+  "pyjwt>=2.10",
+  "pwdlib[argon2]>=0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "httpx>=0.28",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
