@@ -5,7 +5,7 @@ Hechos cerrados al 2026-10-27. Lo que sigue en duda está en `02-pendiente.md`. 
 ## Producto
 
 - Aplicación web de intermediación de soporte técnico.
-- Solicitante: persona, establecimiento o empresa.
+- Solicitante: persona o empresa (ADR-028).
 - Un usuario pertenece a un perfil cliente o a un perfil proveedor, nunca a los dos. Un perfil cliente tiene un usuario. Un perfil proveedor tiene muchos usuarios, administrativos y técnicos.
 - El administrador de la plataforma no es ninguno de esos dos perfiles.
 - Clientes y proveedores se dan de alta desde la vista de ese administrador. No hay auto-registro (ADR-025).

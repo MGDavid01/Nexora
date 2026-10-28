@@ -14,7 +14,6 @@ class FuncionProveedor(str, Enum):
 
 class TipoPerfilCliente(str, Enum):
     persona = "persona"
-    establecimiento = "establecimiento"
     empresa = "empresa"
 
 

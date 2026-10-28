@@ -9,7 +9,7 @@ El estado vigente también está en `01-establecido.md`.
 - Decisión: el solicitante puede ser persona, establecimiento o empresa.
 - Motivo: se toma el alcance del SRS.
 - Alternativas descartadas: limitar el registro a empresas.
-- Consecuencias: el perfil cliente no exige ser persona moral. Los objetivos del plan que dicen «empresa cliente» se leen como caso principal, no como restricción de registro.
+- Consecuencias: el perfil cliente no exige ser persona moral. Los objetivos del plan que dicen «empresa cliente» se leen como caso principal, no como restricción de registro. El tipo quedó en persona o empresa (ADR-028).
 
 ### ADR-002 Stack del SRS §3.1.3
 - Fecha: 2026-10-22
@@ -255,3 +255,12 @@ El estado vigente también está en `01-establecido.md`.
 - Motivo: ser suave con PyMEs pequeñas (piso 5 %) y topar en 9 % para no castigar lo grande, manteniendo ganancia absoluta permisiva por volumen del ticket.
 - Alternativas descartadas: % fijo único; escala hasta 12 %; % solo en configuración de despliegue sin UI; recalcular histórico al cambiar la tabla; proyectar ingresos de servicios aún abiertos.
 - Consecuencias: P-021 queda cerrado. RN-016 y `01-establecido` llevan la regla.
+
+### ADR-028 Tipo de solicitante: persona o empresa
+- Fecha: 2026-10-27
+- Estado: aceptada
+- Contexto: ADR-001 dejó al solicitante como persona, establecimiento o empresa, siguiendo el SRS. El equipo ya no quiere el tercer valor.
+- Decisión: el perfil cliente es `persona` o `empresa`. Si es empresa, el nombre comercial sigue siendo obligatorio.
+- Motivo: decisión de equipo.
+- Alternativas descartadas: conservar `establecimiento` como tercer tipo.
+- Consecuencias: el alta, la validación y el enumerado `tipoperfilcliente` solo aceptan esos dos valores. Una fila que ya era `establecimiento` pasa a `empresa`. ADR-001 queda acotada en este punto.

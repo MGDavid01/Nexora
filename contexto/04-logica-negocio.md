@@ -182,7 +182,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 
 **Usuario:** nombre, correo único, contraseña, teléfono.
 
-**Perfil cliente** (un usuario): tipo `persona | establecimiento | empresa`. Si no es persona, nombre comercial.
+**Perfil cliente** (un usuario): tipo `persona | empresa`. Si es empresa, nombre comercial.
 
 **Perfil proveedor:** tipo `persona | empresa`, nombre comercial o razón social, descripción de servicios, al menos una categoría.
 

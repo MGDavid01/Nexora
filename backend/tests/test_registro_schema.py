@@ -26,6 +26,18 @@ def test_cliente_persona_no_exige_nombre_comercial() -> None:
     assert datos.telefono == "6641234567"
 
 
+def test_cliente_rechaza_establecimiento() -> None:
+    with pytest.raises(ValidationError):
+        RegistroCliente(
+            nombre="Ana",
+            correo="ana@example.com",
+            contrasena="secreta123",
+            telefono="6641234567",
+            tipo="establecimiento",
+            ubicacion=UBICACION,
+        )
+
+
 def test_cliente_empresa_exige_nombre_comercial() -> None:
     with pytest.raises(ValidationError):
         RegistroCliente(

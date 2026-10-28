@@ -5,7 +5,7 @@ export function RegistroCliente() {
   return (
     <FormularioRegistro
       titulo="Alta de cliente"
-      texto="El administrador crea el perfil. La persona, el establecimiento o la empresa no se registran solos."
+      texto="El administrador crea el perfil. La persona o la empresa no se registran solas."
       ruta="/api/v1/admin/clientes"
       perfil="cliente"
       armar={(formulario) => ({
@@ -22,7 +22,6 @@ export function RegistroCliente() {
         Tipo
         <select name="tipo" defaultValue="persona">
           <option value="persona">Persona</option>
-          <option value="establecimiento">Establecimiento</option>
           <option value="empresa">Empresa</option>
         </select>
       </label>

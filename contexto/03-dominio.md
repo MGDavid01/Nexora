@@ -1,13 +1,13 @@
 # Dominio
 
-El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan, modifican o eliminan entidades cuando el desarrollo lo pide (ADR-008).
+El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan, modifican o eliminan entidades cuando el desarrollo lo pide (ADR-008). El listado de lo que ya cambió está en [`otros/der-cambios.md`](otros/der-cambios.md). Los atributos de cada tabla están en [`otros/atributos.md`](otros/atributos.md).
 
 ## Glosario
 
 | Término | Significado en Nexora |
 |---------|------------------------|
 | Usuario solicitante | Usuario del perfil cliente. Publica solicitudes. |
-| Perfil cliente | Lado solicitante. Persona, establecimiento o empresa. Tiene un solo usuario. |
+| Perfil cliente | Lado solicitante. Persona o empresa. Tiene un solo usuario. |
 | Perfil proveedor | Organización que ofrece soporte. Tiene muchos usuarios. |
 | Usuario de proveedor | Cuenta dentro del perfil proveedor. Función: administrativo o técnico. |
 | Técnico | Usuario del perfil proveedor que realiza el servicio. |

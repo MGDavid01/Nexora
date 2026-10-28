@@ -21,11 +21,11 @@ export function validarAlta(datos: Record<string, unknown>, perfil: PerfilAlta):
 
 function validarCliente(datos: Record<string, unknown>): string | null {
   const tipo = texto(datos.tipo);
-  if (tipo !== "persona" && tipo !== "establecimiento" && tipo !== "empresa") {
+  if (tipo !== "persona" && tipo !== "empresa") {
     return "El tipo de cliente no es válido";
   }
   if (tipo !== "persona" && !texto(datos.nombre_comercial)) {
-    return "El establecimiento o la empresa necesitan nombre comercial";
+    return "La empresa necesita nombre comercial";
   }
   return null;
 }
