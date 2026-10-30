@@ -3,7 +3,6 @@
 Tres piezas: base de datos, backend y frontend. En Windows usa **Podman** (o Docker: cambia `podman` por `docker`).
 
 **Requisitos:** Git, Podman/Docker, Python ≥ 3.12, Node.js, pnpm.
-
 ---
 
 ## 1. Base de datos
