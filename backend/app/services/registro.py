@@ -16,6 +16,7 @@ from app.models.entities import (
 )
 from app.models.enums import FuncionProveedor, TipoCuenta
 from app.schemas.auth import RegistroCliente, RegistroProveedor, UbicacionIn
+from app.schemas.usuarios import RegistroAdministrador
 
 _SOLO_ADMIN = "Solo el administrador de plataforma puede registrar clientes y proveedores"
 
@@ -72,6 +73,25 @@ async def registrar_proveedor(
         tipo_cuenta=TipoCuenta.proveedor,
         funcion=FuncionProveedor.administrativo,
         perfil_proveedor_id=perfil.id,
+    )
+    session.add(usuario)
+    await _flush_unico(session)
+    return usuario
+
+
+async def registrar_administrador(
+    session: AsyncSession,
+    datos: RegistroAdministrador,
+    administrador: Usuario,
+) -> Usuario:
+    _exigir_administrador(administrador)
+    await _correo_libre(session, datos.correo)
+    usuario = Usuario(
+        nombre=datos.nombre,
+        correo=datos.correo,
+        contrasena_hash=hash_password(datos.contrasena),
+        telefono=datos.telefono,
+        tipo_cuenta=TipoCuenta.administrador,
     )
     session.add(usuario)
     await _flush_unico(session)

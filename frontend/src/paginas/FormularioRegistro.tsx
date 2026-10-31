@@ -71,7 +71,7 @@ export function ubicacionDe(formulario: FormData): Ubicacion {
   };
 }
 
-function CamposCuenta() {
+export function CamposCuenta() {
   return (
     <>
       <label>
@@ -95,7 +95,7 @@ function CamposCuenta() {
   );
 }
 
-function CamposUbicacion() {
+export function CamposUbicacion() {
   return (
     <fieldset>
       <legend>Ubicación</legend>

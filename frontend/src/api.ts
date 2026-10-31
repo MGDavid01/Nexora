@@ -250,3 +250,55 @@ export type TableroAdminOut = {
 export function obtenerTableroAdmin() {
   return api<TableroAdminOut>("/api/v1/admin/tablero");
 }
+
+export type TipoMarca = "advertencia" | "sancion";
+
+export type UsuarioLista = Usuario & {
+  perfil_nombre: string;
+  bloqueado: boolean;
+  conteo_marcas: number;
+  baja_solicitada: boolean;
+};
+
+export type Marca = {
+  id: string;
+  tipo: TipoMarca;
+  causa: string;
+  creada_en: string | null;
+};
+
+export type UsuarioDetalle = UsuarioLista & {
+  marcas: Marca[];
+};
+
+export function listarUsuariosAdmin() {
+  return api<UsuarioLista[]>("/api/v1/admin/usuarios");
+}
+
+export function obtenerUsuarioAdmin(id: string) {
+  return api<UsuarioDetalle>(`/api/v1/admin/usuarios/${id}`);
+}
+
+export function editarUsuarioAdmin(
+  id: string,
+  datos: { nombre: string; correo: string; telefono: string; funcion: FuncionProveedor | null },
+) {
+  return api<UsuarioDetalle>(`/api/v1/admin/usuarios/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(datos),
+  });
+}
+
+export function registrarAdministrador(datos: Record<string, unknown>) {
+  return api<Usuario>("/api/v1/admin/administradores", {
+    method: "POST",
+    body: JSON.stringify(datos),
+  });
+}
+
+export function registrarMarca(id: string, datos: { tipo: TipoMarca; causa: string }) {
+  return api<UsuarioDetalle>(`/api/v1/admin/usuarios/${id}/marcas`, {
+    method: "POST",
+    body: JSON.stringify(datos),
+  });
+}

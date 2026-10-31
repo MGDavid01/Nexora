@@ -264,15 +264,11 @@ const administrador: Herramienta[] = [
     to: "/admin/usuarios",
     etiqueta: "Usuarios",
     icono: LuUsers,
-    resumen: "Consulta de cuentas.",
-    texto: "Consulta de usuarios. El alta de clientes y proveedores sigue en sus propias herramientas.",
+    resumen: "Padrón de cuentas.",
+    texto: "Consulta, alta y edición de cuentas. Las marcas de un perfil cliente o proveedor se registran en el detalle.",
     lugares: ["administrador"],
-    secciones: [
-      {
-        titulo: "Cuentas",
-        texto: "Clientes, usuarios de proveedor y administradores de plataforma.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/admin/solicitudes",

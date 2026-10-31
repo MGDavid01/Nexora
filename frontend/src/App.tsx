@@ -7,6 +7,7 @@ import { Inicio } from "./paginas/Inicio";
 import { Login } from "./paginas/Login";
 import { RegistroCliente } from "./paginas/RegistroCliente";
 import { RegistroProveedor } from "./paginas/RegistroProveedor";
+import { UsuariosAdmin } from "./paginas/UsuariosAdmin";
 import { VistaPlaceholder } from "./paginas/VistaPlaceholder";
 
 export function App() {
@@ -30,6 +31,14 @@ export function App() {
           element={
             <SoloAdministrador>
               <RegistroProveedor />
+            </SoloAdministrador>
+          }
+        />
+        <Route
+          path="/admin/usuarios"
+          element={
+            <SoloAdministrador>
+              <UsuariosAdmin />
             </SoloAdministrador>
           }
         />
