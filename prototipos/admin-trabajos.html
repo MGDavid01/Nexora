@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es-MX" data-tema="claro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexora — Prototipo Trabajos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root,
+      [data-tema="claro"] {
+        --onyx: #0a0a0a;
+        --white: #fbfbfb;
+        --cerulean: #3573a4;
+        --pollen: #ffd342;
+        --blue-grey: #6795ba;
+        --powder: #98b7d0;
+        --texto: #1c2a33;
+        --texto-suave: #4a6270;
+        --fondo: #e8eef3;
+        --superficie: #fbfbfb;
+        --superficie-suave: #e4edf4;
+        --borde: #b7c9d6;
+        --borde-suave: #d5e1ea;
+        --link: #3573a4;
+        --ok: #04844b;
+        --ok-fondo: #e4f7ed;
+        --alerta: #b45309;
+        --alerta-fondo: #fff4cc;
+        --critico: #c23934;
+        --critico-fondo: #fde8e7;
+        --sombra: 0 10px 28px rgb(10 10 10 / 10%);
+        --tabla-fondo: #fffce8;
+        --fila-impar: #fffce8;
+        --fila-par: #fff6cc;
+        --fila-hover: #ffef99;
+        --grid: rgb(53 115 164 / 10%);
+        --barra-fondo: #fbfbfb;
+        --barra-borde: #d5e1ea;
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        color: var(--texto);
+        background-color: var(--fondo);
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 28px 28px;
+      }
+
+      .marco-sesion {
+        min-height: 100vh;
+        display: flex;
+      }
+
+      .barra-flotante {
+        position: fixed;
+        left: 0.85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        padding: 0.55rem;
+        border: 1px solid var(--barra-borde);
+        border-radius: 14px;
+        background: var(--barra-fondo);
+        box-shadow: 0 16px 40px rgb(10 10 10 / 12%);
+      }
+
+      .barra-nav {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .barra-nav a {
+        display: grid;
+        place-items: center;
+        width: 2.35rem;
+        height: 2.35rem;
+        border-radius: 8px;
+        color: var(--cerulean);
+        text-decoration: none;
+      }
+
+      .barra-nav a[aria-current="page"] {
+        background: var(--pollen);
+        color: #0a0a0a;
+      }
+
+      .barra-nav svg {
+        width: 1.15rem;
+        height: 1.15rem;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      main {
+        flex: 1;
+        padding: 1.15rem 1.35rem 1.25rem 5.5rem;
+        min-height: 100vh;
+        display: flex;
+      }
+
+      .crm {
+        flex: 1;
+        max-width: 1280px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: calc(100vh - 2.4rem);
+      }
+
+      .crm-top h1 {
+        margin: 0;
+        font-size: 1.35rem;
+      }
+
+      .crm-sub {
+        margin: 0.25rem 0 0;
+        font-size: 0.88rem;
+        color: var(--texto-suave);
+      }
+
+      .crm-filtros {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        padding: 0.65rem 0;
+      }
+
+      .filtro-dd {
+        height: 2.25rem;
+        border: 1px solid var(--borde);
+        border-radius: 6px;
+        background: var(--superficie);
+        padding: 0 0.75rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
+      .crm-buscar {
+        flex: 1;
+        min-width: 12rem;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        height: 2.25rem;
+        border: 1px solid var(--borde);
+        border-radius: 6px;
+        background: var(--superficie);
+        padding: 0 0.7rem;
+      }
+
+      .crm-buscar input {
+        border: 0;
+        background: transparent;
+        width: 100%;
+        font: inherit;
+      }
+
+      .tablero {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(16rem, 0.95fr);
+        gap: 0.75rem;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          padding-left: 4.15rem;
+        }
+
+        .tablero {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .panel {
+        border: 1px solid var(--borde);
+        border-radius: 12px;
+        background: var(--superficie);
+        box-shadow: var(--sombra);
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .tabla-wrap {
+        flex: 1;
+        overflow: auto;
+        background: var(--tabla-fondo);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        text-align: left;
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #fbfbfb;
+        padding: 0.72rem 0.8rem;
+        background: #0a0a0a;
+        border-bottom: 3px solid var(--pollen);
+      }
+
+      td {
+        padding: 0.62rem 0.8rem;
+        font-size: 0.86rem;
+        border-bottom: 1px solid var(--borde-suave);
+      }
+
+      tbody tr:nth-child(odd) td {
+        background: var(--fila-impar);
+      }
+
+      tbody tr:nth-child(even) td {
+        background: var(--fila-par);
+      }
+
+      tbody tr:hover td,
+      tbody tr.activa td {
+        background: var(--fila-hover);
+      }
+
+      .fila-caso {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: var(--link);
+        font-weight: 700;
+        text-align: left;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .chip {
+        display: inline-flex;
+        padding: 0.12rem 0.45rem;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        background: var(--superficie-suave);
+      }
+
+      .chip.alerta {
+        background: var(--alerta-fondo);
+        color: var(--alerta);
+      }
+
+      .chip.ok {
+        background: var(--ok-fondo);
+        color: var(--ok);
+      }
+
+      .crm-pie {
+        padding: 0.55rem 0.8rem;
+        font-size: 0.78rem;
+        color: var(--texto-suave);
+        border-top: 1px solid var(--borde-suave);
+      }
+
+      .expediente {
+        overflow: auto;
+        padding: 0.85rem 1rem 1.1rem;
+      }
+
+      .expediente h2 {
+        margin: 0 0 0.35rem;
+        font-size: 1.05rem;
+      }
+
+      .expediente .meta {
+        margin: 0 0 0.85rem;
+        font-size: 0.82rem;
+        color: var(--texto-suave);
+      }
+
+      .bloque {
+        margin-bottom: 0.85rem;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid var(--borde-suave);
+        border-radius: 8px;
+        background: var(--superficie-suave);
+      }
+
+      .bloque h3 {
+        margin: 0 0 0.35rem;
+        font-size: 0.88rem;
+      }
+
+      .bloque p,
+      .bloque li {
+        margin: 0.2rem 0;
+        font-size: 0.8rem;
+        color: var(--texto-suave);
+      }
+
+      .bloque ul {
+        margin: 0.35rem 0 0;
+        padding-left: 1.1rem;
+      }
+
+      .volver {
+        border: 0;
+        background: transparent;
+        color: var(--link);
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 0;
+        margin-bottom: 0.65rem;
+        cursor: pointer;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="marco-sesion">
+      <nav class="barra-flotante" aria-label="Herramientas">
+        <ul class="barra-nav">
+          <li>
+            <a href="admin-inicio.html" title="Inicio" aria-label="Inicio">
+              <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" /></svg>
+            </a>
+          </li>
+          <li>
+            <a href="admin-usuarios.html" title="Usuarios" aria-label="Usuarios">
+              <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            </a>
+          </li>
+          <li>
+            <a href="admin-trabajos.html" aria-current="page" title="Trabajos" aria-label="Trabajos">
+              <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 12h6M9 16h4" /></svg>
+            </a>
+          </li>
+          <li>
+            <a href="#" title="Reportes" aria-label="Reportes">
+              <svg viewBox="0 0 24 24"><path d="M3 3v18h18" /><path d="M7 14v4M12 10v8M17 6v12" /></svg>
+            </a>
+          </li>
+          <li>
+            <a href="#" title="Ingresos" aria-label="Ingresos">
+              <svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 5v14a2 2 0 0 0 2 2h16v-5" /><path d="M18 12a2 2 0 0 0 0 4h4v-4z" /></svg>
+            </a>
+          </li>
+          <li>
+            <a href="#" title="Dispositivos" aria-label="Dispositivos">
+              <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6v6H9z" /></svg>
+            </a>
+          </li>
+          <li>
+            <a href="#" title="Auditoría" aria-label="Auditoría">
+              <svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4M10 13h4M10 17h7" /></svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <main>
+        <section class="crm">
+          <header class="crm-top">
+            <h1>Trabajos</h1>
+            <p class="crm-sub">Solicitudes, cotizaciones, servicios y reclamaciones por caso.</p>
+          </header>
+
+          <div class="crm-filtros" aria-label="Filtros de trabajos">
+            <button type="button" class="filtro-dd">Etapa</button>
+            <button type="button" class="filtro-dd">Reclamación</button>
+            <button type="button" class="filtro-dd">Estado del caso</button>
+            <label class="crm-buscar">
+              <input type="search" placeholder="Buscar caso, cliente o categoría" id="buscar" />
+            </label>
+          </div>
+
+          <div class="tablero">
+            <section class="panel" aria-label="Lista de casos">
+              <div class="tabla-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Caso</th>
+                      <th scope="col">Etapa</th>
+                      <th scope="col">Cliente</th>
+                      <th scope="col">Categoría</th>
+                      <th scope="col">Actualizado</th>
+                      <th scope="col">Reclamación</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cuerpo"></tbody>
+                </table>
+              </div>
+              <div class="crm-pie"><span id="pie">0 en esta vista</span></div>
+            </section>
+
+            <aside class="panel expediente" id="expediente" aria-label="Expediente del caso">
+              <p class="meta" id="exp-vacio">Selecciona un caso para ver el expediente.</p>
+              <div id="exp-contenido" hidden></div>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const casos = [
+        {
+          id: "SOL-1042",
+          etapa: "Servicio",
+          cliente: "Taller del Valle",
+          categoria: "Redes",
+          actualizado: "2026-10-28",
+          reclamacion: "—",
+          solicitud: { estado: "Asignada", resumen: "Caída intermitente en planta baja." },
+          cotizaciones: [
+            { proveedor: "Soporte Norte", monto: "$4,200", estado: "Aceptada" },
+            { proveedor: "Redes Express", monto: "$3,850", estado: "Rechazada" },
+          ],
+          servicio: { estado: "En curso", tecnico: "Luis Técnico" },
+          calificaciones: null,
+          reclamacionDet: null,
+          marcas: [],
+        },
+        {
+          id: "SOL-1038",
+          etapa: "Cotización",
+          cliente: "Ana Cliente",
+          categoria: "Software",
+          actualizado: "2026-10-27",
+          reclamacion: "—",
+          solicitud: { estado: "Abierta", resumen: "Actualización de ERP local." },
+          cotizaciones: [{ proveedor: "Soporte Norte", monto: "$8,500", estado: "Enviada" }],
+          servicio: null,
+          calificaciones: null,
+          reclamacionDet: null,
+          marcas: [{ tipo: "Advertencia", causa: "Plazo vencido sin cotizar (otro proveedor)" }],
+        },
+        {
+          id: "SOL-1021",
+          etapa: "Servicio",
+          cliente: "Hotel Centro",
+          categoria: "CCTV",
+          actualizado: "2026-10-20",
+          reclamacion: "Abierta",
+          solicitud: { estado: "Cerrada", resumen: "Cámaras sin grabación nocturna." },
+          cotizaciones: [{ proveedor: "Vision Pro", monto: "$12,000", estado: "Aceptada" }],
+          servicio: { estado: "Cerrado", tecnico: "María Técnica" },
+          calificaciones: { cliente: 3, proveedor: 4.5, nota: "Cliente no calificó; proveedor 4.5 por defecto." },
+          reclamacionDet: { estado: "Abierta", motivo: "Servicio cerrado sin resolver grabación." },
+          marcas: [{ tipo: "Sanción", causa: "Reclamación del cliente" }],
+        },
+      ];
+
+      let activo = null;
+
+      function renderTabla(lista) {
+        const cuerpo = document.getElementById("cuerpo");
+        cuerpo.innerHTML = lista
+          .map(
+            (c) => `<tr class="${activo === c.id ? "activa" : ""}">
+          <td><button type="button" class="fila-caso" data-id="${c.id}">${c.id}</button></td>
+          <td><span class="chip">${c.etapa}</span></td>
+          <td>${c.cliente}</td>
+          <td>${c.categoria}</td>
+          <td>${c.actualizado}</td>
+          <td>${c.reclamacion === "Abierta" ? '<span class="chip alerta">Abierta</span>' : c.reclamacion}</td>
+        </tr>`,
+          )
+          .join("");
+        document.getElementById("pie").textContent = `${lista.length} en esta vista`;
+        cuerpo.querySelectorAll(".fila-caso").forEach((btn) => {
+          btn.addEventListener("click", () => abrir(btn.dataset.id));
+        });
+      }
+
+      function abrir(id) {
+        activo = id;
+        const c = casos.find((x) => x.id === id);
+        document.getElementById("exp-vacio").hidden = true;
+        const cont = document.getElementById("exp-contenido");
+        cont.hidden = false;
+        cont.innerHTML = `
+          <button type="button" class="volver" id="cerrar-exp">← Volver a la lista</button>
+          <h2>Expediente ${c.id}</h2>
+          <p class="meta">${c.cliente} · ${c.categoria} · ${c.etapa}</p>
+          <div class="bloque"><h3>Solicitud</h3><p><strong>${c.solicitud.estado}</strong> — ${c.solicitud.resumen}</p></div>
+          <div class="bloque"><h3>Cotizaciones</h3><ul>${c.cotizaciones.map((q) => `<li>${q.proveedor}: ${q.monto} (${q.estado})</li>`).join("")}</ul></div>
+          <div class="bloque"><h3>Servicio</h3><p>${c.servicio ? `${c.servicio.estado} · ${c.servicio.tecnico}` : "Aún no hay servicio (sin cotización aceptada)."}</p></div>
+          <div class="bloque"><h3>Calificaciones</h3><p>${
+            c.calificaciones
+              ? `Cliente ${c.calificaciones.cliente} · Proveedor ${c.calificaciones.proveedor}. ${c.calificaciones.nota}`
+              : "Pendientes o no aplican hasta cerrar el servicio."
+          }</p></div>
+          <div class="bloque"><h3>Reclamación</h3><p>${
+            c.reclamacionDet
+              ? `<span class="chip alerta">${c.reclamacionDet.estado}</span> ${c.reclamacionDet.motivo} (cancelar el servicio no es reclamar).`
+              : "Sin reclamación registrada."
+          }</p></div>
+          <div class="bloque"><h3>Marcas del caso</h3><p>${
+            c.marcas.length
+              ? c.marcas.map((m) => `${m.tipo}: ${m.causa}`).join("; ")
+              : "Sin marcas sobre este caso."
+          }</p><p>Distintas del padrón de marcas del perfil en Usuarios.</p></div>
+        `;
+        document.getElementById("cerrar-exp").addEventListener("click", () => {
+          activo = null;
+          cont.hidden = true;
+          document.getElementById("exp-vacio").hidden = false;
+          renderTabla(filtrar());
+        });
+        renderTabla(filtrar());
+      }
+
+      function filtrar() {
+        const q = document.getElementById("buscar").value.trim().toLowerCase();
+        if (!q) return casos;
+        return casos.filter(
+          (c) =>
+            c.id.toLowerCase().includes(q) ||
+            c.cliente.toLowerCase().includes(q) ||
+            c.categoria.toLowerCase().includes(q),
+        );
+      }
+
+      document.getElementById("buscar").addEventListener("input", () => renderTabla(filtrar()));
+      renderTabla(casos);
+    </script>
+  </body>
+</html>

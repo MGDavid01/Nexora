@@ -15,9 +15,11 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 | Solicitud | Petición publicada por un perfil cliente. Puede recibir varias cotizaciones. |
 | Cotización | Propuesta de un proveedor con costo y condiciones. |
 | Servicio | Trabajo que empieza cuando el cliente acepta una cotización. |
-| Historial | Registro de los servicios dados. |
-| Reporte | Mediciones relevantes de las acciones de un perfil cliente o proveedor. No es el historial. |
-| Sanción | Aviso registrado contra un perfil cliente o proveedor. A la tercera, bloquea a todos los usuarios de ese perfil. |
+| Historial | Lista de servicios dados (cada uno con su informe). Para consulta y recontratación. |
+| Informe de servicio | Documento de campo de un servicio: qué se hizo. Obligatorio para cerrar. No es el reporte. |
+| Reporte | Mediciones relevantes de las acciones de un perfil cliente o proveedor. No es el historial ni el informe. |
+| Sanción | Aviso registrado contra un perfil cliente o proveedor. A la tercera marca distinta, bloquea a todos los usuarios de ese perfil. |
+| Reclamación | Trámite sobre un servicio. La abre el cliente o un administrativo del proveedor. El administrador la cierra con o sin marca. |
 | Soporte técnico | Identificar, solucionar, mantener o reparar equipos, dispositivos o software. |
 
 ## Entidades
@@ -56,10 +58,11 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 
 ### Servicio
 - Lo realiza un usuario técnico del perfil proveedor.
-- Al cerrarse deja un registro en el historial.
+- Al cerrarse deja un informe de servicio y entra al historial.
 
-### HistorialServicio
-- Registro de un servicio dado. Distinto de `Reporte`.
+### InformeServicio
+- Documento de campo de un servicio (qué se hizo). Distinto de `Reporte` y del historial como lista (ADR-038).
+- Antes se llamaba `HistorialServicio`.
 
 ### Reporte
 - Medición de una acción de un perfil cliente o proveedor.
@@ -73,11 +76,18 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 
 ### Sancion
 - Asociada a un perfil cliente o a un perfil proveedor.
-- Lleva conteo. A la tercera bloquea a todos los usuarios de ese perfil.
+- Lleva conteo. A la tercera marca distinta bloquea a todos los usuarios de ese perfil (bloqueo, no baja).
+- Causa del catálogo fijo más descripción. El notificado ve «equipo Nexora», no el admin concreto (ADR-036).
 - Hay que agregarla al DER. La advertencia se notifica y suma al mismo conteo que la sanción (ADR-022).
 
+### Reclamacion
+- Ligada a un servicio. La abre el usuario del perfil cliente o un administrativo del proveedor de ese servicio.
+- Estados: `abierta` o `cerrada`. Cancelar el servicio y reclamar son actos distintos (ADR-035).
+- Al abrir: categoría del catálogo fijo y texto de motivo (ADR-037). Ese catálogo no es el de causas de marca (RN-011 Advertencias y sanciones).
+- Hay que agregarla al DER.
+
 ### DispositivoEsp32
-- Equipo de campo autorizado, ligado a la captura del reporte o del historial vía ESP-Claw.
+- Equipo de campo autorizado, ligado a la captura del informe de servicio vía ESP-Claw.
 - Hay que agregarlo al DER.
 
 ## Relaciones vigentes
@@ -93,9 +103,10 @@ PerfilProveedor N──M Solicitud   (notificación / participación)
 Solicitud 1──N Cotizacion
 Cotizacion 1──0..1 Servicio
 Servicio N──1 Usuario            (técnico que lo realiza)
-Servicio 1──1 HistorialServicio
+Servicio 1──1 InformeServicio
 Perfil 1──N Reporte
 Servicio 1──2 Calificacion       (una de cada lado)
+Servicio 1──N Reclamacion
 Perfil 1──N Sancion
 ```
 
@@ -108,7 +119,8 @@ La entidad `Tecnico` del dibujo original queda reemplazada por el usuario del pe
 - Varios proveedores pueden cotizar la misma solicitud abierta. Aceptar no la reserva. Solo se asigna al elegir una cotización enviada.
 - Tras aceptar hay 24 horas para cotizar. Al vencer, o si el cliente retira esa participación, la solicitud sigue abierta.
 - Denegar oculta la solicitud para ese proveedor y avisa al cliente. No cierra la solicitud.
-- El historial registra servicios dados. El reporte mide acciones del perfil. No se sustituyen.
+- El historial lista servicios dados. El informe de servicio documenta lo realizado en uno. El reporte mide acciones del perfil. No se sustituyen.
 - El técnico asignado a un servicio activo y los administrativos de ese perfil ven el historial y el detalle del cliente. Los demás técnicos de la misma empresa no. Sin servicio activo, ese acceso no existe.
-- La advertencia y la sanción notifican y no bloquean hasta la tercera marca distinta, que bloquea a todos los usuarios del perfil.
+- La advertencia y la sanción notifican y no bloquean hasta la tercera marca distinta, que bloquea a todos los usuarios del perfil (bloqueo, no baja).
+- Cancelar un servicio y abrir una reclamación son actos distintos. La reclamación va ligada a un servicio.
 - Los archivos viven en Cloudinary; la base guarda la referencia.

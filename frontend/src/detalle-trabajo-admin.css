@@ -1,0 +1,184 @@
+.marco-sesion main:has(.vista-detalle-caso) {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.85rem 1.5rem 0.75rem 5.5rem;
+  background: #e8eef4;
+}
+
+[data-tema="oscuro"] .marco-sesion main:has(.vista-detalle-caso) {
+  background: #0d1116;
+}
+
+.vista-detalle-caso {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.vista-detalle-caso .cabecera-caso {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2.6rem;
+  margin-bottom: 0.15rem;
+}
+
+.vista-detalle-caso .cabecera-caso h1 {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vista-detalle-caso .volver-trabajos {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--cerulean);
+}
+
+.vista-detalle-caso .escena-caso {
+  z-index: 2;
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+.vista-detalle-caso .escena-caso:not(.activa) {
+  z-index: 1;
+  opacity: 0;
+  transform: scale(0.97);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.vista-detalle-caso .escena-atencion {
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.vista-detalle-caso .escena-atencion.activa {
+  z-index: 2;
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  pointer-events: auto;
+}
+
+.vista-detalle-caso .escena-caso .fila-arriba {
+  flex: 1 1 auto;
+}
+
+.vista-detalle-caso .escena-caso .fila-abajo,
+.vista-detalle-caso .escena-atencion .fila-atencion-extra {
+  flex-shrink: 0;
+}
+
+.vista-detalle-caso .escena-atencion .fila-arriba {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.vista-detalle-caso .problema-texto {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.vista-detalle-caso .problema-meta {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+
+.vista-detalle-caso .lista-detalle {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+}
+
+.vista-detalle-caso .lista-detalle li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.vista-detalle-caso .lista-detalle li:last-child {
+  border-bottom: 0;
+}
+
+.vista-detalle-caso .block-meta {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
+.vista-detalle-caso .card-vacio-servicio {
+  text-align: center;
+  padding: 1.25rem 0.85rem;
+}
+
+.vista-detalle-caso .card-vacio-servicio p {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.vista-detalle-caso .form-detalle-caso {
+  margin-top: 0.65rem;
+}
+
+@media (max-width: 980px) {
+  .vista-detalle-caso .escena-caso .fila-arriba,
+  .vista-detalle-caso .escena-atencion .fila-arriba {
+    flex: none;
+  }
+
+  .vista-detalle-caso .escena-caso .fila-abajo,
+  .vista-detalle-caso .escena-atencion .fila-abajo,
+  .vista-detalle-caso .escena-atencion .fila-atencion-extra,
+  .vista-detalle-caso .escena-atencion .card-vacio-servicio {
+    flex: none;
+    flex-shrink: 0;
+  }
+
+  .vista-detalle-caso .escena > .pista-scroll {
+    flex-shrink: 0;
+    z-index: 5;
+    min-height: 2.15rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .marco-sesion main:has(.vista-detalle-caso) {
+    padding: 0.75rem 0.9rem 0.6rem 4.15rem;
+  }
+
+  .vista-detalle-caso .cabecera-caso {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .vista-detalle-caso .cabecera-caso h1 {
+    white-space: normal;
+  }
+}

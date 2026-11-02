@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es-MX" data-tema="claro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexora — Detalle caso (pasos)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --onyx: #0a0a0a;
+        --white: #fbfbfb;
+        --cerulean: #3573a4;
+        --pollen: #ffd342;
+        --powder: #98b7d0;
+        --blue-grey: #6795ba;
+        --texto: #0a0a0a;
+        --texto-suave: #3d4d59;
+        --fondo: #e8eef4;
+        --superficie: #fbfbfb;
+        --superficie-suave: #f3f7fb;
+        --borde: #d5e0ea;
+        --ok: #166534;
+        --ok-fondo: #e4f7ed;
+        --alerta: #b45309;
+        --radio: 16px;
+        --sombra: 0 10px 28px rgb(53 115 164 / 10%);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--texto);
+        background: var(--fondo);
+      }
+      a,
+      button {
+        font: inherit;
+      }
+      a {
+        color: var(--cerulean);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--cerulean);
+        outline-offset: 2px;
+      }
+      .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0.75rem 1rem 1.25rem;
+      }
+      .cabecera {
+        flex-shrink: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.65rem 1rem;
+        margin-bottom: 0.85rem;
+      }
+      .cabecera-izq {
+        flex: 1 1 12rem;
+        min-width: 0;
+      }
+      .volver {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.82rem;
+        margin-bottom: 0.35rem;
+      }
+      .cabecera h1 {
+        margin: 0;
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: clamp(1.05rem, 4vw, 1.4rem);
+        letter-spacing: -0.02em;
+        line-height: 1.25;
+      }
+      .cabecera-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        align-items: center;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border: 1px solid var(--borde);
+        background: var(--superficie);
+      }
+      .chip.etapa {
+        background: rgb(255 211 66 / 35%);
+        border-color: rgb(255 211 66 / 55%);
+      }
+      .chip.neutral {
+        color: var(--texto-suave);
+      }
+      .barra-pasos-wrap {
+        flex-shrink: 0;
+        margin: 0 -0.25rem 0.75rem;
+        padding: 0 0.25rem;
+      }
+      .barra-pasos {
+        display: flex;
+        gap: 0.35rem;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        padding: 0.15rem 0 0.45rem;
+        scrollbar-width: thin;
+      }
+      .barra-pasos::-webkit-scrollbar {
+        height: 4px;
+      }
+      .barra-pasos::-webkit-scrollbar-thumb {
+        background: var(--powder);
+        border-radius: 4px;
+      }
+      .paso {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.85rem;
+        border: 1px solid var(--borde);
+        border-radius: 999px;
+        background: var(--superficie);
+        color: var(--texto-suave);
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .paso .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 50%;
+        font-size: 0.68rem;
+        background: var(--superficie-suave);
+        color: var(--texto-suave);
+      }
+      .paso.activo {
+        color: var(--texto);
+        border-color: var(--cerulean);
+        background: var(--white);
+        box-shadow: var(--sombra);
+      }
+      .paso.activo .num {
+        background: var(--cerulean);
+        color: var(--white);
+      }
+      .paso:not(.activo):hover {
+        border-color: var(--blue-grey);
+      }
+      .paneles-viewport {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        border-radius: var(--radio);
+      }
+      .paneles-track {
+        display: flex;
+        width: 400%;
+        height: 100%;
+        transition: transform 0.32s ease;
+        will-change: transform;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .paneles-track {
+          transition: none;
+        }
+      }
+      .panel {
+        flex: 0 0 25%;
+        width: 25%;
+        padding: 0.15rem 0.1rem 1rem;
+        overflow-y: auto;
+        max-height: calc(100vh - 11rem);
+        -webkit-overflow-scrolling: touch;
+      }
+      .panel[aria-hidden="true"] {
+        pointer-events: none;
+      }
+      @media (max-width: 480px) {
+        .panel {
+          max-height: calc(100vh - 12.5rem);
+        }
+      }
+      .grid {
+        display: grid;
+        gap: 0.65rem;
+      }
+      @media (min-width: 720px) {
+        .grid-2 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .card {
+        background: var(--superficie);
+        border: 1px solid var(--borde);
+        border-radius: var(--radio);
+        box-shadow: var(--sombra);
+        padding: 0.75rem 0.9rem;
+      }
+      .card h2 {
+        margin: 0 0 0.55rem;
+        font-size: 0.95rem;
+      }
+      .card-cab {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.45rem;
+      }
+      .card-cab h2 {
+        margin: 0;
+      }
+      .meta {
+        margin: 0.35rem 0 0;
+        font-size: 0.8rem;
+        color: var(--texto-suave);
+        line-height: 1.45;
+      }
+      .meta:first-child {
+        margin-top: 0;
+      }
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+      @media (min-width: 560px) {
+        .kpis {
+          grid-template-columns: repeat(4, 1fr);
+        }
+        .kpis-3 {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      .kpi {
+        padding: 0.5rem 0.6rem;
+        border-radius: 12px;
+        background: var(--superficie-suave);
+      }
+      .kpi span {
+        display: block;
+        font-size: 0.68rem;
+        color: var(--texto-suave);
+        font-weight: 600;
+      }
+      .kpi strong {
+        font-size: 1.02rem;
+      }
+      .lista {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.84rem;
+      }
+      .lista li {
+        padding: 0.55rem 0;
+        border-bottom: 1px solid var(--borde);
+      }
+      .lista li:last-child {
+        border-bottom: 0;
+      }
+      .estado-chip {
+        display: inline-block;
+        padding: 0.08rem 0.42rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        background: var(--superficie-suave);
+      }
+      .estado-chip.ok {
+        color: var(--ok);
+        background: var(--ok-fondo);
+      }
+      .estado-chip.alerta {
+        color: var(--alerta);
+      }
+      .vacio {
+        margin: 0;
+        padding: 0.85rem;
+        text-align: center;
+        color: var(--texto-suave);
+        font-size: 0.85rem;
+        border-radius: 12px;
+        background: var(--superficie-suave);
+      }
+      .vacio-servicio {
+        border: 1px dashed var(--borde);
+        background: var(--superficie-suave);
+      }
+      .admin-zona {
+        margin-top: 0.65rem;
+        padding-top: 0.65rem;
+        border-top: 1px solid var(--borde);
+      }
+      .admin-zona h3 {
+        margin: 0 0 0.5rem;
+        font-size: 0.82rem;
+        color: var(--texto-suave);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .form-demo label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--texto-suave);
+        margin-bottom: 0.25rem;
+      }
+      .form-demo select,
+      .form-demo textarea {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        padding: 0.45rem 0.55rem;
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        background: var(--white);
+        font: inherit;
+        font-size: 0.82rem;
+      }
+      .form-demo textarea {
+        min-height: 4rem;
+        resize: vertical;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0.85rem;
+        border-radius: 10px;
+        border: 1px solid var(--cerulean);
+        background: var(--cerulean);
+        color: var(--white);
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn.secundario {
+        background: var(--superficie);
+        color: var(--cerulean);
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .nota-proto {
+        margin: 0.5rem 0 0;
+        font-size: 0.72rem;
+        color: var(--blue-grey);
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="cabecera">
+        <div class="cabecera-izq">
+          <a class="volver" href="#">← Volver a Trabajos</a>
+          <h1 id="titulo-caso">Instalación eléctrica — Taller Vega</h1>
+        </div>
+        <div class="cabecera-chips" aria-label="Estado del caso">
+          <span class="chip etapa" id="chip-etapa">Etapa: Servicio</span>
+          <span class="chip neutral" id="chip-reclamacion">Reclamación: —</span>
+        </div>
+      </header>
+
+      <div class="barra-pasos-wrap">
+        <nav class="barra-pasos" id="barra-pasos" aria-label="Pasos del caso">
+          <button type="button" class="paso activo" data-paso="0" aria-current="step">
+            <span class="num">1</span> Solicitud
+          </button>
+          <button type="button" class="paso" data-paso="1">
+            <span class="num">2</span> Cotizaciones
+          </button>
+          <button type="button" class="paso" data-paso="2">
+            <span class="num">3</span> Servicio
+          </button>
+          <button type="button" class="paso" data-paso="3">
+            <span class="num">4</span> Cierre
+          </button>
+        </nav>
+      </div>
+
+      <div class="paneles-viewport" id="viewport">
+        <div class="paneles-track" id="track">
+          <!-- Solicitud -->
+          <section class="panel" id="panel-solicitud" aria-labelledby="titulo-solicitud" aria-hidden="false">
+            <h2 class="sr-only" id="titulo-solicitud">Solicitud</h2>
+            <div class="grid grid-2">
+              <section class="card">
+                <h2>Resumen</h2>
+                <div class="kpis">
+                  <article class="kpi"><span>Etapa</span><strong>Servicio</strong></article>
+                  <article class="kpi"><span>Estado solicitud</span><strong>Aceptada</strong></article>
+                  <article class="kpi"><span>Cotizaciones</span><strong>2</strong></article>
+                  <article class="kpi"><span>Reclamación</span><strong>—</strong></article>
+                </div>
+              </section>
+              <section class="card">
+                <h2>Descripción y ubicación</h2>
+                <p class="meta">
+                  Tablero nuevo y revisión de tierra física en nave industrial. Cliente solicita continuidad
+                  certificada antes de arranque de línea.
+                </p>
+                <p class="meta"><strong>Electricidad</strong> · Blvd. Industrial 45, Monterrey, N.L.</p>
+                <p class="meta">Creada: 28 oct 2025 · ID demo <code>NEX-2048</code></p>
+              </section>
+            </div>
+            <section class="card" style="margin-top: 0.65rem">
+              <h2>Participaciones (24 h)</h2>
+              <div class="kpis kpis-3">
+                <article class="kpi"><span>Invitados</span><strong>3</strong></article>
+                <article class="kpi"><span>Respondieron</span><strong>2</strong></article>
+                <article class="kpi"><span>Cotización aceptada</span><strong>1</strong></article>
+              </div>
+            </section>
+          </section>
+
+          <!-- Cotizaciones -->
+          <section class="panel" id="panel-cotizaciones" aria-labelledby="titulo-cotizaciones" aria-hidden="true">
+            <h2 class="sr-only" id="titulo-cotizaciones">Cotizaciones</h2>
+            <section class="card">
+              <h2>Resumen</h2>
+              <div class="kpis">
+                <article class="kpi"><span>Enviadas</span><strong>2</strong></article>
+                <article class="kpi"><span>Aceptada</span><strong>1</strong></article>
+                <article class="kpi"><span>Rechazadas</span><strong>0</strong></article>
+                <article class="kpi"><span>Pendientes</span><strong>1</strong></article>
+              </div>
+            </section>
+            <section class="card" style="margin-top: 0.65rem">
+              <h2>Lista</h2>
+              <ul class="lista">
+                <li>
+                  <strong>Volt Norte</strong> · $16,200 MXN
+                  <span class="estado-chip ok">aceptada</span>
+                  <p class="meta">Mano de obra + tablero; cliente provee cableado principal. Aceptada el 30 oct 2025.</p>
+                </li>
+                <li>
+                  <strong>ElectroMax</strong> · $18,500 MXN
+                  <span class="estado-chip">enviada</span>
+                  <p class="meta">Incluye materiales certificados y prueba de continuidad. Plazo 24 h aún vigente.</p>
+                </li>
+              </ul>
+            </section>
+          </section>
+
+          <!-- Servicio -->
+          <section class="panel" id="panel-servicio" aria-labelledby="titulo-servicio" aria-hidden="true">
+            <h2 class="sr-only" id="titulo-servicio">Servicio</h2>
+            <div id="servicio-contenido" class="grid grid-2">
+              <section class="card">
+                <h2>Servicio</h2>
+                <p class="meta">
+                  <strong>En curso</strong> · Volt Norte · Técnico: Luis M. Hernández
+                </p>
+                <p class="meta">Inicio operativo: 31 oct 2025 · Último avance: visita en sitio registrada.</p>
+              </section>
+              <section class="card">
+                <h2>Informe</h2>
+                <p class="meta">Sin informe registrado. El informe no sustituye al historial del caso.</p>
+              </section>
+              <section class="card">
+                <h2>Calificaciones</h2>
+                <p class="vacio" style="text-align: left; padding: 0.65rem">
+                  Pendientes o no aplican hasta cerrar el servicio. Si no califica, aplica 4.5 automática cuando
+                  corresponda.
+                </p>
+              </section>
+            </div>
+            <div id="servicio-vacio" class="card vacio-servicio" hidden>
+              <h2>Servicio</h2>
+              <p class="meta">Aún no hay servicio (sin cotización aceptada).</p>
+            </div>
+          </section>
+
+          <!-- Cierre -->
+          <section class="panel" id="panel-cierre" aria-labelledby="titulo-cierre" aria-hidden="true">
+            <h2 class="sr-only" id="titulo-cierre">Cierre</h2>
+            <div id="cierre-contenido">
+              <div class="grid grid-2">
+                <section class="card">
+                  <h2>Reclamación</h2>
+                  <p class="meta">Sin reclamación. Cancelar el servicio no es reclamar.</p>
+                </section>
+                <section class="card">
+                  <h2>Marcas del caso</h2>
+                  <p class="meta">Sin marcas sobre este caso.</p>
+                </section>
+              </div>
+              <section class="card" style="margin-top: 0.65rem">
+                <h2>Historial acotado</h2>
+                <p class="vacio">
+                  No aplica: sin reclamación ni marca en este caso. Visible solo por reclamación o marca; no es un
+                  padrón libre.
+                </p>
+              </section>
+              <section class="card" style="margin-top: 0.65rem" aria-labelledby="titulo-admin-cierre">
+                <div class="card-cab">
+                  <h2 id="titulo-admin-cierre">Acciones de administrador</h2>
+                </div>
+                <p class="meta">Solo en este paso (Cierre). Prototipo sin API.</p>
+                <div class="admin-zona">
+                  <h3>Cerrar reclamación</h3>
+                  <p class="meta">No hay reclamación abierta en este caso.</p>
+                  <button type="button" class="btn secundario" disabled>Cerrar reclamación</button>
+                </div>
+                <div class="admin-zona">
+                  <h3>Marca del caso</h3>
+                  <form class="form-demo" id="form-marca" onsubmit="return false">
+                    <label for="tipo-marca">Tipo</label>
+                    <select id="tipo-marca" name="tipo">
+                      <option value="">Selecciona…</option>
+                      <option value="seguimiento">Seguimiento</option>
+                      <option value="riesgo">Riesgo operativo</option>
+                    </select>
+                    <label for="motivo-marca">Motivo (visible en historial acotado si aplica)</label>
+                    <textarea id="motivo-marca" name="motivo" placeholder="Nota interna de administrador…"></textarea>
+                    <button type="button" class="btn" id="btn-marca-demo">Registrar marca (demo)</button>
+                    <p class="nota-proto">En producción persiste vía API; aquí solo muestra confirmación local.</p>
+                  </form>
+                </div>
+              </section>
+            </div>
+            <div id="cierre-vacio" class="card vacio-servicio" hidden>
+              <h2>Cierre</h2>
+              <p class="meta">Aún no hay servicio (sin cotización aceptada).</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /** @type {{ hayServicio: boolean }} */
+      const DEMO = { hayServicio: true };
+
+      const PASOS = ["Solicitud", "Cotizaciones", "Servicio", "Cierre"];
+      const track = document.getElementById("track");
+      const viewport = document.getElementById("viewport");
+      const botones = [...document.querySelectorAll(".paso")];
+      const paneles = [
+        document.getElementById("panel-solicitud"),
+        document.getElementById("panel-cotizaciones"),
+        document.getElementById("panel-servicio"),
+        document.getElementById("panel-cierre"),
+      ];
+      const servicioContenido = document.getElementById("servicio-contenido");
+      const servicioVacio = document.getElementById("servicio-vacio");
+      const cierreContenido = document.getElementById("cierre-contenido");
+      const cierreVacio = document.getElementById("cierre-vacio");
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let indice = 0;
+
+      function actualizarVisibilidadPanel(i) {
+        paneles.forEach((p, j) => {
+          const activo = j === i;
+          p.setAttribute("aria-hidden", activo ? "false" : "true");
+          if ("inert" in p) p.inert = !activo;
+        });
+        if (!DEMO.hayServicio) {
+          servicioContenido.hidden = true;
+          servicioVacio.hidden = false;
+          cierreContenido.hidden = true;
+          cierreVacio.hidden = false;
+        } else {
+          servicioContenido.hidden = false;
+          servicioVacio.hidden = true;
+          cierreContenido.hidden = false;
+          cierreVacio.hidden = true;
+        }
+      }
+
+      function irA(nuevo) {
+        if (nuevo < 0 || nuevo >= PASOS.length || nuevo === indice) return;
+        indice = nuevo;
+        track.style.transform = `translateX(-${indice * 25}%)`;
+        botones.forEach((btn, i) => {
+          const activo = i === indice;
+          btn.classList.toggle("activo", activo);
+          if (activo) {
+            btn.setAttribute("aria-current", "step");
+            btn.scrollIntoView({ inline: "nearest", block: "nearest", behavior: reduce ? "auto" : "smooth" });
+          } else {
+            btn.removeAttribute("aria-current");
+          }
+        });
+        actualizarVisibilidadPanel(indice);
+        paneles[indice].scrollTop = 0;
+      }
+
+      botones.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const paso = Number(btn.getAttribute("data-paso"));
+          if (!Number.isNaN(paso)) irA(paso);
+        });
+      });
+
+      document.getElementById("btn-marca-demo")?.addEventListener("click", () => {
+        const tipo = document.getElementById("tipo-marca").value;
+        const motivo = document.getElementById("motivo-marca").value.trim();
+        if (!tipo || !motivo) {
+          window.alert("Completa tipo y motivo (solo demo).");
+          return;
+        }
+        window.alert("Marca registrada localmente (prototipo). En este caso demo no se muestra historial hasta haber reclamación o marca real.");
+      });
+
+      actualizarVisibilidadPanel(0);
+
+      /* Permite probar ?sin_servicio=1 sin editar el archivo */
+      if (new URLSearchParams(location.search).get("sin_servicio") === "1") {
+        DEMO.hayServicio = false;
+        document.getElementById("chip-etapa").textContent = "Etapa: Cotización";
+        actualizarVisibilidadPanel(indice);
+      }
+    </script>
+  </body>
+</html>

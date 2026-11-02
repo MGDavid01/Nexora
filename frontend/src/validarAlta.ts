@@ -48,6 +48,13 @@ export function digitos(valor: unknown): string {
   return String(valor ?? "").replace(/\D+/g, "");
 }
 
+/** Contraseña vacía = no cambiar (edición admin). */
+export function validarContrasenaOpcional(contrasena: string): string | null {
+  if (!contrasena) return null;
+  if (contrasena.length < 8) return "La contraseña debe tener al menos 8 caracteres";
+  return null;
+}
+
 function correoValido(correo: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
 }

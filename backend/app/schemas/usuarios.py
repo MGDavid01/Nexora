@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-from app.models.enums import FuncionProveedor, TipoCuenta, TipoMarca
+from app.models.enums import CodigoMarca, FuncionProveedor, TipoCuenta, TipoMarca
 
 _DIGITOS = re.compile(r"\D+")
 
@@ -27,7 +27,9 @@ class UsuarioListaOut(BaseModel):
 class MarcaOut(BaseModel):
     id: UUID
     tipo: TipoMarca
-    causa: str
+    codigo: CodigoMarca
+    etiqueta: str
+    descripcion: str
     creada_en: datetime | None
 
 
@@ -40,6 +42,7 @@ class EditarCuenta(BaseModel):
     correo: EmailStr
     telefono: str
     funcion: FuncionProveedor | None = None
+    contrasena: str | None = Field(default=None, min_length=8)
 
     @field_validator("nombre")
     @classmethod
@@ -93,12 +96,13 @@ class RegistroAdministrador(BaseModel):
 
 class MarcaIn(BaseModel):
     tipo: TipoMarca
-    causa: str = Field(min_length=1)
+    codigo: CodigoMarca
+    descripcion: str = Field(min_length=1)
 
-    @field_validator("causa")
+    @field_validator("descripcion")
     @classmethod
-    def _causa(cls, value: str) -> str:
+    def _descripcion(cls, value: str) -> str:
         limpio = value.strip()
         if not limpio:
-            raise ValueError("La causa es obligatoria")
+            raise ValueError("La descripción es obligatoria")
         return limpio

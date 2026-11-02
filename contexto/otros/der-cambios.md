@@ -20,10 +20,12 @@ No estaban dibujadas.
 |---------|----------|----------|
 | `Calificacion` | Dos por servicio (cliente → proveedor y proveedor → cliente), de 1 a 5. Si un lado no califica al cerrar, queda 4.5 fijo. | ADR-004, ADR-014, ADR-020 |
 | `Sancion` | Advertencia o sanción sobre un perfil cliente o proveedor. A la tercera marca distinta se bloquean todos sus usuarios. | ADR-008, ADR-010, ADR-022 |
-| `Reporte` | Medición de una acción del perfil. Distinto de `HistorialServicio`. | ADR-008 |
+| `Reporte` | Medición de una acción del perfil. Distinto del informe de servicio y del historial. | ADR-008, ADR-038 |
+| `InformeServicio` | Documento de campo al cerrar. Antes `HistorialServicio`. | ADR-038 |
 | `DispositivoEsp32` | Equipo de campo del perfil proveedor, ligado a la captura por ESP-Claw. | ADR-003, ADR-008 |
 | `Participacion` | La relación `Notifica` (proveedor N:M solicitud) es tabla, con estado: `pendiente`, `rechazada`, `aceptada`, `vencida`, `retirada` o `cotizada`. | ADR-016 |
 | Usuario administrador | Cuenta de plataforma sin perfil cliente ni perfil proveedor. | ADR-007 |
+| `Reclamacion` | Ligada a un servicio. La abre el cliente o un administrativo del proveedor. `abierta` o `cerrada`. | ADR-035 |
 
 ## Relaciones que cambiaron de forma
 
@@ -33,7 +35,7 @@ No estaban dibujadas.
 | Las dos relaciones `Tiene` pueden darse a la vez | Un usuario es cliente, proveedor o administrador. | ADR-007 |
 | `Ubicacion` es una fila compartida (`PerfilCliente 1:1`, `PerfilProveedor 1:1`, `Solicitud 1:1 Realiza`) | Cada perfil y cada solicitud tiene la suya. | [`03-dominio.md`](../03-dominio.md) |
 | `Cotizacion — Propone — Servicio`, sin cardinalidad | Una cotización origina como máximo un servicio, y solo si el cliente la acepta (`1──0..1`). | ADR-006 |
-| `HistorialServicio — Registra — Servicio`, sin cardinalidad | `Servicio 1──1 HistorialServicio`. | ADR-008 |
+| `HistorialServicio — Registra — Servicio`, sin cardinalidad | `Servicio 1──1 InformeServicio` (nombre de producto ADR-038; antes HistorialServicio). | ADR-008, ADR-038 |
 | La solicitud no apunta a un proveedor concreto | Al recontratar puede ir dirigida a un perfil proveedor (`dirigida_a`). | ADR-018 |
 
 ## Lo que el dibujo ya tenía y se mantiene
@@ -43,4 +45,4 @@ No estaban dibujadas.
 - `PerfilCliente 1:N EquipoComputo`.
 - `PerfilProveedor N:M CategoriaServicio`.
 - `Solicitud 1:N Cotizacion`. El perfil proveedor propone esas cotizaciones (`1:N`).
-- Siguen `Usuario`, `PerfilCliente`, `PerfilProveedor`, `EquipoComputo`, `Ubicacion`, `CategoriaServicio`, `Solicitud`, `Cotizacion`, `Servicio`, `HistorialServicio` y `TokenRecuperacion`.
+- Siguen `Usuario`, `PerfilCliente`, `PerfilProveedor`, `EquipoComputo`, `Ubicacion`, `CategoriaServicio`, `Solicitud`, `Cotizacion`, `Servicio`, `InformeServicio` (antes `HistorialServicio`) y `TokenRecuperacion`.

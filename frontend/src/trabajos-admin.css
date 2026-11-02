@@ -1,0 +1,281 @@
+.marco-sesion main:has(.vista-trabajos-crm) {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 1.15rem 1.35rem 1.25rem 5.5rem;
+  background-color: #e8eef3;
+  background-image:
+    linear-gradient(rgb(53 115 164 / 10%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(53 115 164 / 10%) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+[data-tema="oscuro"] .marco-sesion main:has(.vista-trabajos-crm) {
+  background-color: #0a0a0a;
+  background-image:
+    linear-gradient(rgb(255 211 66 / 6%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 211 66 / 6%) 1px, transparent 1px);
+}
+
+@media (max-width: 640px) {
+  .marco-sesion main:has(.vista-trabajos-crm) {
+    padding: 1rem 0.9rem 1.5rem 4.15rem;
+  }
+
+  .vista-trabajos-crm .tabla-wrap table {
+    min-width: 34rem;
+  }
+
+  .vista-trabajos-crm .crm-filtros {
+    gap: 0.45rem;
+  }
+}
+
+.vista-trabajos-crm .crm-subtitulo {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+  font-weight: 500;
+}
+
+.tablero-trabajos {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.9fr);
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.tablero-trabajos-solo {
+  grid-template-columns: 1fr;
+}
+
+.vista-trabajos-crm .fila-caso-clic {
+  cursor: pointer;
+}
+
+.vista-trabajos-crm .fila-caso-clic:hover td {
+  background: rgb(53 115 164 / 6%);
+}
+
+.vista-trabajos-crm .fila-caso-clic .btn-caso-trabajo {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--cerulean);
+  cursor: pointer;
+  text-align: left;
+}
+
+
+@media (max-width: 900px) {
+  .tablero-trabajos {
+    grid-template-columns: 1fr;
+  }
+
+  .expediente-trabajos {
+    order: 2;
+  }
+}
+
+.vista-trabajos-crm .fila-vacia td {
+  padding: 2rem 1rem;
+  text-align: center;
+  background: var(--crm-tabla-fondo);
+}
+
+.expediente-trabajos {
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--superficie);
+  box-shadow: var(--crm-sombra);
+  min-height: 0;
+  overflow: auto;
+}
+
+.expediente-placeholder {
+  padding: 1rem 1.1rem 1.25rem;
+}
+
+.expediente-placeholder h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--crm-encabezado);
+}
+
+.expediente-placeholder .crm-meta {
+  margin: 0 0 1rem;
+  font-size: 0.84rem;
+  color: var(--texto-suave);
+  line-height: 1.45;
+}
+
+.expediente-secciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.expediente-secciones li {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 6px;
+  background: var(--superficie-suave);
+  display: grid;
+  gap: 0.15rem;
+}
+
+.expediente-secciones strong {
+  font-size: 0.82rem;
+  color: var(--texto);
+}
+
+.expediente-secciones span {
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+
+.vista-trabajos-crm .btn-caso-trabajo {
+  border: 0;
+  background: transparent;
+  color: var(--link, #3573a4);
+  font-weight: 700;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.vista-trabajos-crm tbody tr.fila-activa td {
+  background: var(--crm-fila-hover, #ffef99);
+}
+
+.vista-trabajos-crm .chip-trabajo {
+  display: inline-flex;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--superficie-suave);
+  text-transform: capitalize;
+}
+
+.vista-trabajos-crm .chip-trabajo.alerta {
+  background: var(--alerta-fondo, #fff4cc);
+  color: var(--alerta, #b45309);
+}
+
+.vista-trabajos-crm .chip-trabajo.ok {
+  background: var(--ok-fondo, #e4f7ed);
+  color: var(--ok, #04844b);
+}
+
+.expediente-contenido {
+  padding: 0.85rem 1rem 1.15rem;
+}
+
+.expediente-contenido h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  color: var(--crm-encabezado);
+}
+
+.expediente-meta {
+  margin: 0 0 0.85rem;
+}
+
+.btn-volver-expediente {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: var(--link, #3573a4);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0;
+  margin-bottom: 0.65rem;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .tablero-trabajos.expediente-abierto .tabla-completa {
+    display: none;
+  }
+
+  .btn-volver-expediente {
+    display: inline-block;
+  }
+}
+
+.bloque-expediente {
+  margin-bottom: 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--borde-suave);
+  border-radius: 8px;
+  background: var(--superficie-suave);
+}
+
+.bloque-expediente h3,
+.bloque-expediente h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.88rem;
+  color: var(--texto);
+}
+
+.bloque-expediente h4 {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.bloque-expediente p {
+  margin: 0.25rem 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.lista-expediente {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.lista-expediente li {
+  margin: 0.25rem 0;
+}
+
+.lista-expediente .block {
+  display: block;
+  margin-top: 0.15rem;
+}
+
+.form-expediente {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--borde-suave);
+}
+
+.form-expediente fieldset.campo-crm {
+  border: 0;
+  padding: 0;
+  margin: 0 0 0.65rem;
+}
+
+.form-expediente fieldset.campo-crm legend {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.form-expediente fieldset.campo-crm label {
+  display: block;
+  font-size: 0.82rem;
+  margin: 0.2rem 0;
+}
+
+.historial-acotado {
+  border-color: var(--cerulean, #3573a4);
+}

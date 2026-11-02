@@ -1,6 +1,6 @@
 # Atributos de las entidades
 
-Columnas del modelo vigente (`backend/app/models/entities.py`), al 2026-10-27. Las reglas de negocio y los campos que el alta exige están en [`04-logica-negocio.md`](../04-logica-negocio.md). Aquí solo está la forma de cada tabla.
+Columnas del modelo vigente (`backend/app/models/entities.py`), al 2026-11-01. Las reglas de negocio y los campos que el alta exige están en [`04-logica-negocio.md`](../04-logica-negocio.md). Aquí solo está la forma de cada tabla.
 
 `id` es UUID y clave primaria, salvo en `PerfilProveedorCategoria`, cuya clave es la pareja de las dos columnas.
 
@@ -162,12 +162,12 @@ Tabla `servicio`.
 | cotizacion_id | UUID | sí | Único. Apunta a `cotizacion`. |
 | perfil_proveedor_id | UUID | sí | Apunta a `perfil_proveedor`. |
 | tecnico_usuario_id | UUID | no | Apunta a `usuario`. Hace falta antes de pasar a `en_curso`. |
-| estado | `pendiente` \| `en_curso` \| `pendiente_historial` \| `cerrado` \| `cancelado` | sí | Por defecto `pendiente`. |
+| estado | `pendiente` \| `en_curso` \| `pendiente_historial` \| `cerrado` \| `cancelado` | sí | Por defecto `pendiente`. En producto el estado se llama `pendiente_informe` (ADR-038); este enumerado es el del código hasta la migración. |
 | creado_en | fecha-hora | sí | La base lo pone al insertar. |
 
 ## HistorialServicio
 
-Tabla `historial_servicio`. Una por servicio.
+Tabla `historial_servicio`. Una por servicio. En producto la entidad se llama `InformeServicio` (informe de servicio, ADR-038). La tabla no se renombra aquí hasta la migración.
 
 | Atributo | Tipo | Obligatorio | Notas |
 |----------|------|-------------|--------|
@@ -192,17 +192,39 @@ Tabla `calificacion`. Una por lado y por servicio.
 | comentario | texto | no | |
 | es_automatica | booleano | sí | `true` cuando el valor es el 4.5 del sistema. |
 
+## Reclamacion
+
+Tabla `reclamacion`. Trámite sobre un servicio (RN-017, ADR-037). La marca al cerrar no vive aquí: se encuentra por `sancion.reclamacion_id`. No hay `sancion_id` en esta tabla (evita FK circular).
+
+Índice único parcial `reclamacion_abierta_por_servicio`: a lo sumo una fila `abierta` por `servicio_id`.
+
+| Atributo | Tipo | Obligatorio | Notas |
+|----------|------|-------------|--------|
+| id | UUID | sí | |
+| servicio_id | UUID | sí | Índice. Apunta a `servicio`. |
+| reclamante_usuario_id | UUID | sí | Apunta a `usuario`. |
+| categoria | `sin_iniciar` \| `informe_pendiente` \| `estancado_en_curso` \| `alcance_distinto` \| `impedimento_ejecucion` \| `cancelacion_servicio` | sí | Catálogo ADR-037. |
+| motivo | texto | sí | Obligatorio al abrir. |
+| estado | `abierta` \| `cerrada` | sí | Por defecto `abierta`. |
+| creada_en | fecha-hora | sí | La base lo pone al insertar. |
+| cerrada_en | fecha-hora | no | Nula mientras está abierta. |
+
 ## Sancion
 
-Tabla `sancion`. Una fila es advertencia o sanción, y apunta a un solo perfil.
+Tabla `sancion`. Una fila es advertencia o sanción. Apunta a un solo perfil (XOR: `perfil_cliente_id` o `perfil_proveedor_id`). Unicidad `(perfil, codigo)`: índices parciales únicos por cliente y por proveedor.
+
+`reiteracion_vencimiento_24h` no lleva `servicio_id`.
 
 | Atributo | Tipo | Obligatorio | Notas |
 |----------|------|-------------|--------|
 | id | UUID | sí | |
 | tipo | `advertencia` \| `sancion` | sí | Las dos suman a `conteo_marcas`. |
-| causa | texto | sí | |
+| codigo | `reiteracion_vencimiento_24h` \| `servicio_sin_iniciar` \| `informe_no_completado` \| `cancelacion_reiterada_servicio` \| `uso_indebido_reclamacion` \| `alcance_distinto_solicitud` | sí | Catálogo RN-011. |
+| descripcion | texto | sí | |
 | perfil_cliente_id | UUID | uno de los dos | Apunta a `perfil_cliente`. |
 | perfil_proveedor_id | UUID | uno de los dos | Apunta a `perfil_proveedor`. |
+| servicio_id | UUID | no | Apunta a `servicio`. Nulo en `reiteracion_vencimiento_24h`. |
+| reclamacion_id | UUID | no | Apunta a `reclamacion`. Marca originada al cerrar una reclamación. |
 | creada_en | fecha-hora | sí | La base lo pone al insertar. |
 
 ## Reporte

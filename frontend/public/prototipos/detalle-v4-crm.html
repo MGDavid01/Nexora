@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexora — Detalle del trabajo (expediente)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --onyx: #0a0a0a;
+        --white: #fbfbfb;
+        --cerulean: #3573a4;
+        --pollen: #ffd342;
+        --blue-grey: #6795ba;
+        --powder: #98b7d0;
+        --mustard: #ffd753;
+        --texto: #0a0a0a;
+        --texto-suave: #5a6b76;
+        --fondo: #eef2f6;
+        --superficie: #ffffff;
+        --borde: #dce5ed;
+        --ok: #166534;
+        --alerta: #9a6700;
+        --radio: 12px;
+        --sombra: 0 1px 2px rgb(10 10 10 / 4%), 0 8px 24px rgb(53 115 164 / 8%);
+        --izq: 260px;
+        --der: 300px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+
+      body {
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--texto);
+        background: var(--fondo);
+        line-height: 1.45;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      a {
+        color: var(--cerulean);
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        min-height: 100dvh;
+      }
+
+      .barra {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        height: 48px;
+        padding: 0 1rem;
+        background: var(--onyx);
+        color: var(--white);
+      }
+
+      .marca {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .marca span {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: var(--pollen);
+        color: var(--onyx);
+        font-size: 0.72rem;
+        display: grid;
+        place-items: center;
+      }
+
+      .nav {
+        display: flex;
+        gap: 0.15rem;
+        flex: 1;
+        min-width: 0;
+        overflow: auto hidden;
+      }
+
+      .nav a {
+        color: #d8e4ee;
+        font-weight: 600;
+        font-size: 0.84rem;
+        padding: 0.4rem 0.7rem;
+        border-radius: 8px;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+
+      .nav a:hover {
+        background: rgb(255 255 255 / 8%);
+      }
+
+      .nav a.activa {
+        color: var(--white);
+        background: rgb(53 115 164 / 45%);
+      }
+
+      .cuadro {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .col-izq,
+      .col-der {
+        background: var(--superficie);
+        overflow: auto;
+      }
+
+      .col-izq {
+        width: var(--izq);
+        flex-shrink: 0;
+        border-right: 1px solid var(--borde);
+        padding: 1rem 1.05rem 1.5rem;
+      }
+
+      .col-centro {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--fondo);
+        overflow: hidden;
+      }
+
+      .col-der {
+        width: var(--der);
+        flex-shrink: 0;
+        border-left: 1px solid var(--borde);
+        padding: 0.35rem 0 1.25rem;
+        position: relative;
+      }
+
+      .col-der.oculta {
+        display: none;
+      }
+
+      .migas {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.78rem;
+        color: var(--cerulean);
+        font-weight: 700;
+        margin-bottom: 1.1rem;
+      }
+
+      .migas:hover {
+        text-decoration: none;
+        color: #245880;
+      }
+
+      .titulo-caso {
+        margin: 0 0 0.45rem;
+        font-size: 1.55rem;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .chip {
+        display: inline-block;
+        margin-bottom: 0.85rem;
+        padding: 0.18rem 0.55rem;
+        border-radius: 999px;
+        background: rgb(53 115 164 / 12%);
+        color: var(--cerulean);
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      .problema {
+        margin: 0 0 1.25rem;
+        font-size: 0.86rem;
+        color: #2c3a42;
+      }
+
+      .about h2 {
+        margin: 0 0 0.75rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--borde);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .dl {
+        display: grid;
+        gap: 0.85rem;
+      }
+
+      .dl dt {
+        margin: 0;
+        font-size: 0.72rem;
+        color: var(--texto-suave);
+        font-weight: 600;
+      }
+
+      .dl dd {
+        margin: 0.12rem 0 0;
+        font-size: 0.88rem;
+        font-weight: 600;
+      }
+
+      .pestanas {
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-end;
+        gap: 0.2rem;
+        padding: 0.7rem 1.15rem 0;
+        background: #f4f8fb;
+        border-bottom: 1px solid var(--borde);
+      }
+
+      .pestana {
+        border: 0;
+        background: transparent;
+        color: var(--cerulean);
+        font-weight: 700;
+        font-size: 0.86rem;
+        padding: 0.55rem 1.05rem;
+        border-radius: 8px 8px 0 0;
+      }
+
+      .pestana[aria-selected="true"] {
+        background: var(--fondo);
+        color: var(--onyx);
+        box-shadow: inset 0 2px 0 var(--cerulean);
+      }
+
+      .centro-scroll {
+        flex: 1;
+        overflow: auto;
+        padding: 1rem 1.15rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .card {
+        background: var(--superficie);
+        border: 1px solid var(--borde);
+        border-radius: var(--radio);
+        box-shadow: var(--sombra);
+        padding: 0.95rem 1rem 1rem;
+      }
+
+      .card.destacada {
+        border-color: var(--cerulean);
+        box-shadow: 0 0 0 1px var(--cerulean), var(--sombra);
+      }
+
+      .card-cab {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.85rem;
+      }
+
+      .card-cab h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .badge-ceruleo {
+        background: var(--cerulean);
+        color: var(--white);
+      }
+
+      .badge-ok {
+        background: #dcfce7;
+        color: var(--ok);
+      }
+
+      .badge-alerta {
+        background: #fef3c7;
+        color: var(--alerta);
+      }
+
+      .badge-gris {
+        background: #eef2f6;
+        color: #3d4d59;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem 1rem;
+      }
+
+      .meta-grid dt {
+        font-size: 0.7rem;
+        color: var(--texto-suave);
+        font-weight: 600;
+      }
+
+      .meta-grid dd {
+        margin: 0.1rem 0 0;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .nota-vacio {
+        margin: 0;
+        color: var(--texto-suave);
+        font-size: 0.9rem;
+      }
+
+      .herramientas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .busca {
+        flex: 1;
+        min-width: 160px;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.7rem;
+        border: 1px solid var(--borde);
+        border-radius: 8px;
+        background: #f7fafc;
+      }
+
+      .busca input {
+        border: 0;
+        outline: none;
+        background: transparent;
+        width: 100%;
+        color: var(--texto);
+      }
+
+      .filtro {
+        border: 0;
+        background: transparent;
+        color: var(--cerulean);
+        font-weight: 700;
+        font-size: 0.82rem;
+        padding: 0.4rem 0.2rem;
+      }
+
+      .filtro.activo {
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+
+      .tabla-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        min-width: 480px;
+        border-collapse: collapse;
+        font-size: 0.84rem;
+      }
+
+      th {
+        text-align: left;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--texto-suave);
+        padding: 0.5rem 0.55rem;
+        border-bottom: 1px solid var(--borde);
+        background: #f8fbfd;
+      }
+
+      td {
+        padding: 0.7rem 0.55rem;
+        border-bottom: 1px solid var(--borde);
+        vertical-align: top;
+      }
+
+      tr.aceptada td:first-child {
+        box-shadow: inset 3px 0 0 var(--pollen);
+      }
+
+      .fila-nombre {
+        color: var(--cerulean);
+        font-weight: 700;
+      }
+
+      .lista-hist {
+        display: grid;
+        gap: 0.65rem;
+      }
+
+      .item-hist {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.25rem 0.75rem;
+        padding: 0.7rem 0.75rem;
+        border: 1px solid var(--borde);
+        border-radius: 10px;
+        background: #f8fbfd;
+      }
+
+      .item-hist strong {
+        font-size: 0.9rem;
+      }
+
+      .item-hist .sub {
+        grid-column: 1 / -1;
+        font-size: 0.75rem;
+        color: var(--texto-suave);
+      }
+
+      .aviso-rn {
+        margin: 0 0 0.85rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: 10px;
+        background: rgb(53 115 164 / 8%);
+        font-size: 0.82rem;
+      }
+
+      .colapsar-der {
+        position: absolute;
+        left: -13px;
+        top: 14px;
+        z-index: 2;
+        width: 26px;
+        height: 26px;
+        border: 1px solid var(--borde);
+        border-radius: 999px;
+        background: var(--superficie);
+        color: var(--cerulean);
+        font-weight: 800;
+        box-shadow: var(--sombra);
+      }
+
+      .abrir-der {
+        display: none;
+        align-self: flex-start;
+        margin: 0.85rem 0 0 0.85rem;
+        width: 26px;
+        height: 26px;
+        border: 1px solid var(--borde);
+        border-radius: 999px;
+        background: var(--superficie);
+        color: var(--cerulean);
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .app.der-cerrada .abrir-der {
+        display: grid;
+        place-items: center;
+      }
+
+      .acordeon {
+        border-bottom: 1px solid var(--borde);
+      }
+
+      .acordeon > summary {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.75rem 1rem;
+        font-weight: 800;
+        font-size: 0.92rem;
+        cursor: pointer;
+      }
+
+      .acordeon > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .acordeon > summary::before {
+        content: "▾";
+        color: var(--cerulean);
+        font-size: 0.75rem;
+      }
+
+      .acordeon:not([open]) > summary::before {
+        content: "▸";
+      }
+
+      .n-count {
+        color: var(--texto-suave);
+        font-weight: 700;
+      }
+
+      .panel {
+        padding: 0 1rem 0.95rem;
+      }
+
+      .item-lado {
+        padding: 0.65rem 0;
+        border-top: 1px solid var(--borde);
+        font-size: 0.82rem;
+      }
+
+      .item-lado:first-child {
+        border-top: 0;
+        padding-top: 0;
+      }
+
+      .item-lado h3 {
+        margin: 0 0 0.2rem;
+        font-size: 0.88rem;
+        color: var(--cerulean);
+      }
+
+      .item-lado p {
+        margin: 0.15rem 0;
+        color: #334047;
+      }
+
+      .acciones {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 0.55rem;
+      }
+
+      .btn {
+        border: 1px solid var(--borde);
+        background: var(--white);
+        border-radius: 8px;
+        padding: 0.42rem 0.55rem;
+        font-weight: 700;
+        font-size: 0.78rem;
+        color: var(--onyx);
+      }
+
+      .btn-principal {
+        background: var(--cerulean);
+        border-color: var(--cerulean);
+        color: var(--white);
+      }
+
+      .btn-pollen {
+        background: var(--pollen);
+        border-color: #e6bc2c;
+        color: var(--onyx);
+      }
+
+      .hint {
+        margin: 0.45rem 0 0;
+        font-size: 0.72rem;
+        color: var(--texto-suave);
+      }
+
+      .form-marca {
+        display: grid;
+        gap: 0.45rem;
+        margin-top: 0.7rem;
+        padding-top: 0.7rem;
+        border-top: 1px dashed var(--borde);
+      }
+
+      .form-marca label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--texto-suave);
+      }
+
+      .form-marca select,
+      .form-marca textarea {
+        width: 100%;
+        border: 1px solid var(--borde);
+        border-radius: 8px;
+        padding: 0.4rem 0.5rem;
+        background: #f7fafc;
+      }
+
+      .form-marca textarea {
+        min-height: 64px;
+        resize: vertical;
+      }
+
+      .toast {
+        display: none;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--ok);
+      }
+
+      .toast.error {
+        color: #9f1239;
+      }
+
+      .oculto {
+        display: none !important;
+      }
+
+      @media (max-width: 900px) {
+        .app,
+        .cuadro {
+          height: auto;
+          min-height: 0;
+          overflow: visible;
+          display: block;
+        }
+
+        .col-izq,
+        .col-der,
+        .col-centro {
+          width: 100%;
+          height: auto;
+          overflow: visible;
+          border: 0;
+        }
+
+        .col-izq {
+          border-bottom: 1px solid var(--borde);
+        }
+
+        .col-der {
+          border-top: 1px solid var(--borde);
+        }
+
+        .col-der.oculta {
+          display: block;
+        }
+
+        .colapsar-der,
+        .abrir-der,
+        .app.der-cerrada .abrir-der {
+          display: none;
+        }
+
+        .meta-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .centro-scroll {
+          overflow: visible;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="barra">
+        <div class="marca"><span>N</span> Nexora</div>
+        <nav class="nav" aria-label="Administración">
+          <a href="#">Inicio</a>
+          <a href="#">Usuarios</a>
+          <a class="activa" href="#" aria-current="page">Trabajos</a>
+          <a href="#">Reportes</a>
+          <a href="#">Ingresos</a>
+          <a href="#">Dispositivos</a>
+          <a href="#">Auditoría</a>
+        </nav>
+      </header>
+
+      <div class="cuadro">
+        <aside class="col-izq" aria-label="Ficha de la solicitud">
+          <a class="migas" href="#">← Trabajos</a>
+          <h1 class="titulo-caso">Falla en el tablero eléctrico del local</h1>
+          <span class="chip">Electricidad</span>
+          <p class="problema">
+            El tablero principal dispara el interruptor al encender el horno y
+            tres contactos de la cocina. Ocurre desde el domingo. El cliente
+            pide revisión en sitio, no un cambio de instalación completo.
+          </p>
+          <section class="about">
+            <h2>Sobre esta solicitud</h2>
+            <dl class="dl">
+              <div>
+                <dt>Cliente</dt>
+                <dd>Mariana Solís · persona</dd>
+              </div>
+              <div>
+                <dt>Calle</dt>
+                <dd>Av. Revolución 1842</dd>
+              </div>
+              <div>
+                <dt>Colonia</dt>
+                <dd>Escandón</dd>
+              </div>
+              <div>
+                <dt>Ciudad</dt>
+                <dd>Ciudad de México</dd>
+              </div>
+              <div>
+                <dt>Estado</dt>
+                <dd>CDMX</dd>
+              </div>
+              <div>
+                <dt>Código postal</dt>
+                <dd>11800</dd>
+              </div>
+              <div>
+                <dt>Estado de la solicitud</dt>
+                <dd>asignada</dd>
+              </div>
+              <div>
+                <dt>Fecha de publicación</dt>
+                <dd>24 oct 2026</dd>
+              </div>
+              <div>
+                <dt>Dirigida a un proveedor</dt>
+                <dd>No — quedó abierta para cualquier proveedor</dd>
+              </div>
+            </dl>
+          </section>
+        </aside>
+
+        <main class="col-centro">
+          <button
+            type="button"
+            class="abrir-der"
+            id="abrir-der"
+            title="Mostrar reclamaciones y marcas"
+            aria-label="Mostrar columna derecha"
+          >
+            «
+          </button>
+          <div class="pestanas" role="tablist" aria-label="Expediente">
+            <button
+              type="button"
+              class="pestana"
+              role="tab"
+              id="tab-servicio"
+              aria-selected="true"
+              aria-controls="panel-servicio"
+            >
+              Servicio
+            </button>
+            <button
+              type="button"
+              class="pestana"
+              role="tab"
+              id="tab-historial"
+              aria-selected="false"
+              aria-controls="panel-historial"
+            >
+              Historial
+            </button>
+          </div>
+
+          <div class="centro-scroll">
+            <div
+              id="panel-servicio"
+              role="tabpanel"
+              aria-labelledby="tab-servicio"
+            >
+              <article class="card destacada" id="card-servicio">
+                <div class="card-cab">
+                  <h2>Servicio actual</h2>
+                  <span class="badge badge-ceruleo">Este caso</span>
+                </div>
+                <p class="hint" style="margin: -0.4rem 0 0.8rem">
+                  Es el único servicio ligado a esta solicitud. No es un listado
+                  de otros trabajos.
+                </p>
+                <dl class="meta-grid">
+                  <div>
+                    <dt>Estado</dt>
+                    <dd>en curso</dd>
+                  </div>
+                  <div>
+                    <dt>Técnico asignado</dt>
+                    <dd>Luis Peña</dd>
+                  </div>
+                  <div>
+                    <dt>Proveedor</dt>
+                    <dd>Eléctrica del Valle</dd>
+                  </div>
+                  <div>
+                    <dt>Cotización ligada</dt>
+                    <dd>$4,850 MXN · aceptada</dd>
+                  </div>
+                </dl>
+              </article>
+
+              <article class="card">
+                <div class="card-cab">
+                  <h2>Cotizaciones</h2>
+                </div>
+                <div class="herramientas">
+                  <label class="busca">
+                    <span aria-hidden="true">⌕</span>
+                    <input
+                      id="busca-cot"
+                      type="search"
+                      placeholder="Buscar proveedor o condiciones"
+                    />
+                  </label>
+                  <button type="button" class="filtro activo" data-estado="todas">
+                    Todas
+                  </button>
+                  <button type="button" class="filtro" data-estado="aceptada">
+                    Aceptada
+                  </button>
+                  <button type="button" class="filtro" data-estado="descartada">
+                    Descartada
+                  </button>
+                </div>
+                <div class="tabla-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Proveedor</th>
+                        <th>Costo MXN</th>
+                        <th>Estado</th>
+                        <th>Condiciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tabla-cot"></tbody>
+                  </table>
+                </div>
+                <p class="hint" id="cot-vacia" hidden>
+                  Ninguna cotización coincide con el filtro.
+                </p>
+              </article>
+            </div>
+
+            <div
+              id="panel-historial"
+              role="tabpanel"
+              aria-labelledby="tab-historial"
+              hidden
+            >
+              <article class="card">
+                <div class="card-cab">
+                  <h2>Historial acotado</h2>
+                </div>
+                <p class="aviso-rn" id="aviso-historial">
+                  Hay una reclamación abierta y una marca de este caso. El
+                  administrador ve el historial de ambos perfiles de este
+                  servicio, no un padrón libre (RN-015).
+                </p>
+                <div id="bloques-historial"></div>
+              </article>
+            </div>
+          </div>
+        </main>
+
+        <aside class="col-der" id="col-der" aria-label="Reclamaciones y marcas">
+          <button
+            type="button"
+            class="colapsar-der"
+            id="colapsar-der"
+            title="Ocultar columna"
+            aria-label="Ocultar columna derecha"
+          >
+            »
+          </button>
+
+          <details class="acordeon" open>
+            <summary>
+              Reclamaciones <span class="n-count" id="n-recl">(1)</span>
+            </summary>
+            <div class="panel" id="lista-recl"></div>
+          </details>
+
+          <details class="acordeon" open>
+            <summary>
+              Marcas <span class="n-count" id="n-marcas">(1)</span>
+            </summary>
+            <div class="panel">
+              <div id="lista-marcas"></div>
+              <form class="form-marca" id="form-marca">
+                <strong style="font-size: 0.82rem">Registrar marca de este caso</strong>
+                <p class="hint" style="margin-top: 0">
+                  La unicidad es por perfil y código, no por expediente. No se
+                  registra aquí la reiteración de vencimientos de 24 h.
+                </p>
+                <label for="marca-tipo">Tipo</label>
+                <select id="marca-tipo" required>
+                  <option value="advertencia">Advertencia</option>
+                  <option value="sancion">Sanción</option>
+                </select>
+                <label for="marca-perfil">Perfil</label>
+                <select id="marca-perfil" required>
+                  <option value="proveedor">Eléctrica del Valle (proveedor)</option>
+                  <option value="cliente">Mariana Solís (cliente)</option>
+                </select>
+                <label for="marca-causa">Causa (RN-011)</label>
+                <select id="marca-causa" required></select>
+                <label for="marca-desc">Descripción</label>
+                <textarea id="marca-desc" required placeholder="Hecho de este caso, con detalle."></textarea>
+                <button type="submit" class="btn btn-principal">Registrar marca</button>
+                <p class="toast" id="toast-marca"></p>
+              </form>
+            </div>
+          </details>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      const cotizaciones = [
+        {
+          proveedor: "Eléctrica del Valle",
+          costo: 4850,
+          estado: "aceptada",
+          condiciones: "Diagnóstico, reposición de interruptor y prueba en carga. Visita en 24 h.",
+        },
+        {
+          proveedor: "Circuito Norte",
+          costo: 5200,
+          estado: "descartada",
+          condiciones: "Cambio de pastillas y revisión de acometida. Quedó descartada al aceptar la otra.",
+        },
+      ];
+
+      const historial = {
+        hayPuerta: true,
+        cliente: [
+          { titulo: "Cambio de contactos en cocina", estado: "cerrado", fecha: "12 ago 2026" },
+          { titulo: "Instalación de luminarias LED", estado: "cerrado", fecha: "3 may 2026" },
+        ],
+        proveedor: [
+          { titulo: "Tablero industrial en taller", estado: "cerrado", fecha: "2 oct 2026" },
+          { titulo: "Falla de bomba en local", estado: "cerrado", fecha: "18 jul 2026" },
+        ],
+      };
+
+      const reclamaciones = [
+        {
+          id: "r1",
+          categoria: "Servicio en curso sin avanzar",
+          codigo: "estancado_en_curso",
+          estado: "abierta",
+          reclamante: "Mariana Solís (cliente)",
+          motivo:
+            "El técnico llegó, abrió el tablero y se fue a buscar una pastilla. Llevamos dos días sin avance ni aviso.",
+        },
+      ];
+
+      const marcas = [
+        {
+          tipo: "advertencia",
+          causa: "servicio_sin_iniciar",
+          etiqueta: "Servicio asignado sin iniciar",
+          perfil: "Eléctrica del Valle",
+          fecha: "28 oct 2026",
+        },
+      ];
+
+      const causas = {
+        proveedor: [
+          { codigo: "servicio_sin_iniciar", etiqueta: "Servicio asignado sin iniciar" },
+          { codigo: "informe_no_completado", etiqueta: "Informe de servicio no completado" },
+          { codigo: "cancelacion_reiterada_servicio", etiqueta: "Cancelación reiterada de servicio" },
+          { codigo: "uso_indebido_reclamacion", etiqueta: "Uso indebido de reclamación" },
+        ],
+        cliente: [
+          { codigo: "cancelacion_reiterada_servicio", etiqueta: "Cancelación reiterada de servicio" },
+          { codigo: "uso_indebido_reclamacion", etiqueta: "Uso indebido de reclamación" },
+          { codigo: "alcance_distinto_solicitud", etiqueta: "El trabajo pedido no corresponde a la solicitud" },
+        ],
+      };
+
+      const mxn = (n) =>
+        n.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+
+      function pintarCotizaciones() {
+        const q = document.getElementById("busca-cot").value.trim().toLowerCase();
+        const estado = document.querySelector(".filtro.activo").dataset.estado;
+        const filas = cotizaciones.filter((c) => {
+          const texto = (c.proveedor + " " + c.condiciones).toLowerCase();
+          const okQ = !q || texto.includes(q);
+          const okE = estado === "todas" || c.estado === estado;
+          return okQ && okE;
+        });
+        const tbody = document.getElementById("tabla-cot");
+        tbody.innerHTML = filas
+          .map(
+            (c) => `
+          <tr class="${c.estado === "aceptada" ? "aceptada" : ""}">
+            <td class="fila-nombre">${c.proveedor}${c.estado === "aceptada" ? " · elegida" : ""}</td>
+            <td>${mxn(c.costo)}</td>
+            <td><span class="badge ${c.estado === "aceptada" ? "badge-ok" : "badge-gris"}">${c.estado}</span></td>
+            <td>${c.condiciones}</td>
+          </tr>`
+          )
+          .join("");
+        const vacia = document.getElementById("cot-vacia");
+        vacia.hidden = filas.length > 0;
+      }
+
+      function pintarHistorial() {
+        const aviso = document.getElementById("aviso-historial");
+        const bloques = document.getElementById("bloques-historial");
+        const hayRecl = reclamaciones.some((r) => r.estado === "abierta");
+        const hayMarca = marcas.length > 0;
+        if (!hayRecl && !hayMarca) {
+          aviso.textContent =
+            "El administrador no lista historiales ajenos; hace falta atender una reclamación o una marca de este caso.";
+          bloques.innerHTML = "";
+          return;
+        }
+        aviso.textContent =
+          "Hay una reclamación o una marca de este caso. El administrador ve el historial de ambos perfiles de este servicio, no un padrón libre (RN-015).";
+        const lista = (titulo, items) => `
+          <h3 style="margin:0.9rem 0 0.45rem;font-size:0.82rem">${titulo}</h3>
+          <div class="lista-hist">
+            ${items
+              .map(
+                (i) => `
+              <article class="item-hist">
+                <strong>${i.titulo}</strong>
+                <span class="badge badge-gris">${i.estado}</span>
+                <span class="sub">${i.fecha}</span>
+              </article>`
+              )
+              .join("")}
+          </div>`;
+        bloques.innerHTML =
+          lista("Servicios previos del cliente", historial.cliente) +
+          lista("Servicios previos del proveedor", historial.proveedor);
+      }
+
+      function pintarReclamaciones() {
+        document.getElementById("n-recl").textContent = "(" + reclamaciones.length + ")";
+        const abierta = reclamaciones.find((r) => r.estado === "abierta");
+        document.getElementById("lista-recl").innerHTML = reclamaciones
+          .map(
+            (r) => `
+          <article class="item-lado">
+            <h3>${r.categoria}</h3>
+            <p><span class="badge ${r.estado === "abierta" ? "badge-alerta" : "badge-gris"}">${r.estado}</span></p>
+            <p>Reclamante: ${r.reclamante}</p>
+            <p>${r.motivo.length > 90 ? r.motivo.slice(0, 87) + "…" : r.motivo}</p>
+            ${
+              r.estado === "abierta"
+                ? `<div class="acciones">
+                    <button type="button" class="btn" data-cierre="sin">Cerrar sin marca</button>
+                    <button type="button" class="btn btn-pollen" data-cierre="con">Cerrar con marca</button>
+                    <p class="hint">Cancelar el servicio y reclamar son actos distintos. El administrador no abre reclamaciones.</p>
+                  </div>`
+                : `<p class="hint">Cerrada. No se reabre.</p>`
+            }
+          </article>`
+          )
+          .join("");
+        document.querySelectorAll("[data-cierre]").forEach((btn) => {
+          btn.addEventListener("click", () => cerrarReclamacion(btn.dataset.cierre));
+        });
+        void abierta;
+      }
+
+      function pintarMarcas() {
+        document.getElementById("n-marcas").textContent = "(" + marcas.length + ")";
+        document.getElementById("lista-marcas").innerHTML = marcas
+          .map(
+            (m) => `
+          <article class="item-lado">
+            <h3>${m.etiqueta}</h3>
+            <p>Tipo: ${m.tipo} · código ${m.causa}</p>
+            <p>Perfil: ${m.perfil}</p>
+            <p>${m.fecha}</p>
+          </article>`
+          )
+          .join("");
+      }
+
+      function llenarCausas() {
+        const perfil = document.getElementById("marca-perfil").value;
+        const sel = document.getElementById("marca-causa");
+        sel.innerHTML = causas[perfil]
+          .map((c) => `<option value="${c.codigo}">${c.etiqueta}</option>`)
+          .join("");
+      }
+
+      function cerrarReclamacion(modo) {
+        const r = reclamaciones.find((x) => x.estado === "abierta");
+        if (!r) return;
+        r.estado = "cerrada";
+        if (modo === "con") {
+          const ya = marcas.some(
+            (m) => m.causa === "uso_indebido_reclamacion" && m.perfil === "Mariana Solís"
+          );
+          if (!ya) {
+            marcas.push({
+              tipo: "advertencia",
+              causa: "uso_indebido_reclamacion",
+              etiqueta: "Uso indebido de reclamación",
+              perfil: "Mariana Solís",
+              fecha: "2 nov 2026",
+            });
+          }
+          const toast = document.getElementById("toast-marca");
+          toast.textContent = ya
+            ? "La reclamación se cerró. Esa causa ya existía en el perfil (unicidad por perfil + código)."
+            : "Reclamación cerrada con marca de demostración (uso indebido de reclamación · cliente).";
+          toast.classList.remove("error");
+          toast.style.display = "block";
+        }
+        pintarReclamaciones();
+        pintarMarcas();
+        pintarHistorial();
+      }
+
+      document.getElementById("busca-cot").addEventListener("input", pintarCotizaciones);
+      document.querySelectorAll(".filtro").forEach((b) => {
+        b.addEventListener("click", () => {
+          document.querySelectorAll(".filtro").forEach((x) => x.classList.remove("activo"));
+          b.classList.add("activo");
+          pintarCotizaciones();
+        });
+      });
+
+      document.getElementById("tab-servicio").addEventListener("click", () => {
+        document.getElementById("tab-servicio").setAttribute("aria-selected", "true");
+        document.getElementById("tab-historial").setAttribute("aria-selected", "false");
+        document.getElementById("panel-servicio").hidden = false;
+        document.getElementById("panel-historial").hidden = true;
+      });
+      document.getElementById("tab-historial").addEventListener("click", () => {
+        document.getElementById("tab-historial").setAttribute("aria-selected", "true");
+        document.getElementById("tab-servicio").setAttribute("aria-selected", "false");
+        document.getElementById("panel-servicio").hidden = true;
+        document.getElementById("panel-historial").hidden = false;
+      });
+
+      document.getElementById("colapsar-der").addEventListener("click", () => {
+        document.getElementById("col-der").classList.add("oculta");
+        document.getElementById("app").classList.add("der-cerrada");
+      });
+      document.getElementById("abrir-der").addEventListener("click", () => {
+        document.getElementById("col-der").classList.remove("oculta");
+        document.getElementById("app").classList.remove("der-cerrada");
+      });
+
+      document.getElementById("marca-perfil").addEventListener("change", llenarCausas);
+      document.getElementById("form-marca").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const tipo = document.getElementById("marca-tipo").value;
+        const perfilKey = document.getElementById("marca-perfil").value;
+        const causa = document.getElementById("marca-causa").value;
+        const etiqueta = causas[perfilKey].find((c) => c.codigo === causa).etiqueta;
+        const perfilNombre =
+          perfilKey === "proveedor" ? "Eléctrica del Valle" : "Mariana Solís";
+        const toast = document.getElementById("toast-marca");
+        const duplicada = marcas.some((m) => m.causa === causa && m.perfil === perfilNombre);
+        if (duplicada) {
+          toast.textContent =
+            "Esa causa ya está en este perfil. La unicidad es por perfil + código, no por expediente.";
+          toast.classList.add("error");
+          toast.style.display = "block";
+          return;
+        }
+        marcas.push({
+          tipo,
+          causa,
+          etiqueta,
+          perfil: perfilNombre,
+          fecha: "2 nov 2026",
+        });
+        toast.textContent = "Marca registrada en este caso (demostración).";
+        toast.classList.remove("error");
+        toast.style.display = "block";
+        pintarMarcas();
+        pintarHistorial();
+      });
+
+      llenarCausas();
+      pintarCotizaciones();
+      pintarHistorial();
+      pintarReclamaciones();
+      pintarMarcas();
+    </script>
+  </body>
+</html>

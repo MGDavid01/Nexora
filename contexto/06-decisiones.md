@@ -99,7 +99,7 @@ El estado vigente también está en `01-establecido.md`.
 - Decisión: el proveedor ve el historial de servicios y el detalle de cada uno solo mientras tenga un servicio activo con ese cliente.
 - Motivo: decisión de equipo.
 - Alternativas descartadas: verlo al ser notificado, al cotizar, o en cualquier momento.
-- Consecuencias: al cerrarse o cancelarse el servicio, ese acceso se corta. Servicio activo: `pendiente`, `en_curso` o `pendiente_historial` (ADR-016).
+- Consecuencias: al cerrarse o cancelarse el servicio, ese acceso se corta. Servicio activo: `pendiente`, `en_curso` o `pendiente_informe` (ADR-016, nombres en ADR-038).
 
 ### ADR-012 Interfaz responsive
 - Fecha: 2026-10-22
@@ -141,7 +141,7 @@ El estado vigente también está en `01-establecido.md`.
 - Fecha: 2026-10-24
 - Estado: aceptada
 - Contexto: ADR-015 cerró el plazo de 24 horas. Faltaba autorizar los nombres de estado de la participación, la solicitud, la cotización y el servicio.
-- Decisión: valen las tablas de `04-logica-negocio.md`, sección Estados. Participación: `pendiente`, `rechazada`, `aceptada`, `vencida`, `retirada`, `cotizada`. Solicitud: `abierta`, `asignada`, `cancelada`, `cerrada`. Cotización: `enviada`, `aceptada`, `rechazada`, `descartada`. Servicio: `pendiente`, `en_curso`, `pendiente_historial`, `cerrado`, `cancelado`. Servicio activo: los tres primeros. El proveedor mueve el servicio; cliente o proveedor lo cancelan antes del cierre.
+- Decisión: valen las tablas de `04-logica-negocio.md`, sección Estados. Participación: `pendiente`, `rechazada`, `aceptada`, `vencida`, `retirada`, `cotizada`. Solicitud: `abierta`, `asignada`, `cancelada`, `cerrada`. Cotización: `enviada`, `aceptada`, `rechazada`, `descartada`. Servicio: `pendiente`, `en_curso`, `pendiente_informe`, `cerrado`, `cancelado` (el nombre `pendiente_informe` lo fija ADR-038; antes `pendiente_historial`). Servicio activo: los tres primeros. El proveedor mueve el servicio; cliente o proveedor lo cancelan antes del cierre.
 - Motivo: el equipo confirmó que esas tablas están bien.
 - Alternativas descartadas: dejar los nombres como etiqueta provisional.
 - Consecuencias: P-006 queda cerrado. Los campos obligatorios quedaron en ADR-017.
@@ -171,7 +171,7 @@ El estado vigente también está en `01-establecido.md`.
 - Decisión:
   - Al asignar o cancelar una solicitud, las participaciones `pendiente` y `aceptada` pasan a `retirada`, se detiene su plazo y ese vencimiento no sanciona. Si la solicitud se cancela, las cotizaciones `enviada` pasan a `descartada`.
   - Si se cancela el servicio, la solicitud pasa de `asignada` a `cancelada`. La cotización aceptada se conserva.
-  - Cancelar el servicio solo se permite desde `pendiente` o `en_curso`. Desde `pendiente_historial` se cierra con historial.
+  - Cancelar el servicio solo se permite desde `pendiente` o `en_curso`. Desde `pendiente_informe` se cierra con el informe de servicio (ADR-038).
   - Una cotización por perfil y solicitud. Enviada, no se modifica. Rechazada, no se envía otra.
   - Una participación por perfil y solicitud. Aceptar otra vez no reinicia las 24 horas. En una carrera vale la primera transición cuyo estado de origen todavía coincide. Aceptar una cotización solo ocurre si la solicitud sigue `abierta`.
   - Hay un técnico del perfil asignado antes de `en_curso`.
@@ -236,7 +236,7 @@ El estado vigente también está en `01-establecido.md`.
 - Decisión: clientes y proveedores se registran desde la vista del administrador de plataforma.
 - Motivo: decisión de equipo.
 - Alternativas descartadas: auto-registro público.
-- Consecuencias: no hay alta pública. El acceso posterior de esos usuarios sigue siendo el suyo. Quién suma después más usuarios al perfil proveedor no cambia con esta decisión.
+- Consecuencias: no hay alta pública. El acceso posterior de esos usuarios sigue siendo el suyo. Quién suma usuarios al perfil proveedor después del alta lo cierra ADR-031.
 
 ### ADR-026 Ingresos simulados sin pasarela de pagos
 - Fecha: 2026-10-27
@@ -264,3 +264,109 @@ El estado vigente también está en `01-establecido.md`.
 - Motivo: decisión de equipo.
 - Alternativas descartadas: conservar `establecimiento` como tercer tipo.
 - Consecuencias: el alta, la validación y el enumerado `tipoperfilcliente` solo aceptan esos dos valores. Una fila que ya era `establecimiento` pasa a `empresa`. ADR-001 queda acotada en este punto.
+
+### ADR-029 Edición de cuenta después del alta
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: RN-014 listaba consulta de usuarios, no edición. El padrón de la UI ya permitía editar.
+- Decisión: el administrador de plataforma edita una cuenta ya dada de alta. Campos: nombre, correo (único), teléfono y contraseña (hasheada). No cambia `tipo_cuenta`. No pasa un usuario de cliente a proveedor ni al revés. No asigna un segundo usuario a un perfil cliente. Cada edición se audita.
+- Motivo: decisión de equipo.
+- Alternativas descartadas: no editar nunca; permitir cambiar el tipo de cuenta.
+- Consecuencias: RN-014 y `01-establecido` lo incluyen.
+
+### ADR-030 Alta de más administradores de plataforma
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: RN-014 no incluía registrar otros administradores. El código ya tenía el alta.
+- Decisión: un administrador autenticado registra a otros administradores desde el panel. Esa cuenta no tiene perfil cliente ni proveedor (ADR-007). El alta pide nombre, correo único, contraseña y teléfono. No hay auto-registro de administradores. Cada alta se audita.
+- Motivo: decisión de equipo.
+- Alternativas descartadas: un solo administrador por despliegue; auto-registro de admins.
+- Consecuencias: RN-014 y `01-establecido`. El primer administrador de un despliegue sigue fuera de esta RN.
+
+### ADR-031 Quién suma usuarios al perfil proveedor
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: ADR-025 dejó abierto quién suma usuarios después del alta. RN-002 decía que el perfil «puede sumar».
+- Decisión: un administrativo de ese perfil crea usuarios del mismo perfil, administrativos o técnicos. El administrador de plataforma también puede crearlos y editarlos (campos de cuenta y `funcion`). No hay flujo de petición empresa → Nexora.
+- Motivo: la empresa opera sola; Nexora cubre el caso de apoyo. Un flujo de petición ampliaría el MVP.
+- Alternativas descartadas: solo Nexora crea usuarios previa petición; solo la empresa, sin el admin de plataforma.
+- Consecuencias: RN-002, RN-014, `01` y `05`. ADR-025 queda acotada en este punto.
+
+### ADR-032 Baja voluntaria vs bloqueo
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: RN-003 y RN-011 cierran el bloqueo a la tercera marca. RN-015 decía «al pedir la baja, deja de entrar» sin decir quién pide ni si el admin procesa. Se barajó dar de baja por las tres marcas.
+- Decisión: tres marcas distintas = bloqueo, como RN-003/RN-011. El admin levanta el bloqueo; el conteo no vuelve a cero. El admin no dispara baja por tres marcas. Baja voluntaria: la pide el usuario del perfil cliente o un administrativo del perfil proveedor, sobre ese perfil (todos sus usuarios). El administrador de plataforma la procesa. El pedido queda registrado; el corte de acceso y el reloj de 12 meses corren al procesar. El resto de RN-015 (borrado de contacto a 12 meses, historial cerrado sin esos datos) se mantiene.
+- Motivo: bloqueo es reversible; baja borra contacto a 12 meses. Mezclarlos haría irreversible el tercio de marcas.
+- Alternativas descartadas: tres marcas = baja directa; el corte al pedir, no al procesar.
+- Consecuencias: RN-003, RN-011, RN-014, RN-015, `01` y `05`. ADR-024 se acota, no se revierte.
+
+### ADR-033 ESP32 en el panel del administrador
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: ADR-003 y `05` ponían endpoints de dispositivo en el backend. RN-014 no los asignaba al panel.
+- Decisión: el administrador de plataforma opera los dispositivos desde su panel: autorizar, consultar datos, enviar comandos y consultar estado. El panel es el dueño de autorizar. El flujo web no depende del dispositivo (ADR-003). Auth JWT o API key.
+- Motivo: decisión de equipo.
+- Alternativas descartadas: solo endpoints técnicos, sin pantalla admin.
+- Consecuencias: RN-014 y `05`. P-014 sigue abierto.
+
+### ADR-034 Consulta del log de auditoría
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: el NFR y RN-014 exigían auditar. No decían si el admin consulta el log.
+- Decisión: el administrador consulta el log en el panel. Alcance: altas, ediciones de cuenta, marcas, desbloqueo, baja procesada, edición de tramos, operaciones de dispositivos y consultas de historial acotadas (RN-015, ADR-023). No es un SIEM ni cada GET de listado. Ver el log no abre historiales. El notificado de una marca ve «equipo Nexora»; el log interno guarda qué admin actuó.
+- Motivo: decisión de equipo.
+- Alternativas descartadas: solo escritura de log, sin consulta.
+- Consecuencias: RN-014 y `01`.
+
+### ADR-035 Reclamación sobre un servicio
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: RN-014/015 usaban «reclamación» como puerta al historial sin trámite. El equipo quiso definirla (R2).
+- Decisión: una reclamación va ligada a un servicio (cualquier estado). La abren el usuario del perfil cliente o un administrativo del proveedor de ese servicio. El técnico no. Estados `abierta` → `cerrada`; no se reabre; una sola `abierta` por servicio. Cancelar el servicio y reclamar son dos actos: uno no dispara el otro. Al atender, el admin ve el historial de ambos perfiles de ese servicio, no un padrón. Al cerrar: sin marca o con marca (RN-011). Fuera del MVP: chat, apelación del 4.5, anónima, de oficio, adjuntos extra, SLA, indemnizaciones.
+- Motivo: dar sentido a la palabra de RN-015 sin una mesa de ayuda.
+- Alternativas descartadas: quitar la palabra; que solo abra el cliente; historial de un solo perfil al atender.
+- Consecuencias: RN-007, RN-014, RN-015, RN-017, `03` y `05`.
+
+### ADR-036 Catálogo fijo de causas
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: `04` decía no asumir catálogo cerrado. Solo estaba la reiteración de vencimientos (RN-006). El admin no edita la lista. La marca lleva descripción libre; el notificado ve «equipo Nexora».
+- Decisión: seis causas, identificadas por código por perfil. Una misma causa no suma dos veces. Lista: `reiteracion_vencimiento_24h` (proveedor), `servicio_sin_iniciar` (proveedor), `informe_no_completado` (proveedor; antes `historial_no_completado`, ADR-038), `cancelacion_reiterada_servicio` (ambos), `uso_indebido_reclamacion` (ambos), `alcance_distinto_solicitud` (cliente). No entra cancelar solicitudes de forma reiterada: cancelar para republicar es RN-004.
+- Motivo: lista corta anclada a comportamientos de las RN. Con esas seis, cliente y proveedor pueden acumular tres códigos distintos.
+- Alternativas descartadas: catálogo editable por el admin; causa «cancelación reiterada de solicitudes»; causa libre como ítem del catálogo.
+- Consecuencias: RN-011. La sección «Lo que no hay que asumir» de `04` sobre el catálogo deja de aplicar.
+
+### ADR-037 Campos y catálogo al abrir una reclamación
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: RN-017 Reclamación cerraba el trámite y no listaba campos. Campos obligatorios no incluía Reclamación. El equipo pidió categoría fija además del texto de motivo, distinta del catálogo de causas de RN-011 Advertencias y sanciones.
+- Decisión: al abrir una reclamación son obligatorios el servicio y el reclamante (salen del acto), una categoría del catálogo fijo y un texto de motivo. Seis códigos: `sin_iniciar`, `informe_pendiente` (antes `historial_pendiente`, ADR-038), `estancado_en_curso`, `alcance_distinto`, `impedimento_ejecucion`, `cancelacion_servicio`. El admin no edita la lista. La categoría no dispara marca; al cerrar con marca el admin elige causa de RN-011 Advertencias y sanciones. `uso_indebido_reclamacion` se usa si se abusó del trámite, cualquiera sea la categoría. No hay categoría para el vencimiento de 24 horas (es de participación, no de servicio).
+- Motivo: poder abrir y atender el trámite sin texto libre sin clasificar, sin mezclar marca y reclamación, y sin ítems ajenos a las RN (calidad en sitio, impago, «Otro»).
+- Alternativas descartadas: solo texto libre; categoría editable por el admin; ítem «Otro».
+- Consecuencias: RN-017 Reclamación, Campos obligatorios, `01` y `03`. El catálogo de causas de RN-011 Advertencias y sanciones (ADR-036) no se modifica. Los códigos `informe_pendiente` / `informe_no_completado` los renombra ADR-038.
+
+### ADR-038 Informe de servicio (no «historial»)
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: «historial» nombraba a la vez la lista de servicios dados y el documento de campo al cerrar. Eso se confundía con el reporte (medición) y con un «reporte del técnico».
+- Decisión: **informe de servicio** es el documento de campo (qué se hizo), obligatorio para cerrar. Entidad `InformeServicio` (antes `HistorialServicio`). Estado `pendiente_informe` (antes `pendiente_historial`). Causa `informe_no_completado` y categoría de reclamación `informe_pendiente`. **Historial** queda para la lista de servicios dados (RN-010 Historial y recontratación). **Reporte** sigue siendo la medición del sistema. RN-008 pasa a llamarse Informe de servicio al cerrar.
+- Motivo: el nombre tiene que decir qué es cada cosa en la UI y en las RN.
+- Alternativas descartadas: dejar historial para el documento; llamarlo reporte del técnico (choca con RN-008 / ADR-008); acta o bitácora.
+- Consecuencias: `01`, `03`, `04` (RN-007, RN-008, RN-011, RN-017, estados, campos), `05`. ADR-016 y ADR-036/037 usan los nombres nuevos. El código y `otros/atributos.md` pueden seguir con `historial_servicio` / `pendiente_historial` hasta la migración.
+
+### ADR-039 Herramientas de la barra del administrador
+- Fecha: 2026-11-01
+- Estado: aceptada
+- Contexto: RN-014 Administración lista facultades (consultar solicitudes, cotizaciones, servicios, reportes, calificaciones, sanciones, reclamaciones, ingresos, dispositivos, log). La barra tenía un icono por ítem, más altas sueltas de cliente y proveedor. Personas y empresas ya cubría esas altas. El equipo unificó la barra sin recortar permisos.
+- Decisión: la barra del administrador tiene, en este orden: **Inicio**, **Usuarios**, **Trabajos**, **Reportes**, **Ingresos**, **Dispositivos**, **Auditoría**.
+  - **Usuarios** es el padrón (nombre de la herramienta: Usuarios, no «Personas y empresas»). Incluye alta de cliente, proveedor y administrador, edición de cuentas y **advertencias, sanciones, bloqueo y desbloqueo del perfil** (RN-011 Advertencias y sanciones, RN-003). No hay icono Sanciones.
+  - **Trabajos** es una sola vista: solicitudes, cotizaciones y servicios del mismo caso. El detalle de ese caso muestra **calificaciones** (RN-009 Calificación mutua), **reclamación** (RN-017 Reclamación) y la **marca originada en ese caso**. No hay iconos sueltos de Solicitudes, Cotizaciones, Servicios, Calificaciones ni Reclamaciones. En la lista de Trabajos hay filtros para encontrar reclamación abierta, cierre (calificaciones) o marca de ese caso.
+  - **Reportes** sigue aparte (mediciones del perfil, no el caso; ADR-038).
+  - **Ingresos** sigue aparte (RN-016 Ingresos simulados).
+  - **Dispositivos** sigue aparte (ADR-033).
+  - **Auditoría** es herramienta propia: consulta del log (ADR-034). No es historial ni reporte.
+  - Las marcas del perfil (conteo 3/3, bloqueo) viven en Usuarios. La marca que nace al cerrar una reclamación o por un hecho de ese servicio se registra en el expediente de Trabajos y suma al mismo conteo del perfil (RN-011).
+- Motivo: la barra cabe en un rail vertical; solicitud → cotización → servicio es un expediente; sanción es del perfil; calificación y reclamación son del servicio; el log no es un padrón.
+- Alternativas descartadas: un icono por facultad de RN-014; mezclar Reportes con Trabajos; dejar Sanciones como icono aparte; llamar Usuarios «Personas y empresas»; meter Auditoría dentro de Trabajos o de Usuarios.
+- Consecuencias: `01`, RN-014 (facultades iguales; agrupación de UI). Rutas sueltas de esas consultas redirigen a Usuarios, Trabajos o Auditoría.
