@@ -2,12 +2,15 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, Column, DateTime, Numeric, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, Column, DateTime, Index, Numeric, UniqueConstraint, func, text
 from sqlmodel import Field, SQLModel
 
 from app.models.enums import (
+    CategoriaReclamacion,
+    CodigoMarca,
     EstadoCotizacion,
     EstadoParticipacion,
+    EstadoReclamacion,
     EstadoServicio,
     EstadoSolicitud,
     FuncionProveedor,
@@ -231,6 +234,33 @@ class Calificacion(SQLModel, table=True):
     es_automatica: bool
 
 
+class Reclamacion(SQLModel, table=True):
+    __tablename__ = "reclamacion"
+    __table_args__ = (
+        Index(
+            "reclamacion_abierta_por_servicio",
+            "servicio_id",
+            unique=True,
+            postgresql_where=text("estado = 'abierta'"),
+        ),
+    )
+
+    id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
+    servicio_id: uuid.UUID = Field(foreign_key="servicio.id", index=True)
+    reclamante_usuario_id: uuid.UUID = Field(foreign_key="usuario.id", index=True)
+    categoria: CategoriaReclamacion
+    motivo: str
+    estado: EstadoReclamacion = EstadoReclamacion.abierta
+    creada_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )
+    cerrada_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+    )
+
+
 class Sancion(SQLModel, table=True):
     __tablename__ = "sancion"
     __table_args__ = (
@@ -238,13 +268,30 @@ class Sancion(SQLModel, table=True):
             "(perfil_cliente_id IS NOT NULL)::int + (perfil_proveedor_id IS NOT NULL)::int = 1",
             name="sancion_un_perfil",
         ),
+        Index(
+            "sancion_codigo_cliente_unico",
+            "perfil_cliente_id",
+            "codigo",
+            unique=True,
+            postgresql_where=text("perfil_cliente_id IS NOT NULL"),
+        ),
+        Index(
+            "sancion_codigo_proveedor_unico",
+            "perfil_proveedor_id",
+            "codigo",
+            unique=True,
+            postgresql_where=text("perfil_proveedor_id IS NOT NULL"),
+        ),
     )
 
     id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
     tipo: TipoMarca
-    causa: str
+    codigo: CodigoMarca
+    descripcion: str
     perfil_cliente_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_cliente.id", index=True)
     perfil_proveedor_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_proveedor.id", index=True)
+    servicio_id: uuid.UUID | None = Field(default=None, foreign_key="servicio.id", index=True)
+    reclamacion_id: uuid.UUID | None = Field(default=None, foreign_key="reclamacion.id", index=True)
     creada_en: datetime | None = Field(
         default=None,
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),

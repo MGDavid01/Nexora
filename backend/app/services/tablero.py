@@ -28,6 +28,7 @@ from app.models.enums import (
     EstadoSolicitud,
     FuncionProveedor,
     TipoCuenta,
+    etiqueta_codigo_marca,
 )
 from app.schemas.tablero import (
     CoberturaCategoriaItem,
@@ -261,17 +262,17 @@ async def obtener_tablero_admin(session: AsyncSession) -> TableroAdminOut:
     )
 
     # Sanciones, bloqueos y vigilancia
-    ultima_causa_cliente: dict[UUID, str] = {}
-    ultima_causa_proveedor: dict[UUID, str] = {}
+    ultima_marca_cliente: dict[UUID, Sancion] = {}
+    ultima_marca_proveedor: dict[UUID, Sancion] = {}
     sanciones_ordenadas = sorted(
         sanciones,
         key=lambda s: _asegurar_utc(s.creada_en, ahora),
     )
     for san in sanciones_ordenadas:
         if san.perfil_cliente_id is not None:
-            ultima_causa_cliente[san.perfil_cliente_id] = san.causa
+            ultima_marca_cliente[san.perfil_cliente_id] = san
         if san.perfil_proveedor_id is not None:
-            ultima_causa_proveedor[san.perfil_proveedor_id] = san.causa
+            ultima_marca_proveedor[san.perfil_proveedor_id] = san
 
     perfiles_bloqueados = sum(1 for c in clientes if c.bloqueado) + sum(
         1 for p in proveedores if p.bloqueado
@@ -300,7 +301,7 @@ async def obtener_tablero_admin(session: AsyncSession) -> TableroAdminOut:
                     conteo_marcas=c.conteo_marcas,
                     bloqueado=c.bloqueado,
                     vencimientos_24h=0,
-                    ultima_causa=ultima_causa_cliente.get(c.id),
+                    **_ultima_marca_tablero(ultima_marca_cliente.get(c.id)),
                     motivo_atencion=motivo,
                 )
             )
@@ -326,7 +327,7 @@ async def obtener_tablero_admin(session: AsyncSession) -> TableroAdminOut:
                     conteo_marcas=p.conteo_marcas,
                     bloqueado=p.bloqueado,
                     vencimientos_24h=venc_p,
-                    ultima_causa=ultima_causa_proveedor.get(p.id),
+                    **_ultima_marca_tablero(ultima_marca_proveedor.get(p.id)),
                     motivo_atencion=motivo,
                 )
             )
@@ -495,3 +496,17 @@ async def obtener_tablero_admin(session: AsyncSession) -> TableroAdminOut:
             cuentas_en_baja=cuentas_en_baja,
         ),
     )
+
+
+def _ultima_marca_tablero(marca: Sancion | None) -> dict[str, str | None]:
+    if marca is None:
+        return {
+            "ultima_codigo": None,
+            "ultima_etiqueta": None,
+            "ultima_descripcion": None,
+        }
+    return {
+        "ultima_codigo": marca.codigo.value,
+        "ultima_etiqueta": etiqueta_codigo_marca(marca.codigo),
+        "ultima_descripcion": marca.descripcion,
+    }

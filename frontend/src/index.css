@@ -645,6 +645,140 @@ dd {
   font-weight: 700;
 }
 
+.padron {
+  display: grid;
+  gap: 1.15rem;
+  align-content: start;
+}
+
+.padron-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+}
+
+.padron-encabezado p {
+  max-width: 46rem;
+  margin: 0.35rem 0 0;
+  color: var(--texto-suave);
+}
+
+.padron-altas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.padron-altas button {
+  padding: 0.55rem 0.95rem;
+}
+
+.padron-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.85fr);
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.padron-tabla {
+  min-height: 18rem;
+}
+
+.padron-cuenta {
+  display: grid;
+  justify-items: start;
+  width: 100%;
+  padding: 0.2rem 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--texto);
+  font-weight: 700;
+  text-align: left;
+}
+
+.padron-cuenta span {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.padron-cuenta:hover,
+.padron-cuenta.actual {
+  color: var(--cerulean);
+}
+
+.padron-cuenta:focus-visible {
+  outline: 2px solid var(--cerulean);
+  outline-offset: 3px;
+}
+
+.padron-marca {
+  display: inline-block;
+  margin-left: 0.4rem;
+  color: var(--error-texto);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.padron-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.padron-esqueleto {
+  display: grid;
+  gap: 0.7rem;
+  margin: 1rem 0 1.2rem;
+}
+
+.padron-esqueleto span {
+  display: block;
+  height: 2.4rem;
+  border-radius: 10px;
+  background: var(--superficie-suave);
+}
+
+.padron-ficha h3 {
+  margin: 1.2rem 0 0.35rem;
+  font-size: 1rem;
+}
+
+.padron-marcas {
+  margin: 0.4rem 0 0.9rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.padron-marcas li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: var(--superficie-suave);
+}
+
+.padron-acciones-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.padron ::selection {
+  background: var(--pollen);
+  color: #0a0a0a;
+}
+
+@media (max-width: 980px) {
+  .padron-cuerpo,
+  .padron-encabezado {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}
+
 @media (min-width: 720px) {
   .panel {
     padding: 1.75rem;

@@ -11,7 +11,8 @@ Reglas que el SRS afirma o que el equipo cerró.
 
 ### RN-002 Registro de proveedor
 - Cuando: el administrador de plataforma registra un proveedor desde su vista.
-- Entonces: se crea un perfil proveedor con al menos un usuario. Ese perfil puede sumar más usuarios, administrativos o técnicos. La ficha describe los servicios que ofrece y se liga a solicitudes, cotizaciones, servicios, calificaciones e historial.
+- Entonces: se crea un perfil proveedor con al menos un usuario. La primera cuenta queda como administrativa. La ficha describe los servicios que ofrece y se liga a solicitudes, cotizaciones, servicios, calificaciones e historial.
+- Después del alta, un administrativo de ese perfil puede crear más usuarios del mismo perfil, administrativos o técnicos. El administrador de plataforma también puede crearlos y editarlos (RN-014). No hay flujo de petición empresa → Nexora (ADR-031).
 - Un usuario de este perfil no puede ser además perfil cliente.
 - La persona o empresa no se registra por su cuenta.
 
@@ -19,7 +20,7 @@ Reglas que el SRS afirma o que el equipo cerró.
 - Cuando: un usuario autenticado entra a una función.
 - Entonces: solo ve y ejecuta lo de su lugar: cliente, usuario de un proveedor (administrativo o técnico) o administrador de plataforma.
 - La API autentica con JWT o API key a clientes web y a dispositivos autorizados.
-- Con el perfil bloqueado por tres sanciones, ninguno de sus usuarios opera. Esa cuenta no puede crear ni unirse a otro perfil. El administrador de plataforma levanta el bloqueo cuando Nexora atiende el contacto. El conteo de sanciones no vuelve a cero al desbloquear.
+- Con el perfil bloqueado por tres marcas distintas, ninguno de sus usuarios opera. Esa cuenta no puede crear ni unirse a otro perfil. El administrador de plataforma levanta el bloqueo cuando Nexora atiende el contacto. El conteo de marcas no vuelve a cero al desbloquear. Tres marcas son bloqueo, no baja (ADR-032).
 
 ### RN-004 Publicar solicitud
 - Cuando: el usuario del perfil cliente publica soporte.
@@ -50,10 +51,11 @@ Reglas que el SRS afirma o que el equipo cerró.
 - Cuando: el cliente acepta una cotización.
 - Entonces: la solicitud pasa a `asignada`, nace el servicio en `pendiente` y las demás cotizaciones `enviada` pasan a `descartada`.
 - Antes de pasar a `en_curso` el servicio tiene un técnico de ese mismo perfil. Administrativo o técnico pueden mover los estados; el técnico registrado es quien realiza el servicio.
-- Recorrido: `pendiente` → `en_curso` → `pendiente_historial` → `cerrado`.
-- Al pasar a `cerrado` se registra el historial, la solicitud pasa a `cerrada` y cada lado queda calificado (RN-009).
+- Recorrido: `pendiente` → `en_curso` → `pendiente_informe` → `cerrado`.
+- Al pasar a `cerrado` se registra el informe de servicio, la solicitud pasa a `cerrada` y cada lado queda calificado (RN-009).
 - Cliente o proveedor pueden cancelar solo desde `pendiente` o `en_curso`. La otra parte recibe aviso, el servicio queda `cancelado` y la solicitud pasa de `asignada` a `cancelada`. La cotización aceptada se conserva como antecedente.
-- Desde `pendiente_historial` no se cancela: se completa el historial y se cierra.
+- Cancelar el servicio y abrir una reclamación son actos distintos (ADR-035). Uno no dispara el otro.
+- Desde `pendiente_informe` no se cancela: se completa el informe de servicio y se cierra.
 
 ## Estados
 
@@ -97,18 +99,25 @@ Nace al aceptar la cotización.
 |--------|-------------|
 | pendiente | Asignado, sin empezar |
 | en_curso | El trabajo empezó |
-| pendiente_historial | El trabajo terminó y falta el registro en el historial |
-| cerrado | El historial ya quedó registrado |
+| pendiente_informe | El trabajo terminó y falta el informe de servicio |
+| cerrado | El informe de servicio ya quedó registrado |
 | cancelado | Se canceló desde `pendiente` o `en_curso`. Avisa a la otra parte. La solicitud pasa a `cancelada` |
 
-Servicio activo, para ver el historial del cliente: `pendiente`, `en_curso` o `pendiente_historial`.
+Servicio activo, para ver el historial del cliente: `pendiente`, `en_curso` o `pendiente_informe`.
 
-Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pasar a `en_curso` ya hay un técnico asignado de ese perfil. Cancelar: cliente o proveedor, solo desde `pendiente` o `en_curso`.
+Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pasar a `en_curso` ya hay un técnico asignado de ese perfil. Cancelar: cliente o proveedor, solo desde `pendiente` o `en_curso`. Cancelar no abre reclamación.
 
-### RN-008 Historial al cerrar
+### Reclamación
+
+| Estado | Quién lo provoca |
+|--------|------------------|
+| abierta | El cliente o un administrativo del proveedor, sobre un servicio (RN-017) |
+| cerrada | El administrador de plataforma, con o sin marca |
+
+### RN-008 Informe de servicio al cerrar
 - Cuando: termina la atención.
-- Entonces: se registra el servicio en el historial (qué se hizo, ligado al proveedor, al cliente y al servicio).
-- Los reportes son otra cosa: mediciones de las acciones del perfil, no este registro.
+- Entonces: se registra el **informe de servicio** (qué se hizo, ligado al proveedor, al cliente y al servicio). Ese informe es el documento de campo. No es el reporte ni el historial.
+- El **historial** es la lista de servicios dados (cada uno con su informe). El **reporte** es una medición que genera el sistema, no un formulario de cierre.
 
 ### RN-009 Calificación mutua
 - Cuando: el servicio se cierra.
@@ -128,17 +137,27 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 - En esta fase la lista no se filtra por área. Más adelante solo mostrará proveedores del área de la solicitud.
 - Cuando: un proveedor tiene un servicio activo con ese cliente.
 - Entonces: el técnico asignado a ese servicio y los usuarios administrativos de ese perfil ven el historial y el detalle. Los demás técnicos de la misma empresa no. Cada consulta queda auditada.
-- Sin servicio activo, ese acceso no existe. Si el administrador de plataforma también lo ve, sigue en P-015.
+- Sin servicio activo, ese acceso no existe. El administrador de plataforma no lista historiales ajenos; el acceso acotado está en RN-014 y RN-015 (ADR-024).
 
 ### RN-011 Advertencias y sanciones
 - Cuando: el administrador de plataforma registra una advertencia o una sanción contra un perfil cliente o proveedor.
-- Entonces: se notifica a ese perfil, se guarda y suma uno al mismo conteo. No bloquea en ese momento.
-- A la tercera marca distinta de ese perfil: se bloquean todos sus usuarios y se les pide contactar a Nexora.
-- Una misma causa no suma más de una marca, sea advertencia o sanción.
+- Entonces: elige **una** causa del catálogo fijo y escribe una descripción detallada. Se notifica a ese perfil, se guarda y suma uno al mismo conteo. No bloquea en ese momento.
+- El notificado ve la etiqueta de la causa y la descripción, atribuidas al **equipo Nexora**, no al administrador concreto. El log interno sí registra qué admin actuó (RN-014).
+- A la tercera marca distinta de ese perfil: se bloquean todos sus usuarios y se les pide contactar a Nexora. Eso es bloqueo, no baja (ADR-032).
+- Una misma causa no suma más de una marca, sea advertencia o sanción. La identidad de la causa es el **código** del catálogo, por perfil. El texto de la descripción no crea otra marca. Diez participaciones `vencida` siguen siendo un solo `reiteracion_vencimiento_24h`.
 - Si el bloqueado es proveedor: deja de ser elegible, sus cotizaciones `enviada` pasan a `descartada` y sus plazos se detienen.
 - Si el bloqueado es cliente: sus solicitudes `abierta` pasan a `cancelada` y se aplica el cierre de participaciones y cotizaciones de RN-005 y RN-006.
 - Los servicios que ya están activos no se borran. Se avisa a la otra parte, que puede cancelarlos si el servicio sigue en `pendiente` o `en_curso`.
-- La reiteración de vencimientos sin cotizar ya es causa (RN-006). El resto de causas no está listado.
+- El admin no edita el catálogo. Causas vigentes (ADR-036):
+
+| Código | Etiqueta | Aplica a |
+|--------|----------|----------|
+| `reiteracion_vencimiento_24h` | Reiteración de vencimientos sin cotizar | Proveedor. Ya en RN-006: el primer vencimiento no bloquea; un vencimiento con la solicitud ya asignada o cancelada no cuenta. |
+| `servicio_sin_iniciar` | Servicio asignado sin iniciar | Proveedor. El servicio se queda en `pendiente` sin pasar a `en_curso`. No hay plazo fijo; es juicio del admin. |
+| `informe_no_completado` | Informe de servicio no completado | Proveedor. El servicio se queda en `pendiente_informe`. No hay plazo fijo; es juicio del admin. |
+| `cancelacion_reiterada_servicio` | Cancelación reiterada de servicio | Ambos. Cancelar una vez desde `pendiente` o `en_curso` es un derecho (RN-007). La reiteración autoriza a marcar, sin número fijo. |
+| `uso_indebido_reclamacion` | Uso indebido de reclamación | Ambos. Abuso del trámite de RN-017. |
+| `alcance_distinto_solicitud` | El trabajo pedido no corresponde a la solicitud | Cliente. En el sitio piden algo distinto a lo publicado o cotizado. El proveedor puede cancelar el servicio (RN-007) y, en un acto aparte, abrir reclamación (RN-017). |
 
 ### RN-012 Ubicación del proveedor
 - Cuando: se consulta un proveedor.
@@ -150,8 +169,17 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 
 ### RN-014 Administración
 - Cuando: un administrador de plataforma entra al panel.
-- Entonces: registra perfiles cliente y perfiles proveedor (RN-001, RN-002) y consulta usuarios, proveedores, solicitudes, cotizaciones, servicios, reportes, calificaciones, advertencias, sanciones e ingresos simulados de la plataforma, dentro de sus permisos. Esas acciones se auditan.
-- El historial de un perfil lo ve solo al atender una advertencia, sanción, bloqueo o reclamación de ese perfil (RN-015).
+- Entonces, dentro de sus permisos:
+  - Registra perfiles cliente y perfiles proveedor (RN-001, RN-002) y a otros administradores de plataforma (ADR-030).
+  - Edita cuentas ya dadas de alta: nombre, correo único, teléfono y contraseña. No cambia `tipo_cuenta` ni mueve a un usuario de cliente a proveedor (ADR-029).
+  - Crea y edita usuarios de un perfil proveedor, con función `administrativo` o `técnico` (RN-002, ADR-031).
+  - Consulta usuarios, proveedores, solicitudes, cotizaciones, servicios, reportes, calificaciones, advertencias, sanciones, reclamaciones e ingresos simulados.
+  - Registra advertencias y sanciones (RN-011), levanta un bloqueo (RN-003) y procesa una baja voluntaria (RN-015).
+  - Opera dispositivos ESP32: autorizar, consultar datos, enviar comandos y consultar estado (ADR-033). El flujo web no depende del dispositivo (ADR-003).
+  - Consulta el log de auditoría: altas, ediciones de cuenta, marcas, desbloqueo, baja procesada, edición de tramos (RN-016), operaciones de dispositivos y consultas de historial acotadas (RN-015 y ADR-023). No es un volcado de toda la API ni un listado libre de historiales.
+- Esas acciones se auditan.
+- En la barra no hay un icono por cada consulta. Agrupación de herramientas: ADR-039. No cambia qué puede hacer el administrador.
+- El historial de un perfil lo ve solo al atender una advertencia, sanción, bloqueo o reclamación (RN-015, RN-017).
 
 ### RN-016 Ingresos simulados
 - Cuando: un servicio queda `cerrado`.
@@ -173,16 +201,41 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 - Se guardan cuenta (nombre, correo, teléfono, contraseña hasheada), perfil, ubicación, solicitudes, cotizaciones, servicios, historial, calificaciones, advertencias, sanciones y la referencia de archivos en Cloudinary.
 - El cliente ve lo suyo.
 - Con servicio activo, el técnico asignado y los administrativos de ese proveedor ven el historial de ese cliente. Otros técnicos de la misma empresa no. Cada consulta se audita.
-- El administrador de plataforma ve el historial de un perfil solo al atender una advertencia, sanción, bloqueo o reclamación de ese perfil. Cada consulta se audita. No hay un listado libre de historiales ajenos.
+- El administrador de plataforma ve historial ajeno solo al atender una advertencia, sanción, bloqueo o reclamación. En una reclamación ve el historial de **ambos** perfiles de ese servicio, no un padrón libre (RN-017). Cada consulta se audita.
 - Mientras la cuenta está activa, se conservan sus datos.
-- Al pedir la baja, la cuenta deja de entrar en el momento. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial de servicios ya cerrados se queda sin esos datos de contacto.
+- Baja voluntaria: la pide el usuario del perfil cliente o un administrativo del perfil proveedor, sobre **ese perfil** (todos sus usuarios). Un técnico que deja la empresa no es baja del perfil. El administrador de plataforma la procesa. El pedido queda registrado y visible; el corte de acceso y el reloj de 12 meses corren al **procesar**, no al pedir (ADR-032).
+- Al procesar la baja, las cuentas de ese perfil dejan de entrar. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial de servicios ya cerrados se queda sin esos datos de contacto.
 - Contraseñas y tokens no se conservan después de la baja.
+- Tres marcas no disparan baja. El admin no da de baja por el bloqueo; puede levantar el bloqueo (RN-003, RN-011).
+
+### RN-017 Reclamación
+- Cuando: hay un servicio (`pendiente`, `en_curso`, `pendiente_informe`, `cerrado` o `cancelado`).
+- Entonces: el usuario del perfil cliente o un administrativo del perfil proveedor de **ese** servicio puede abrir una reclamación ligada a ese servicio. El técnico no la abre. No hay reclamación anónima ni de oficio por el administrador.
+- Al abrir elige **una** categoría del catálogo fijo y escribe un texto de motivo. El servicio y el reclamante salen del acto. Sin categoría o sin motivo no se abre.
+- El admin no edita el catálogo. La categoría no dispara marca ni elige sola la causa de RN-011 Advertencias y sanciones.
+- Al cerrar **con marca**, el admin elige tipo y causa de RN-011 Advertencias y sanciones sobre el perfil que corresponda. La categoría solo orienta. Si el trámite se usó de forma indebida, la causa es `uso_indebido_reclamacion`, sea cual sea la categoría.
+- Categorías vigentes (ADR-037):
+
+| Código | Etiqueta | Suele abrirla | Encaje RN-011 si hay marca |
+|--------|----------|---------------|----------------------------|
+| `sin_iniciar` | Servicio asignado sin iniciar | cliente | `servicio_sin_iniciar` |
+| `informe_pendiente` | Informe de servicio no completado | cliente | `informe_no_completado` |
+| `estancado_en_curso` | Servicio en curso sin avanzar | cliente | ninguna; suele ir sin marca |
+| `alcance_distinto` | El trabajo pedido no corresponde a la solicitud | administrativo del proveedor | `alcance_distinto_solicitud` |
+| `impedimento_ejecucion` | Impedimento para realizar el servicio | administrativo del proveedor | ninguna; suele ir sin marca |
+| `cancelacion_servicio` | Cancelación del servicio | ambos | `cancelacion_reiterada_servicio` |
+
+- Estados: `abierta` → `cerrada`. No se reabre. Un servicio no tiene dos reclamaciones `abierta` a la vez.
+- Abrir una reclamación no cancela el servicio. Cancelar el servicio no abre una reclamación. Son dos actos (ADR-035).
+- El administrador atiende la reclamación `abierta`. En ese contexto ve el historial de ambos perfiles de ese servicio. Cada consulta se audita. Eso no es un listado libre de historiales.
+- Al cerrar elige un desenlace: **sin marca** o **con marca** (advertencia o sanción) sobre el perfil que corresponda. Si hay marca, aplica RN-011.
+- Fuera de este MVP: chat o hilo, apelación del 4.5, adjuntos extra (valen las evidencias ya ligadas al servicio), SLA, reasignar técnico, indemnizaciones.
 
 ## Campos obligatorios
 
 **Usuario:** nombre, correo único, contraseña, teléfono.
 
-**Perfil cliente** (un usuario): tipo `persona | establecimiento | empresa`. Si no es persona, nombre comercial.
+**Perfil cliente** (un usuario): tipo `persona | empresa`. Si es empresa, nombre comercial.
 
 **Perfil proveedor:** tipo `persona | empresa`, nombre comercial o razón social, descripción de servicios, al menos una categoría.
 
@@ -194,10 +247,8 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 
 **Cotización:** descripción del trabajo, costo en MXN, condiciones (plazo y alcance en texto).
 
-**Historial** (obligatorio para cerrar el servicio): descripción de lo realizado, tipo `mantenimiento | cambio de pieza | otro servicio`, detalle de la pieza solo si hubo cambio, fecha, usuario técnico que lo realizó.
+**Informe de servicio** (obligatorio para cerrar): descripción de lo realizado, tipo `mantenimiento | cambio de pieza | otro servicio`, detalle de la pieza solo si hubo cambio, fecha, usuario técnico que lo realizó.
 
-**Reporte** (medición, no formulario de cierre): perfil medido, acción de referencia, nombre de la métrica, valor, fecha. Lo genera el sistema al ocurrir la acción. El cierre del servicio exige historial, no un reporte capturado a mano.
+**Reporte** (medición, no formulario de cierre): perfil medido, acción de referencia, nombre de la métrica, valor, fecha. Lo genera el sistema al ocurrir la acción. El cierre del servicio exige el informe de servicio, no un reporte capturado a mano.
 
-## Lo que no hay que asumir
-
-- El catálogo cerrado de causas de advertencia y sanción. La reiteración de vencimientos sin cotizar ya es una causa (RN-006).
+**Reclamación** (al abrir): categoría del catálogo fijo de RN-017 Reclamación y texto de motivo. El servicio y el reclamante salen del acto (usuario autenticado sobre ese servicio). Sin categoría o sin motivo se rechaza. El admin no edita el catálogo. No hay ítem «Otro».

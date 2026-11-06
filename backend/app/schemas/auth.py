@@ -65,7 +65,7 @@ class RegistroCliente(BaseModel):
     @model_validator(mode="after")
     def _nombre_comercial_si_no_es_persona(self) -> "RegistroCliente":
         if self.tipo != TipoPerfilCliente.persona and not self.nombre_comercial:
-            raise ValueError("El establecimiento o la empresa necesitan nombre comercial")
+            raise ValueError("La empresa necesita nombre comercial")
         return self
 
 

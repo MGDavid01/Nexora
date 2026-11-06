@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es-MX" data-tema="claro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexora — Detalle caso (ficha)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --onyx: #0a0a0a;
+        --white: #fbfbfb;
+        --cerulean: #3573a4;
+        --pollen: #ffd342;
+        --blue-grey: #6795ba;
+        --powder: #98b7d0;
+        --texto: var(--onyx);
+        --texto-suave: #3d4d59;
+        --fondo: #e8eef4;
+        --superficie: #fff;
+        --superficie-suave: #f3f7fb;
+        --borde: #d5e0ea;
+        --ok: #166534;
+        --alerta: #b45309;
+        --critico: #9f1239;
+        --radio: 16px;
+        --sombra: 0 12px 40px rgb(53 115 164 / 10%);
+        --cover-h: min(50vh, 420px);
+        --indice-ancho: 11.5rem;
+        --sticky-top: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+
+      body {
+        margin: 0;
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--texto);
+        background: var(--fondo);
+        line-height: 1.45;
+      }
+
+      a {
+        color: var(--cerulean);
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      /* —— Portada —— */
+      .cover {
+        position: relative;
+        min-height: var(--cover-h);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 1.5rem clamp(1rem, 4vw, 2.5rem) 1.75rem;
+        background: linear-gradient(145deg, #1a3a52 0%, var(--cerulean) 42%, #4a8fbf 100%);
+        color: var(--white);
+        box-shadow: var(--sombra);
+      }
+
+      .cover::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 85% 20%, rgb(255 211 66 / 18%), transparent 45%);
+        pointer-events: none;
+      }
+
+      .cover-nav {
+        position: absolute;
+        top: 1rem;
+        left: clamp(1rem, 4vw, 2.5rem);
+        right: clamp(1rem, 4vw, 2.5rem);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        z-index: 1;
+      }
+
+      .cover-nav a {
+        color: var(--white);
+        font-size: 0.85rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 999px;
+        background: rgb(0 0 0 / 22%);
+        backdrop-filter: blur(6px);
+        text-decoration: none;
+      }
+
+      .cover-nav a:hover {
+        background: rgb(0 0 0 / 32%);
+        text-decoration: none;
+      }
+
+      .cover-marca {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+
+      .cover-cuerpo {
+        position: relative;
+        z-index: 1;
+        max-width: 52rem;
+      }
+
+      .cover-cuerpo h1 {
+        margin: 0.35rem 0 0.65rem;
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: clamp(1.65rem, 5vw, 2.75rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.12;
+      }
+
+      .cover-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.25rem;
+        margin: 0;
+        font-size: 0.88rem;
+        opacity: 0.95;
+      }
+
+      .cover-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .cover-meta strong {
+        font-weight: 700;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 0.15rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .pill.cerrado {
+        background: rgb(22 101 52 / 35%);
+        color: #bbf7d0;
+        border: 1px solid rgb(187 247 208 / 40%);
+      }
+
+      .pill.categoria {
+        background: rgb(255 211 66 / 25%);
+        color: #fff8dc;
+        border: 1px solid rgb(255 211 66 / 35%);
+      }
+
+      .cover-costo {
+        margin-top: 1rem;
+        font-size: 1.05rem;
+      }
+
+      .cover-costo em {
+        font-style: normal;
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+
+      /* —— Índice móvil (chips) —— */
+      .indice-chips {
+        display: none;
+        position: sticky;
+        top: var(--sticky-top);
+        z-index: 20;
+        gap: 0.4rem;
+        padding: 0.55rem 0.75rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        background: rgb(251 251 251 / 92%);
+        border-bottom: 1px solid var(--borde);
+        backdrop-filter: blur(8px);
+      }
+
+      .indice-chips::-webkit-scrollbar {
+        display: none;
+      }
+
+      .indice-chips a {
+        flex-shrink: 0;
+        padding: 0.4rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--texto-suave);
+        background: var(--superficie);
+        border: 1px solid var(--borde);
+        text-decoration: none;
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+      }
+
+      .indice-chips a.activo {
+        color: var(--onyx);
+        background: var(--pollen);
+        border-color: #e6bc2e;
+      }
+
+      /* —— Layout principal —— */
+      .ficha-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 0 clamp(1rem, 4vw, 2rem) 3rem;
+      }
+
+      @media (min-width: 900px) {
+        .ficha-layout {
+          grid-template-columns: var(--indice-ancho) 1fr;
+          gap: 2rem;
+          padding-top: 1.5rem;
+        }
+
+        .indice-chips {
+          display: none !important;
+        }
+
+        .indice-lateral {
+          display: block;
+        }
+      }
+
+      @media (max-width: 899px) {
+        .indice-chips {
+          display: flex;
+        }
+
+        .indice-lateral {
+          display: none;
+        }
+      }
+
+      .indice-lateral {
+        position: sticky;
+        top: 1.25rem;
+        align-self: start;
+        padding: 0.25rem 0;
+      }
+
+      .indice-lateral p {
+        margin: 0 0 0.65rem;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--blue-grey);
+      }
+
+      .indice-lateral nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        border-left: 2px solid var(--borde);
+        padding-left: 0.85rem;
+      }
+
+      .indice-lateral a {
+        display: block;
+        padding: 0.35rem 0.5rem;
+        margin-left: -0.85rem;
+        padding-left: calc(0.85rem + 0.5rem);
+        border-left: 2px solid transparent;
+        margin-left: calc(-0.85rem - 2px);
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--texto-suave);
+        text-decoration: none;
+        transition: color 0.2s, border-color 0.2s;
+      }
+
+      .indice-lateral a:hover {
+        color: var(--cerulean);
+        text-decoration: none;
+      }
+
+      .indice-lateral a.activo {
+        color: var(--cerulean);
+        border-left-color: var(--cerulean);
+        font-weight: 700;
+      }
+
+      /* —— Secciones —— */
+      .contenido-ficha {
+        min-width: 0;
+      }
+
+      .seccion {
+        scroll-margin-top: 4.5rem;
+        margin-bottom: 1.25rem;
+        padding: 1.1rem 1.15rem;
+        background: var(--superficie);
+        border: 1px solid var(--borde);
+        border-radius: var(--radio);
+        box-shadow: var(--sombra);
+        transition: border-color 0.25s, box-shadow 0.25s;
+      }
+
+      @media (min-width: 900px) {
+        .seccion {
+          scroll-margin-top: 1.5rem;
+        }
+      }
+
+      .seccion.resaltada {
+        border-color: var(--cerulean);
+        box-shadow: 0 0 0 1px rgb(53 115 164 / 15%), var(--sombra);
+      }
+
+      .seccion h2 {
+        margin: 0 0 0.75rem;
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .seccion-lead {
+        margin: 0 0 0.65rem;
+        font-size: 0.95rem;
+        color: var(--texto);
+      }
+
+      .meta {
+        margin: 0.35rem 0 0;
+        font-size: 0.8rem;
+        color: var(--texto-suave);
+      }
+
+      .mapa-demo {
+        margin-top: 0.75rem;
+        height: 160px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--superficie-suave), #dce8f2);
+        border: 1px dashed var(--borde);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        color: var(--texto-suave);
+        font-weight: 600;
+      }
+
+      .lista {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.86rem;
+      }
+
+      .lista > li {
+        padding: 0.65rem 0;
+        border-bottom: 1px solid var(--borde);
+      }
+
+      .lista > li:last-child {
+        border-bottom: 0;
+      }
+
+      .chip {
+        display: inline-block;
+        margin-left: 0.35rem;
+        padding: 0.08rem 0.45rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        vertical-align: middle;
+      }
+
+      .chip.ok {
+        background: #dcfce7;
+        color: var(--ok);
+      }
+
+      .chip.neutro {
+        background: var(--superficie-suave);
+        color: var(--texto-suave);
+      }
+
+      .chip.rechazada {
+        background: #fee2e2;
+        color: var(--critico);
+      }
+
+      .chip.cerrada {
+        background: #e0f2fe;
+        color: var(--cerulean);
+      }
+
+      .filas-dl {
+        display: grid;
+        gap: 0.5rem;
+        margin: 0;
+      }
+
+      @media (min-width: 520px) {
+        .filas-dl.calif {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .calif-card {
+        padding: 0.75rem 0.85rem;
+        border-radius: 12px;
+        background: var(--superficie-suave);
+        border: 1px solid var(--borde);
+      }
+
+      .calif-card span {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--texto-suave);
+        letter-spacing: 0.04em;
+      }
+
+      .calif-card strong {
+        display: block;
+        margin-top: 0.25rem;
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: 1.65rem;
+        color: var(--cerulean);
+      }
+
+      .calif-card small {
+        display: block;
+        margin-top: 0.2rem;
+        font-size: 0.72rem;
+        color: var(--texto-suave);
+      }
+
+      .aviso-admin {
+        margin-top: 0.75rem;
+        padding: 0.65rem 0.75rem;
+        border-radius: 10px;
+        background: var(--superficie-suave);
+        border: 1px solid var(--borde);
+        font-size: 0.78rem;
+        color: var(--texto-suave);
+      }
+
+      .marca-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.5rem;
+        padding: 0.4rem 0.65rem;
+        border-radius: 10px;
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #92400e;
+      }
+
+      .historial-nota {
+        margin: 0 0 0.65rem;
+        font-size: 0.78rem;
+        color: var(--texto-suave);
+      }
+
+      @media (max-width: 390px) {
+        .cover {
+          padding-bottom: 1.25rem;
+        }
+
+        .cover-meta {
+          flex-direction: column;
+          gap: 0.35rem;
+        }
+
+        .seccion {
+          padding: 0.95rem 0.85rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="cover" aria-label="Portada del caso">
+      <div class="cover-nav">
+        <a href="#">← Volver a Trabajos</a>
+        <span class="cover-marca">Administrador</span>
+      </div>
+      <div class="cover-cuerpo">
+        <h1>Fuga en tinaco</h1>
+        <p class="cover-meta">
+          <span><strong>Cliente:</strong> Casa López</span>
+          <span><span class="pill categoria">Plomería</span></span>
+          <span><span class="pill cerrado">Caso cerrado</span></span>
+        </p>
+        <p class="cover-costo">
+          Costo aceptado: <em>$2,450 MXN</em>
+        </p>
+      </div>
+    </header>
+
+    <div class="indice-chips" id="indice-chips" role="navigation" aria-label="Secciones del caso">
+      <a href="#problema" data-ancla="problema">Problema</a>
+      <a href="#ubicacion" data-ancla="ubicacion">Ubicación</a>
+      <a href="#cotizaciones" data-ancla="cotizaciones">Cotizaciones</a>
+      <a href="#servicio" data-ancla="servicio">Servicio</a>
+      <a href="#calificaciones" data-ancla="calificaciones">Calificaciones</a>
+      <a href="#reclamacion" data-ancla="reclamacion">Reclamación</a>
+      <a href="#marcas" data-ancla="marcas">Marcas</a>
+      <a href="#historial" data-ancla="historial">Historial</a>
+    </div>
+
+    <div class="ficha-layout">
+      <aside class="indice-lateral" aria-label="Índice del caso">
+        <p>En esta ficha</p>
+        <nav id="indice-lateral">
+          <a href="#problema" data-ancla="problema">Problema</a>
+          <a href="#ubicacion" data-ancla="ubicacion">Ubicación</a>
+          <a href="#cotizaciones" data-ancla="cotizaciones">Cotizaciones</a>
+          <a href="#servicio" data-ancla="servicio">Servicio</a>
+          <a href="#calificaciones" data-ancla="calificaciones">Calificaciones</a>
+          <a href="#reclamacion" data-ancla="reclamacion">Reclamación</a>
+          <a href="#marcas" data-ancla="marcas">Marcas</a>
+          <a href="#historial" data-ancla="historial">Historial</a>
+        </nav>
+      </aside>
+
+      <main class="contenido-ficha">
+        <section class="seccion" id="problema" tabindex="-1" aria-labelledby="h-problema">
+          <h2 id="h-problema">Problema</h2>
+          <p class="seccion-lead">
+            Goteo constante en la conexión del tinaco; humedad visible en muro norte desde hace dos semanas.
+          </p>
+          <p class="meta">Solicitud aceptada · etapa servicio concluida · identificador demo NX-2026-0412</p>
+        </section>
+
+        <section class="seccion" id="ubicacion" tabindex="-1" aria-labelledby="h-ubicacion">
+          <h2 id="h-ubicacion">Ubicación</h2>
+          <p class="seccion-lead">Av. Reforma 120, Col. Centro, Alcaldía Cuauhtémoc, CDMX · CP 06000</p>
+          <p class="meta">Referencia: acceso por portón azul; tinaco en azotea lado norte.</p>
+          <div class="mapa-demo" role="img" aria-label="Mapa ilustrativo">Vista mapa (OpenStreetMap en app real)</div>
+        </section>
+
+        <section class="seccion" id="cotizaciones" tabindex="-1" aria-labelledby="h-cotizaciones">
+          <h2 id="h-cotizaciones">Cotizaciones</h2>
+          <p class="meta" style="margin-top: 0">Aceptar una cotización no reserva el servicio hasta que el flujo lo confirme en backend.</p>
+          <ul class="lista">
+            <li>
+              <strong>Hidrosur</strong> · $2,450 MXN
+              <span class="chip ok">aceptada</span>
+              <p class="meta">Empaques, mano de obra y prueba de presión. Plazo estimado: 1 visita.</p>
+            </li>
+            <li>
+              <strong>PlomExpress</strong> · $2,890 MXN
+              <span class="chip rechazada">rechazada</span>
+              <p class="meta">Incluía cambio de tinaco completo (no solicitado).</p>
+            </li>
+            <li>
+              <strong>AquaFix</strong> · $2,100 MXN
+              <span class="chip neutro">no elegida</span>
+              <p class="meta">Solo revisión sin materiales; venció ventana de respuesta del cliente.</p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="seccion" id="servicio" tabindex="-1" aria-labelledby="h-servicio">
+          <h2 id="h-servicio">Servicio</h2>
+          <p class="seccion-lead"><strong>Cerrado</strong> · Proveedor Hidrosur · Técnica: Ana Ruiz</p>
+          <p class="meta">Informe final: Sustitución de empaques en conexión, limpieza de sedimento y prueba de presión sin fugas al cierre.</p>
+          <p class="meta">Visitas: 2 · Última actualización: 28 ene 2026</p>
+        </section>
+
+        <section class="seccion" id="calificaciones" tabindex="-1" aria-labelledby="h-calificaciones">
+          <h2 id="h-calificaciones">Calificaciones</h2>
+          <div class="filas-dl calif">
+            <article class="calif-card">
+              <span>Cliente → proveedor</span>
+              <strong>5.0</strong>
+              <small>Calificación manual · «Rápida y clara la explicación»</small>
+            </article>
+            <article class="calif-card">
+              <span>Proveedor → cliente</span>
+              <strong>4.5</strong>
+              <small>4.5 si no calificó (automática)</small>
+            </article>
+          </div>
+        </section>
+
+        <section class="seccion" id="reclamacion" tabindex="-1" aria-labelledby="h-reclamacion">
+          <h2 id="h-reclamacion">Reclamación</h2>
+          <ul class="lista">
+            <li>
+              <strong class="chip cerrada">Cerrada</strong>
+              · Motivo: Calidad del trabajo — goteo persistió tras la primera visita.
+              <p class="meta">Segunda visita correctiva registrada. Cierre administrativo: 30 ene 2026.</p>
+            </li>
+          </ul>
+          <p class="aviso-admin">
+            Vista administrador: solo consulta. El administrador no abre reclamaciones; las inicia el cliente en su flujo.
+          </p>
+        </section>
+
+        <section class="seccion" id="marcas" tabindex="-1" aria-labelledby="h-marcas">
+          <h2 id="h-marcas">Marcas</h2>
+          <p class="seccion-lead">Marca asociada al cierre de la reclamación (no confundir con cancelar servicio).</p>
+          <span class="marca-badge" role="status">Marca registrada · Seguimiento reforzado en próximas asignaciones</span>
+          <p class="meta">Registrada al cerrar reclamación · visible en contexto de este caso.</p>
+        </section>
+
+        <section class="seccion" id="historial" tabindex="-1" aria-labelledby="h-historial">
+          <h2 id="h-historial">Historial</h2>
+          <p class="historial-nota">
+            Historial acotado (RN-015): visible aquí por reclamación y marca en este caso; no es un reporte libre ni el historial completo del cliente.
+          </p>
+          <ul class="lista">
+            <li>Instalación de calentador — cerrado · 12 ene 2026 · mismo domicilio</li>
+            <li>Revisión anual tinaco — cerrado · 3 ago 2025</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        const secciones = document.querySelectorAll(".contenido-ficha .seccion");
+        const enlaces = document.querySelectorAll("[data-ancla]");
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const mapa = new Map();
+        enlaces.forEach((a) => {
+          const id = a.getAttribute("data-ancla");
+          if (!mapa.has(id)) mapa.set(id, []);
+          mapa.get(id).push(a);
+        });
+
+        function marcarActivo(id) {
+          enlaces.forEach((a) => {
+            a.classList.toggle("activo", a.getAttribute("data-ancla") === id);
+          });
+          secciones.forEach((sec) => {
+            sec.classList.toggle("resaltada", sec.id === id);
+          });
+          const chip = document.querySelector('.indice-chips a[data-ancla="' + id + '"]');
+          if (chip) {
+            chip.scrollIntoView({ behavior: reduce ? "auto" : "smooth", inline: "center", block: "nearest" });
+          }
+        }
+
+        enlaces.forEach((a) => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            const id = a.getAttribute("data-ancla");
+            const dest = document.getElementById(id);
+            if (!dest) return;
+            dest.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+            marcarActivo(id);
+            dest.focus({ preventScroll: true });
+          });
+        });
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const visibles = entries
+              .filter((en) => en.isIntersecting)
+              .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+            if (visibles.length) {
+              marcarActivo(visibles[0].target.id);
+            }
+          },
+          {
+            root: null,
+            rootMargin: "-20% 0px -55% 0px",
+            threshold: [0, 0.15, 0.35, 0.55],
+          },
+        );
+
+        secciones.forEach((sec) => observer.observe(sec));
+
+        if (secciones.length) {
+          marcarActivo(secciones[0].id);
+        }
+      })();
+    </script>
+  </body>
+</html>

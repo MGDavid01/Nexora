@@ -71,23 +71,24 @@ export function ubicacionDe(formulario: FormData): Ubicacion {
   };
 }
 
-function CamposCuenta() {
+export function CamposCuenta({ classNameCampo = "" }: { classNameCampo?: string }) {
+  const cls = classNameCampo || undefined;
   return (
     <>
-      <label>
+      <label className={cls}>
         Nombre de la persona
         <input name="nombre" required autoComplete="off" />
       </label>
-      <label>
+      <label className={cls}>
         Correo
         <input name="correo" type="email" required autoComplete="off" />
       </label>
-      <label>
+      <label className={cls}>
         Contraseña inicial
         <input name="contrasena" type="password" required minLength={8} autoComplete="new-password" />
         <span className="pista">Mínimo 8 caracteres. Se la entregas a quien va a entrar.</span>
       </label>
-      <label>
+      <label className={cls}>
         Teléfono
         <input name="telefono" required inputMode="numeric" autoComplete="off" placeholder="10 dígitos" />
       </label>
@@ -95,29 +96,30 @@ function CamposCuenta() {
   );
 }
 
-function CamposUbicacion() {
+export function CamposUbicacion({ classNameCampo = "" }: { classNameCampo?: string }) {
+  const cls = classNameCampo || undefined;
   return (
     <fieldset>
       <legend>Ubicación</legend>
-      <label>
+      <label className={cls}>
         Calle y número
         <input name="calle_numero" required autoComplete="off" />
       </label>
-      <label>
+      <label className={cls}>
         Colonia
         <input name="colonia" required autoComplete="off" />
       </label>
       <div className="fila">
-        <label>
+        <label className={cls}>
           Ciudad
           <input name="ciudad" required autoComplete="off" />
         </label>
-        <label>
+        <label className={cls}>
           Estado
           <input name="estado" required autoComplete="off" />
         </label>
       </div>
-      <label>
+      <label className={cls}>
         Código postal
         <input name="codigo_postal" required inputMode="numeric" maxLength={5} placeholder="22000" autoComplete="off" />
       </label>

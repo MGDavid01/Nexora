@@ -10,7 +10,7 @@ Centralizar solicitud, cotización, aceptación, ejecución y seguimiento de sop
 
 ## Para quién
 
-Decisión de equipo (2026-10-22): el solicitante puede ser **persona, establecimiento o empresa**, como define el SRS. El plan básico enfatiza PyMEs; eso no restringe el registro a solo empresas.
+Decisión de equipo (2026-10-27, ADR-028): el solicitante es **persona o empresa**. El plan básico enfatiza PyMEs; eso no restringe el registro a solo empresas.
 
 | Rol | Necesidad principal |
 |-----|---------------------|

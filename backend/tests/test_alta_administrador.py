@@ -111,6 +111,24 @@ def test_alta_de_otro_rol_responde_403() -> None:
         app.dependency_overrides.clear()
 
 
+def test_consulta_usuarios_rechaza_otro_rol() -> None:
+    async def como_cliente() -> Usuario:
+        return _usuario(TipoCuenta.cliente)
+
+    app.dependency_overrides[get_session] = _sesion_vacia
+    app.dependency_overrides[sesion_real] = _sesion_vacia
+    app.dependency_overrides[usuario_actual] = como_cliente
+    try:
+        with TestClient(app) as cliente:
+            respuesta = cliente.get(
+                "/api/v1/admin/usuarios",
+                headers={"authorization": "Bearer prueba"},
+            )
+        assert respuesta.status_code == 403
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_tablero_admin_rechaza_otro_rol() -> None:
     async def como_proveedor() -> Usuario:
         return _usuario(TipoCuenta.proveedor)

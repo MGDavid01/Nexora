@@ -1,32 +1,35 @@
 # Establecido
 
-Hechos cerrados al 2026-10-27. Lo que sigue en duda está en `02-pendiente.md`. Los porqués están en `06-decisiones.md`.
+Hechos cerrados al 2026-11-01. Lo que sigue en duda está en `02-pendiente.md`. Los porqués están en `06-decisiones.md`.
 
 ## Producto
 
 - Aplicación web de intermediación de soporte técnico.
-- Solicitante: persona, establecimiento o empresa.
+- Solicitante: persona o empresa (ADR-028).
 - Un usuario pertenece a un perfil cliente o a un perfil proveedor, nunca a los dos. Un perfil cliente tiene un usuario. Un perfil proveedor tiene muchos usuarios, administrativos y técnicos.
-- El administrador de la plataforma no es ninguno de esos dos perfiles.
+- El administrador de la plataforma no es ninguno de esos dos perfiles. Puede registrar a otros administradores desde el panel. No hay auto-registro de administradores (ADR-030).
 - Clientes y proveedores se dan de alta desde la vista de ese administrador. No hay auto-registro (ADR-025).
-- Flujo: solicitud abierta → varios proveedores pueden aceptarla y cotizar → el solicitante elige una cotización enviada → seguimiento del servicio → registro en el historial → calificación mutua.
+- Tras el alta, un administrativo del perfil proveedor suma usuarios de ese perfil (administrativos o técnicos). El administrador de plataforma también puede crearlos y editarlos. No hay flujo de petición empresa → Nexora (ADR-031).
+- El administrador de plataforma edita cuentas ya dadas de alta: nombre, correo (sigue único), teléfono y contraseña (hasheada). No cambia `tipo_cuenta` ni pasa un usuario de cliente a proveedor (ADR-029).
+- Flujo: solicitud abierta → varios proveedores pueden aceptarla y cotizar → el solicitante elige una cotización enviada → seguimiento del servicio → informe de servicio al cerrar → calificación mutua → queda en el historial.
 - Aceptar no aparta la solicitud. Sigue visible para los demás proveedores hasta que el cliente elige una cotización enviada.
 - Tras aceptar, el proveedor tiene 24 horas para cotizar. Si no lo hace, su participación vence, la solicitud sigue abierta y el cliente recibe aviso.
 - El cliente puede quitar a ese proveedor antes de las 24 horas, sin cerrar la solicitud para los demás.
 - Denegar una solicitud la oculta para ese proveedor y avisa al cliente que ese proveedor la rechazó. La solicitud sigue abierta para los demás.
 - Repetir el vencimiento de las 24 horas sin cotizar es causa de sanción. No bloquea en el primer vencimiento.
 - La máquina de estados de participación, solicitud, cotización y servicio está cerrada. Vive en `04-logica-negocio.md` (ADR-016).
-- Los campos obligatorios de usuario, perfiles, ubicación, solicitud, cotización, historial y reporte están cerrados. Viven en `04-logica-negocio.md` (ADR-017).
+- Los campos obligatorios de usuario, perfiles, ubicación, solicitud, cotización, informe de servicio y reporte están cerrados. Viven en `04-logica-negocio.md` (ADR-017, ADR-038).
 - Calificación mutua de 1 a 5 estrellas. El comentario es opcional. El servicio se cierra aunque una parte no califique; si no hay calificación manual, queda 4.5 y ya no se puede cambiar.
 - Un proveedor ve el historial del cliente, durante un servicio activo, por el técnico asignado y por los usuarios administrativos de ese perfil. Los demás técnicos de la misma empresa no. Cada consulta se audita.
 - Los huecos de carrera, cancelación, cotización única y bloqueo están cerrados en `04-logica-negocio.md` (ADR-019).
-- Historial y reporte son distintos. El historial es el registro de los servicios dados. El reporte son las mediciones relevantes de las acciones de un perfil cliente o proveedor.
+- Historial, informe de servicio y reporte son distintos. El historial es la lista de servicios dados. El informe de servicio es el documento de campo al cerrar. El reporte son las mediciones de las acciones de un perfil (ADR-038).
 - Recontratación: al publicar una solicitud, si el cliente ya cerró servicios, ve «Solicitar para:» con los proveedores con los que trabajó. Elegir uno dirige la solicitud a ese proveedor, sin saltarse la cotización ni las 24 horas. Filtrar esa lista por el área de la solicitud queda para una fase posterior.
-- Una advertencia o una sanción se notifica al proveedor o al cliente y no bloquea en el momento. Cada una suma al mismo conteo. A la tercera marca distinta se bloquean todos los usuarios de ese perfil y se les pide contactar a Nexora. El administrador levanta el bloqueo; el conteo no vuelve a cero por eso.
+- Una advertencia o una sanción se notifica al proveedor o al cliente y no bloquea en el momento. Cada una suma al mismo conteo. A la tercera marca distinta se bloquean todos los usuarios de ese perfil y se les pide contactar a Nexora. El administrador levanta el bloqueo; el conteo no vuelve a cero por eso. Tres marcas son bloqueo, no baja (ADR-032). El catálogo de causas es fijo (ADR-036); el detalle vive en `04-logica-negocio.md`.
+- Reclamación: trámite sobre un servicio. Al abrir: categoría de un catálogo fijo y texto de motivo (ADR-037). La abren el usuario del perfil cliente o un administrativo del proveedor. Retirarse del servicio y reclamar son actos distintos (ADR-035). El detalle vive en `04-logica-negocio.md`.
 - La frase del plan sobre «reservaciones de recursos o servicios compartidos» no describe a Nexora. El producto es intermediación de soporte técnico.
-- Datos personales: se conservan mientras la cuenta está activa. Al pedir la baja, deja de entrar en el momento. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial cerrado se queda sin esos datos de contacto. El detalle está en `04-logica-negocio.md` (ADR-024).
+- Datos personales: se conservan mientras la cuenta está activa. Baja voluntaria: la pide el usuario del perfil cliente o un administrativo del perfil proveedor; el administrador de plataforma la procesa. El corte de acceso y el reloj de 12 meses corren al procesar, no al pedir. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial cerrado se queda sin esos datos de contacto. El detalle está en `04-logica-negocio.md` (ADR-024, ADR-032).
 - El DER de `bases/` es una base. Se agregan, modifican o eliminan entidades cuando el desarrollo lo pida.
-- Panel de administración para consultar usuarios, proveedores, solicitudes, cotizaciones, servicios, reportes, calificaciones, sanciones e ingresos simulados de la plataforma.
+- Panel de administración: las mismas facultades de RN-014. En la barra del administrador: Inicio, Usuarios, Trabajos, Reportes, Ingresos, Dispositivos y Auditoría. Usuarios es el padrón (altas, edición, marcas y bloqueo del perfil). Trabajos junta solicitud, cotización y servicio; el detalle de ese caso muestra calificación, reclamación y la marca originada en ese caso. Auditoría es el log (ADR-034), no el historial. El detalle vive en `04-logica-negocio.md` (RN-014, ADR-029 a ADR-034, ADR-039).
 - No hay pasarela de pagos en esta fase (proyecto académico). Sí hay una herramienta de ingresos para el administrador que calcula comisión «como si» los pagos fueran reales, sobre el costo de las cotizaciones ligadas a servicios cerrados (ADR-026). La comisión es escalonada (5 % a 9 % por defecto) y el administrador la edita en la UI (ADR-027). El detalle vive en `04-logica-negocio.md`.
 - Idioma: español.
 - La interfaz del MVP es responsive (escritorio y celular).
@@ -65,7 +68,7 @@ Decisión de equipo: vale lo nombrado en el SRS §3.1.3, por encima del §2.1 qu
 - Sin inventario empresarial completo del proveedor.
 - Funciones limitadas por rol.
 - Sin certificación de proveedores en esta fase (ni RFC ni acta ni sello).
-- Historial y reportes se conservan ligados al perfil y, cuando aplica, al servicio.
+- Historial, informes de servicio y reportes se conservan ligados al perfil y, cuando aplica, al servicio.
 
 ## Requisitos no funcionales (SRS §3.3)
 

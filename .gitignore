@@ -24,4 +24,7 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+.cursor/
 *.log
+.impeccable/
+PRODUCT.md

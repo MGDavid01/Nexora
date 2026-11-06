@@ -51,7 +51,9 @@ class VigilanciaPerfilItem(BaseModel):
     conteo_marcas: int
     bloqueado: bool
     vencimientos_24h: int
-    ultima_causa: str | None
+    ultima_codigo: str | None
+    ultima_etiqueta: str | None
+    ultima_descripcion: str | None
     motivo_atencion: str
 
 

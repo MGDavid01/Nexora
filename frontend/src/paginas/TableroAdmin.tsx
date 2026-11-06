@@ -202,7 +202,7 @@ export function TableroAdmin() {
               <section className="card celda-kpis" aria-labelledby="titulo-kpis">
                 <div className="card-cab">
                   <h2 id="titulo-kpis">Solicitudes</h2>
-                  <Link to="/admin/solicitudes" className="card-link">
+                  <Link to="/admin/trabajos" className="card-link">
                     Ver →
                   </Link>
                 </div>
@@ -280,7 +280,7 @@ export function TableroAdmin() {
             <section className="card" aria-labelledby="titulo-cotizaciones">
               <div className="card-cab">
                 <h2 id="titulo-cotizaciones">Cotizaciones</h2>
-                <Link to="/admin/cotizaciones" className="card-link">
+                <Link to="/admin/trabajos" className="card-link">
                   Ver →
                 </Link>
               </div>
@@ -390,7 +390,7 @@ export function TableroAdmin() {
               <section className="card" aria-labelledby="titulo-sanciones">
                 <div className="card-cab">
                   <h2 id="titulo-sanciones">Sanciones y bloqueos</h2>
-                  <Link to="/admin/sanciones" className="card-link">
+                  <Link to="/admin/usuarios" className="card-link">
                     Ver →
                   </Link>
                 </div>
@@ -405,7 +405,7 @@ export function TableroAdmin() {
               <section className="card" aria-labelledby="titulo-calificaciones-inicio">
                 <div className="card-cab">
                   <h2 id="titulo-calificaciones-inicio">Calificaciones</h2>
-                  <Link to="/admin/calificaciones" className="card-link">
+                  <Link to="/admin/trabajos" className="card-link">
                     Ver →
                   </Link>
                 </div>

@@ -9,7 +9,7 @@ Material original (SRS, DER, plan básico) vive en [`../bases/`](../bases/). Est
 | Fuente | Uso |
 |--------|-----|
 | `bases/SRS_Nexora.docx.pdf` | Requisitos, módulos, stack, interfaz |
-| `bases/NEXORA_DR_ER-DER.jpg` | Entidades y relaciones |
+| `bases/NEXORA_DR_ER-DER.jpg` | Entidades y relaciones. El delta respecto al dibujo está en [`otros/der-cambios.md`](otros/der-cambios.md). Los atributos vigentes están en [`otros/atributos.md`](otros/atributos.md) |
 | `bases/PLAN_BASICO_SOPORTE_TECNICO.pdf` | Objetivos del proyecto y límites de adopción |
 
 ## Orden de lectura

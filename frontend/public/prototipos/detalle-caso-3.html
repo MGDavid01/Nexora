@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es-MX" data-tema="claro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nexora — Detalle caso (3 escenas)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --cerulean: #3573a4;
+        --texto: #0a0a0a;
+        --texto-suave: #3d4d59;
+        --fondo: #e8eef4;
+        --superficie: #fff;
+        --superficie-suave: #f3f7fb;
+        --borde: #d5e0ea;
+        --ok: #166534;
+        --alerta: #b45309;
+        --radio: 18px;
+        --sombra: 0 10px 30px rgb(53 115 164 / 8%);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        overflow: hidden;
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--texto);
+        background: var(--fondo);
+      }
+      a {
+        color: var(--cerulean);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .shell {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 0.85rem 1.25rem 0.75rem;
+      }
+      .cabecera-caso {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .cabecera-caso h1 {
+        margin: 0;
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: clamp(1.05rem, 3vw, 1.35rem);
+      }
+      .escenas-viewport {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .escena {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        padding: 3rem 0 0.55rem;
+        overflow: hidden;
+        overscroll-behavior: contain;
+        opacity: 0;
+        transform: translateY(24px) scale(0.98);
+        filter: blur(5px);
+        pointer-events: none;
+        transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease;
+      }
+      .escena.activa {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+        pointer-events: auto;
+        z-index: 2;
+      }
+      .escena:not(.activa) {
+        z-index: 1;
+      }
+      @media (max-width: 980px) {
+        .escena {
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .escena > .grid,
+        .escena > .card,
+        .escena > section.card {
+          flex-shrink: 0;
+        }
+
+        .pista-scroll {
+          flex-shrink: 0;
+          z-index: 5;
+          min-height: 2.15rem;
+          padding: 0.25rem 0.55rem;
+        }
+
+        #e-cotizaciones {
+          padding-top: 4.4rem;
+        }
+
+        #e-cotizaciones .pista-scroll[data-destino="servicio"] {
+          top: 2.25rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .cabecera-caso {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.35rem;
+        }
+      }
+      .pista-scroll {
+        position: absolute;
+        top: 0.35rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        border: 0;
+        background: transparent;
+        color: var(--texto-suave);
+        font: inherit;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .pista-scroll svg {
+        width: 0.9rem;
+        height: 0.9rem;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+      }
+      .pista-arriba svg path {
+        d: path("m18 15-6-6-6 6");
+      }
+      .grid {
+        display: grid;
+        gap: 0.65rem;
+      }
+      @media (min-width: 900px) {
+        .grid-2 {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .card {
+        background: var(--superficie);
+        border: 1px solid var(--borde);
+        border-radius: var(--radio);
+        box-shadow: var(--sombra);
+        padding: 0.7rem 0.85rem;
+      }
+      .card h2 {
+        margin: 0 0 0.5rem;
+        font-size: 0.95rem;
+      }
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+      @media (min-width: 640px) {
+        .kpis {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+      .kpi {
+        padding: 0.5rem 0.6rem;
+        border-radius: 12px;
+        background: var(--superficie-suave);
+      }
+      .kpi span {
+        display: block;
+        font-size: 0.68rem;
+        color: var(--texto-suave);
+        font-weight: 600;
+      }
+      .kpi strong {
+        font-size: 1.1rem;
+      }
+      .meta {
+        margin: 0.25rem 0 0;
+        font-size: 0.78rem;
+        color: var(--texto-suave);
+      }
+      .lista {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.84rem;
+      }
+      .lista li {
+        padding: 0.45rem 0;
+        border-bottom: 1px solid var(--borde);
+      }
+      .chip {
+        display: inline-block;
+        padding: 0.1rem 0.45rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        background: var(--superficie-suave);
+      }
+      .chip.ok {
+        color: var(--ok);
+      }
+      .chip.alerta {
+        color: var(--alerta);
+      }
+      .vacio-historial {
+        margin: 0;
+        padding: 0.75rem;
+        text-align: center;
+        color: var(--texto-suave);
+        font-size: 0.85rem;
+        border-radius: 12px;
+        background: var(--superficie-suave);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .escena {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="cabecera-caso">
+        <h1>Instalación eléctrica — Taller Vega</h1>
+        <a href="#">← Volver a Trabajos</a>
+      </header>
+
+      <div class="escenas-viewport" id="viewport">
+        <section class="escena activa" id="e-solicitud" data-orden="0" aria-label="Solicitud">
+          <button type="button" class="pista-scroll pista-abajo" data-destino="cotizaciones" aria-label="Ir a Cotizaciones">
+            <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+            Cotizaciones
+          </button>
+          <div class="grid grid-2">
+            <section class="card">
+              <h2>Solicitud</h2>
+              <div class="kpis">
+                <article class="kpi"><span>Etapa</span><strong>Cotización</strong></article>
+                <article class="kpi"><span>Estado</span><strong>Abierta</strong></article>
+                <article class="kpi"><span>Cotizaciones</span><strong>2</strong></article>
+                <article class="kpi"><span>Reclamación</span><strong>—</strong></article>
+              </div>
+            </section>
+            <section class="card">
+              <h2>Descripción y ubicación</h2>
+              <p class="meta" style="margin-top: 0">Tablero nuevo y revisión de tierra física en nave industrial.</p>
+              <p class="meta"><strong>Electricidad</strong> · Blvd. Industrial 45, Monterrey</p>
+            </section>
+          </div>
+          <section class="card">
+            <h2>Participaciones</h2>
+            <div class="kpis">
+              <article class="kpi"><span>Invitados</span><strong>3</strong></article>
+              <article class="kpi"><span>Aceptaron</span><strong>2</strong></article>
+              <article class="kpi"><span>Plazo 24 h</span><strong>14 h</strong></article>
+              <article class="kpi"><span>Vencidas</span><strong>0</strong></article>
+            </div>
+          </section>
+        </section>
+
+        <section class="escena" id="e-cotizaciones" data-orden="1" aria-label="Cotizaciones">
+          <button type="button" class="pista-scroll pista-arriba" data-destino="solicitud" aria-label="Ir a Solicitud">
+            <svg viewBox="0 0 24 24"><path d="m18 15-6-6-6 6" /></svg>
+            Solicitud
+          </button>
+          <button type="button" class="pista-scroll pista-abajo" data-destino="servicio" aria-label="Ir a Servicio" style="top: 2.1rem">
+            <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+            Servicio
+          </button>
+          <section class="card">
+            <h2>Resumen cotizaciones</h2>
+            <div class="kpis">
+              <article class="kpi"><span>Enviadas</span><strong>2</strong></article>
+              <article class="kpi"><span>Aceptadas</span><strong>0</strong></article>
+              <article class="kpi"><span>Rechazadas</span><strong>0</strong></article>
+              <article class="kpi"><span>Pendientes</span><strong>2</strong></article>
+            </div>
+          </section>
+          <section class="card">
+            <h2>Lista</h2>
+            <ul class="lista">
+              <li>
+                <strong>ElectroMax</strong> · $18,500 MXN
+                <span class="chip">enviada</span>
+                <p class="meta">Incluye materiales certificados y prueba de continuidad.</p>
+              </li>
+              <li>
+                <strong>Volt Norte</strong> · $16,200 MXN
+                <span class="chip">enviada</span>
+                <p class="meta">Mano de obra + tablero; cliente provee cableado principal.</p>
+              </li>
+            </ul>
+          </section>
+        </section>
+
+        <section class="escena" id="e-servicio" data-orden="2" aria-label="Servicio">
+          <button type="button" class="pista-scroll pista-arriba" data-destino="cotizaciones" aria-label="Ir a Cotizaciones">
+            <svg viewBox="0 0 24 24"><path d="m18 15-6-6-6 6" /></svg>
+            Cotizaciones
+          </button>
+          <div class="grid grid-2">
+            <section class="card">
+              <h2>Servicio</h2>
+              <p class="meta" style="margin-top: 0">Aún no hay servicio (sin cotización aceptada).</p>
+            </section>
+            <section class="card">
+              <h2>Calificaciones</h2>
+              <p class="meta" style="margin-top: 0">Pendientes hasta cerrar el servicio.</p>
+            </section>
+          </div>
+          <div class="grid grid-2">
+            <section class="card">
+              <h2>Reclamación</h2>
+              <p class="meta" style="margin-top: 0">Sin reclamación. Cancelar el servicio no es reclamar.</p>
+            </section>
+            <section class="card">
+              <h2>Marcas del caso</h2>
+              <p class="meta" style="margin-top: 0">Sin marcas sobre este caso.</p>
+            </section>
+          </div>
+          <section class="card">
+            <h2>Historial acotado (RN-015)</h2>
+            <p class="vacio-historial">No aplica: sin reclamación ni marca en este caso.</p>
+          </section>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const escenas = [
+        document.getElementById("e-solicitud"),
+        document.getElementById("e-cotizaciones"),
+        document.getElementById("e-servicio"),
+      ];
+      const nombres = ["solicitud", "cotizaciones", "servicio"];
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let idx = 0;
+      let animando = false;
+
+      function irPorNombre(nombre) {
+        const i = nombres.indexOf(nombre);
+        if (i >= 0) ir(i);
+      }
+
+      function ir(nuevo) {
+        if (animando || nuevo === idx) return;
+        animando = true;
+        escenas[idx].classList.remove("activa");
+        idx = nuevo;
+        escenas[idx].classList.add("activa");
+        escenas[idx].scrollTop = 0;
+        setTimeout(() => {
+          animando = false;
+        }, reduce ? 0 : 360);
+      }
+
+      function enTope(el) {
+        return el.scrollTop <= 2;
+      }
+      function enFondo(el) {
+        return el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+      }
+
+      const viewport = document.getElementById("viewport");
+      viewport.addEventListener(
+        "wheel",
+        (e) => {
+          if (animando) {
+            e.preventDefault();
+            return;
+          }
+          const el = escenas[idx];
+          if (e.deltaY > 0 && idx < escenas.length - 1 && enFondo(el)) {
+            e.preventDefault();
+            ir(idx + 1);
+          } else if (e.deltaY < 0 && idx > 0 && enTope(el)) {
+            e.preventDefault();
+            ir(idx - 1);
+          }
+        },
+        { passive: false },
+      );
+
+      let touchY = null;
+      viewport.addEventListener("touchstart", (e) => {
+        touchY = e.changedTouches[0]?.clientY ?? null;
+      });
+      viewport.addEventListener("touchend", (e) => {
+        if (touchY == null || animando) return;
+        const dy = touchY - (e.changedTouches[0]?.clientY ?? touchY);
+        touchY = null;
+        if (Math.abs(dy) < 40) return;
+        const el = escenas[idx];
+        if (dy > 0 && idx < escenas.length - 1 && enFondo(el)) ir(idx + 1);
+        if (dy < 0 && idx > 0 && enTope(el)) ir(idx - 1);
+      });
+
+      document.querySelectorAll("[data-destino]").forEach((btn) => {
+        btn.addEventListener("click", () => irPorNombre(btn.getAttribute("data-destino")));
+      });
+    </script>
+  </body>
+</html>

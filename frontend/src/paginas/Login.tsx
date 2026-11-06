@@ -4,7 +4,7 @@ import { BotonTema } from "../BotonTema";
 import { useSesion } from "../sesion";
 
 const correoInicial = import.meta.env.DEV ? "admin@example.com" : "";
-const contrasenaInicial = import.meta.env.DEV ? "AdminNexora1" : "";
+const contrasenaInicial = import.meta.env.DEV ? "admin123" : "";
 
 export function Login() {
   const { usuario, entrar } = useSesion();
