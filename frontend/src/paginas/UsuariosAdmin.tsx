@@ -4,7 +4,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import {
@@ -25,10 +24,13 @@ import {
 import { digitos, texto, validarAlta, validarContrasenaOpcional } from "../validarAlta";
 import { CamposCuenta, CamposUbicacion, ubicacionDe } from "./FormularioRegistro";
 import "../usuarios-admin.css";
+import "../usuarios-v2.css";
 
 type TipoPerfil = "cliente" | "proveedor" | "plataforma";
 type ModoAlta = "cliente" | "proveedor" | "administrador";
-type FiltroMarcas = "" | "con" | "sin";
+type TabAcceso = "todas" | "operan" | "marca" | "bloqueadas" | "baja";
+type LugarFiltro = "todos" | "cliente" | "proveedor" | "administrador";
+type OrdenLista = "marcas" | "nombre" | "alta";
 
 type PerfilGrupo = {
   id: string;
@@ -43,18 +45,13 @@ type PerfilGrupo = {
 
 const ID_PLATAFORMA = "plataforma";
 
-type ColumnaId = "nombre" | "forma" | "rol" | "cuentas" | "marcas" | "estado";
-
-const COLUMNAS: { id: ColumnaId; etiqueta: string; fija?: boolean }[] = [
-  { id: "nombre", etiqueta: "Nombre", fija: true },
-  { id: "forma", etiqueta: "Forma" },
-  { id: "rol", etiqueta: "Rol" },
-  { id: "cuentas", etiqueta: "Cuentas" },
-  { id: "marcas", etiqueta: "Marcas" },
-  { id: "estado", etiqueta: "Estado" },
+const PESTANIAS: { id: TabAcceso; etiqueta: string; badge?: boolean }[] = [
+  { id: "todas", etiqueta: "Todas" },
+  { id: "operan", etiqueta: "Operan" },
+  { id: "marca", etiqueta: "A una marca", badge: true },
+  { id: "bloqueadas", etiqueta: "Bloqueadas", badge: true },
+  { id: "baja", etiqueta: "Baja pedida", badge: true },
 ];
-
-const COLUMNAS_INICIAL: ColumnaId[] = ["nombre", "forma", "rol", "cuentas", "marcas", "estado"];
 
 export function UsuariosAdmin() {
   const [cuentas, setCuentas] = useState<UsuarioLista[]>([]);
@@ -62,23 +59,18 @@ export function UsuariosAdmin() {
   const [errorGlobal, setErrorGlobal] = useState("");
 
   const [busqueda, setBusqueda] = useState("");
-  const [filtroRol, setFiltroRol] = useState<Set<TipoPerfil>>(new Set());
-  const [filtroEstado, setFiltroEstado] = useState<Set<string>>(new Set());
-  const [filtroForma, setFiltroForma] = useState<Set<string>>(new Set());
-  const [filtroMarcas, setFiltroMarcas] = useState<FiltroMarcas>("");
-  const [columnasVisibles, setColumnasVisibles] = useState<Set<ColumnaId>>(() => new Set(COLUMNAS_INICIAL));
+  const [tabAcceso, setTabAcceso] = useState<TabAcceso>("todas");
+  const [lugarFiltro, setLugarFiltro] = useState<LugarFiltro>("todos");
+  const [orden, setOrden] = useState<OrdenLista>("marcas");
+  const [controlesAbiertos, setControlesAbiertos] = useState(false);
+  const [sello, setSello] = useState(() => formatearSello(new Date()));
+  const [avisoLista, setAvisoLista] = useState("");
 
   const [perfilActivoId, setPerfilActivoId] = useState<string | null>(null);
   const [seleccionId, setSeleccionId] = useState<string | null>(null);
   const [modoAlta, setModoAlta] = useState<ModoAlta | null>(null);
   const [detalle, setDetalle] = useState<UsuarioDetalle | null>(null);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
-
-  const [menuAltaAbierto, setMenuAltaAbierto] = useState(false);
-  const [modalColumnas, setModalColumnas] = useState(false);
-  const [ddAbierto, setDdAbierto] = useState<string | null>(null);
-
-  const accionesRef = useRef<HTMLDivElement>(null);
 
   const perfiles = useMemo(() => agruparPerfiles(cuentas), [cuentas]);
 
@@ -87,9 +79,24 @@ export function UsuariosAdmin() {
     [perfiles, perfilActivoId],
   );
 
-  const perfilesFiltrados = useMemo(
-    () => filtrarPerfiles(perfiles, busqueda, filtroRol, filtroEstado, filtroForma, filtroMarcas),
-    [perfiles, busqueda, filtroRol, filtroEstado, filtroForma, filtroMarcas],
+  const cuentasBase = useMemo(
+    () => cuentas.filter((c) => pasaLugar(c, lugarFiltro) && pasaBusquedaCuenta(c, busqueda)),
+    [cuentas, lugarFiltro, busqueda],
+  );
+
+  const cuentasVisibles = useMemo(
+    () =>
+      cuentasBase
+        .filter((c) => pasaTabAcceso(c, tabAcceso))
+        .sort((a, b) => compararCuentas(orden, a, b)),
+    [cuentasBase, tabAcceso, orden],
+  );
+
+  const kpis = useMemo(() => calcularKpis(cuentas, perfiles), [cuentas, perfiles]);
+
+  const cuentaActiva = useMemo(
+    () => cuentas.find((c) => c.id === seleccionId) ?? null,
+    [cuentas, seleccionId],
   );
 
   const recargar = useCallback(async (mantenerId?: string) => {
@@ -123,18 +130,13 @@ export function UsuariosAdmin() {
       setDetalle(null);
       return;
     }
-    const idDetalle =
-      seleccionId ??
-      (perfilActivo && perfilActivo.forma === "empresa" && !seleccionId
-        ? perfilActivo.usuarios[0]?.id
-        : null);
-    if (!idDetalle) {
+    if (!seleccionId) {
       setDetalle(null);
       return;
     }
     let vivo = true;
     setCargandoDetalle(true);
-    obtenerUsuarioAdmin(idDetalle)
+    obtenerUsuarioAdmin(seleccionId)
       .then((d) => {
         if (vivo) setDetalle(d);
       })
@@ -147,78 +149,72 @@ export function UsuariosAdmin() {
     return () => {
       vivo = false;
     };
-  }, [seleccionId, perfilActivoId, perfilActivo, modoAlta]);
+  }, [seleccionId, modoAlta]);
 
   useEffect(() => {
-    function cerrarMenus(evento: MouseEvent) {
-      const target = evento.target as Node;
-      if (accionesRef.current && !accionesRef.current.contains(target)) {
-        setMenuAltaAbierto(false);
-      }
-      if (!(evento.target as HTMLElement).closest?.(".dd-filtro")) {
-        setDdAbierto(null);
-      }
+    if (cargando || modoAlta) return;
+    if (cuentasVisibles.length === 0) {
+      setSeleccionId(null);
+      setPerfilActivoId(null);
+      return;
     }
-    document.addEventListener("pointerdown", cerrarMenus);
-    return () => document.removeEventListener("pointerdown", cerrarMenus);
-  }, []);
+    const vigente = seleccionId && cuentasVisibles.some((c) => c.id === seleccionId);
+    if (!vigente) {
+      const id = cuentasVisibles[0].id;
+      const cuenta = cuentas.find((c) => c.id === id);
+      if (!cuenta) return;
+      const perfil =
+        perfiles.find((p) => p.usuarios.some((u) => u.id === id)) ??
+        (cuenta.tipo_cuenta === "administrador" ? perfiles.find((p) => p.id === ID_PLATAFORMA) : null);
+      setPerfilActivoId(perfil?.id ?? (cuenta.tipo_cuenta === "administrador" ? ID_PLATAFORMA : null));
+      setSeleccionId(id);
+    }
+  }, [cargando, cuentasVisibles, modoAlta, seleccionId, cuentas, perfiles]);
 
   useEffect(() => {
     function escape(evento: KeyboardEvent) {
-      if (evento.key === "Escape" && modalColumnas) setModalColumnas(false);
+      if (evento.key === "Escape" && modoAlta) setModoAlta(null);
     }
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
-  }, [modalColumnas]);
-
-  function col(id: ColumnaId) {
-    return columnasVisibles.has(id);
-  }
-
-  function abrirPerfil(id: string) {
-    setModoAlta(null);
-    setErrorGlobal("");
-    const p = perfiles.find((perfil) => perfil.id === id);
-    if (!p) return;
-    setPerfilActivoId(id);
-    if (p.forma === "persona" && p.usuarios[0]) {
-      setSeleccionId(p.usuarios[0].id);
-      return;
-    }
-    setSeleccionId(null);
-  }
+  }, [modoAlta]);
 
   function abrirCuenta(id: string) {
-    setModoAlta(null);
     setErrorGlobal("");
+    const cuenta = cuentas.find((c) => c.id === id);
+    if (!cuenta) return;
     const perfil =
       perfiles.find((p) => p.usuarios.some((u) => u.id === id)) ??
-      (perfilActivo?.usuarios.some((u) => u.id === id) ? perfilActivo : null);
+      (cuenta.tipo_cuenta === "administrador" ? perfiles.find((p) => p.id === ID_PLATAFORMA) : null);
     if (perfil) setPerfilActivoId(perfil.id);
+    else if (cuenta.tipo_cuenta === "administrador") setPerfilActivoId(ID_PLATAFORMA);
     setSeleccionId(id);
   }
 
-  function cerrarDetalle() {
-    setModoAlta(null);
-    setSeleccionId(null);
-    setPerfilActivoId(null);
-    setDetalle(null);
+  function conteoTab(tab: TabAcceso) {
+    return cuentasBase.filter((c) => pasaTabAcceso(c, tab)).length;
   }
 
-  function volverDesdeFicha() {
-    setModoAlta(null);
-    if (seleccionId && perfilActivo?.forma === "empresa") {
-      setSeleccionId(null);
-      return;
+  async function actualizarLista() {
+    setAvisoLista("");
+    try {
+      await recargar(seleccionId ?? undefined);
+      setSello(formatearSello(new Date()));
+    } catch (causa) {
+      setErrorGlobal(causa instanceof Error ? causa.message : "No se pudo actualizar");
     }
-    cerrarDetalle();
   }
 
-  const conDetalle = Boolean(modoAlta || perfilActivoId);
-  const sinLista = Boolean(perfilActivo && perfilActivo.forma === "persona" && seleccionId);
-  const listandoEmpresa = Boolean(perfilActivo?.forma === "empresa" && !seleccionId && !modoAlta);
+  function restablecerFiltros() {
+    setBusqueda("");
+    setTabAcceso("todas");
+    setLugarFiltro("todos");
+    setAvisoLista("");
+  }
 
-  const usuariosLaterales = perfilActivo ? usuariosVisiblesEnPerfil(perfilActivo, busqueda) : [];
+  function alternarFiltroMarcas() {
+    setTabAcceso((t) => (t === "marca" ? "todas" : "marca"));
+  }
 
   async function onActualizadoDetalle(siguiente: UsuarioDetalle) {
     setDetalle(siguiente);
@@ -251,511 +247,381 @@ export function UsuariosAdmin() {
   }
 
   return (
-    <section className="vista-padron-crm" aria-labelledby="titulo-padron-crm">
-      <header className="crm-top">
-        <div className="crm-titulo">
-          <h1 id="titulo-padron-crm">Usuarios</h1>
+    <section className="vista-usuarios-v2" aria-labelledby="titulo-usuarios">
+      <div className="titulo-fila">
+        <div>
+          <h1 id="titulo-usuarios">Usuarios</h1>
+          <p className="subtitulo-pagina">{kpis.subtitulo}</p>
         </div>
-        <div className="crm-acciones" ref={accionesRef}>
-          <button
-            type="button"
-            className="btn-crm btn-crm-principal"
-            aria-haspopup="menu"
-            aria-expanded={menuAltaAbierto}
-            onClick={() => setMenuAltaAbierto((v) => !v)}
-          >
-            Crear cuenta
+        <div className="acciones-titulo">
+          <button type="button" className="btn btn-alto" onClick={() => setModoAlta("administrador")}>
+            Administrador
           </button>
-          <div className={menuAltaAbierto ? "menu-alta abierto" : "menu-alta"} role="menu">
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenuAltaAbierto(false);
-                cerrarDetalle();
-                setModoAlta("cliente");
-              }}
-            >
-              Cliente (perfil + cuenta)
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenuAltaAbierto(false);
-                cerrarDetalle();
-                setModoAlta("proveedor");
-              }}
-            >
-              Proveedor (perfil + cuenta)
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenuAltaAbierto(false);
-                cerrarDetalle();
-                setModoAlta("administrador");
-              }}
-            >
-              Administrador de plataforma
-            </button>
-          </div>
+          <button type="button" className="btn btn-alto" onClick={() => setModoAlta("proveedor")}>
+            Registrar proveedor
+          </button>
+          <button type="button" className="btn btn-primario btn-alto" onClick={() => setModoAlta("cliente")}>
+            Registrar cliente
+          </button>
         </div>
-      </header>
+      </div>
 
       {errorGlobal ? <p className="error-crm">{errorGlobal}</p> : null}
 
-      <div className="crm-filtros" aria-label="Filtros del padrón">
-        <FiltroDesplegable
-          clave="rol"
-          etiqueta="Rol"
-          abierto={ddAbierto === "rol"}
-          activo={filtroRol.size > 0}
-          texto={etiquetaMulti("Rol", filtroRol, {
-            cliente: "Cliente",
-            proveedor: "Proveedor",
-            plataforma: "Plataforma",
-          })}
-          onToggle={() => setDdAbierto((d) => (d === "rol" ? null : "rol"))}
-        >
-          {(["cliente", "proveedor", "plataforma"] as TipoPerfil[]).map((valor) => (
-            <label key={valor}>
-              <input
-                type="checkbox"
-                checked={filtroRol.has(valor)}
-                onChange={() => {
-                  setFiltroRol((prev) => {
-                    const sig = new Set(prev);
-                    if (sig.has(valor)) sig.delete(valor);
-                    else sig.add(valor);
-                    return sig;
-                  });
-                }}
-              />
-              {valor === "cliente" ? "Cliente" : valor === "proveedor" ? "Proveedor" : "Plataforma"}
-            </label>
-          ))}
-        </FiltroDesplegable>
+      <section className="kpis" aria-label="Resumen de cuentas">
+        <div className="kpi kpi-principal">
+          <p className="kpi-etiqueta">Cuentas registradas</p>
+          <p className="kpi-valor num">
+            <span>{kpis.total}</span>
+            <span className="kpi-unidad">cuentas</span>
+          </p>
+          <p className="kpi-nota">{kpis.notaTotal}</p>
+        </div>
+        <div className="kpi">
+          <p className="kpi-etiqueta">Pueden entrar</p>
+          <p className="kpi-valor num">
+            <span>{kpis.operan}</span>
+            <span className="kpi-unidad">activas</span>
+          </p>
+          <p className="kpi-nota">{kpis.notaOperan}</p>
+        </div>
+        <div className="kpi">
+          <p className="kpi-etiqueta">A una marca del bloqueo</p>
+          <p className="kpi-valor num">
+            <span>{kpis.riesgoCuentas}</span>
+            <span className="kpi-unidad">cuentas</span>
+          </p>
+          <p className="kpi-nota">{kpis.notaRiesgo}</p>
+        </div>
+        <div className="kpi">
+          <p className="kpi-etiqueta">Sin acceso activo</p>
+          <p className="kpi-valor num">
+            <span>{kpis.inactivas}</span>
+            <span className="kpi-unidad">cuentas</span>
+          </p>
+          <p className="kpi-nota">{kpis.notaInactivas}</p>
+        </div>
+      </section>
 
-        <FiltroDesplegable
-          clave="estado"
-          etiqueta="Estado de cuenta"
-          abierto={ddAbierto === "estado"}
-          activo={filtroEstado.size > 0}
-          texto={etiquetaMulti("Estado de cuenta", filtroEstado, {
-            activo: "Activo",
-            bloqueado: "Bloqueado",
-            baja: "Baja solicitada",
-          })}
-          onToggle={() => setDdAbierto((d) => (d === "estado" ? null : "estado"))}
-        >
-          {[
-            ["activo", "Activo"],
-            ["bloqueado", "Bloqueado"],
-            ["baja", "Baja solicitada"],
-          ].map(([valor, etiqueta]) => (
-            <label key={valor}>
-              <input
-                type="checkbox"
-                checked={filtroEstado.has(valor)}
-                onChange={() => {
-                  setFiltroEstado((prev) => {
-                    const sig = new Set(prev);
-                    if (sig.has(valor)) sig.delete(valor);
-                    else sig.add(valor);
-                    return sig;
-                  });
-                }}
-              />
-              {etiqueta}
-            </label>
-          ))}
-        </FiltroDesplegable>
-
-        <FiltroDesplegable
-          clave="forma"
-          etiqueta="Forma"
-          abierto={ddAbierto === "forma"}
-          activo={filtroForma.size > 0}
-          texto={etiquetaMulti("Forma", filtroForma, { persona: "Persona", empresa: "Empresa" })}
-          onToggle={() => setDdAbierto((d) => (d === "forma" ? null : "forma"))}
-        >
-          {[
-            ["persona", "Persona"],
-            ["empresa", "Empresa"],
-          ].map(([valor, etiqueta]) => (
-            <label key={valor}>
-              <input
-                type="checkbox"
-                checked={filtroForma.has(valor)}
-                onChange={() => {
-                  setFiltroForma((prev) => {
-                    const sig = new Set(prev);
-                    if (sig.has(valor)) sig.delete(valor);
-                    else sig.add(valor);
-                    return sig;
-                  });
-                }}
-              />
-              {etiqueta}
-            </label>
-          ))}
-        </FiltroDesplegable>
-
-        <FiltroDesplegable
-          clave="marcas"
-          etiqueta="Marcas"
-          abierto={ddAbierto === "marcas"}
-          activo={Boolean(filtroMarcas)}
-          texto={
-            filtroMarcas
-              ? `Marcas: ${filtroMarcas === "con" ? "Con marcas" : "Sin marcas"}`
-              : "Marcas"
-          }
-          onToggle={() => setDdAbierto((d) => (d === "marcas" ? null : "marcas"))}
-        >
-          {[
-            ["", "Todas"],
-            ["con", "Con marcas"],
-            ["sin", "Sin marcas"],
-          ].map(([valor, etiqueta]) => (
-            <label key={valor || "todas"}>
-              <input
-                type="radio"
-                name="filtro-marcas"
-                checked={filtroMarcas === valor}
-                onChange={() => setFiltroMarcas(valor as FiltroMarcas)}
-              />
-              {etiqueta}
-            </label>
-          ))}
-        </FiltroDesplegable>
-
-        <label className="crm-buscar">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3-3" />
-          </svg>
-          <input
-            type="search"
-            placeholder="Buscar persona, empresa o correo"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </label>
-        <button
-          type="button"
-          className="btn-crm btn-columnas"
-          title="Columnas"
-          aria-label="Mostrar u ocultar columnas"
-          onClick={() => setModalColumnas(true)}
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <path d="M9 4v16M15 4v16M3 10h18" />
-          </svg>
-        </button>
-      </div>
-
-      {modalColumnas ? (
-        <div
-          className="modal-fondo"
-          role="presentation"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setModalColumnas(false);
-          }}
-        >
-          <div className="modal-caja" role="dialog" aria-modal="true" aria-labelledby="titulo-columnas">
-            <h2 id="titulo-columnas">Columnas</h2>
-            <p className="crm-meta">Elige qué columnas se muestran en la tabla. Nombre no se puede ocultar.</p>
-            <div className="modal-lista">
-              {COLUMNAS.map((c) => (
-                <label key={c.id} className={c.fija ? "fija" : undefined}>
-                  <input
-                    type="checkbox"
-                    checked={col(c.id)}
-                    disabled={c.fija}
-                    onChange={(e) => {
-                      if (c.fija) return;
-                      setColumnasVisibles((prev) => {
-                        const sig = new Set(prev);
-                        if (e.target.checked) sig.add(c.id);
-                        else sig.delete(c.id);
-                        return sig;
-                      });
-                    }}
-                  />
-                  {c.etiqueta}
-                  {c.fija ? " (siempre visible)" : ""}
-                </label>
-              ))}
+      <div className="mesa">
+        <section className="columna-lista" aria-label="Directorio de cuentas">
+          {cuentaActiva && perfilActivo ? (
+            <div className="resumen-movil-perfil" id="resumen-movil">
+              <span>
+                Ficha activa: {perfilActivo.nombre} ({perfilActivo.tipo === "plataforma" ? "plataforma" : `${perfilActivo.conteo_marcas} /3 marcas`})
+              </span>
+              <a className="btn-texto" href="#bloque-ficha">
+                Ver ficha
+              </a>
             </div>
-            <div className="modal-acciones">
-              <button type="button" className="btn-crm" onClick={() => setModalColumnas(false)}>
-                Cerrar
+          ) : null}
+
+          <div className="pestanias" role="tablist" aria-label="Estado de acceso">
+            {PESTANIAS.map((p) => {
+              const n = conteoTab(p.id);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="pestania"
+                  role="tab"
+                  aria-selected={tabAcceso === p.id}
+                  onClick={() => setTabAcceso(p.id)}
+                >
+                  {p.etiqueta}
+                  {p.badge && n > 0 ? <span className="cuenta-tab num">{n}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="herramientas">
+            <div className="herramientas-izq">
+              <label className="buscar">
+                <span className="sr">Buscar cuentas</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="11" cy="11" r="6" />
+                  <path d="m16 16 4 4" />
+                </svg>
+                <input
+                  type="search"
+                  placeholder="Buscar cuenta, correo o perfil"
+                  autoComplete="off"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                className="btn btn-filtros"
+                aria-expanded={controlesAbiertos}
+                aria-controls="controles-usuarios"
+                onClick={() => setControlesAbiertos((v) => !v)}
+              >
+                Filtros
               </button>
             </div>
+
+            <div
+              className={controlesAbiertos ? "herramientas-controles abiertas" : "herramientas-controles"}
+              id="controles-usuarios"
+            >
+              <p className="conteo num">{cuentasVisibles.length === 1 ? "1 cuenta" : `${cuentasVisibles.length} cuentas`}</p>
+              <label className="filtro">
+                Lugar
+                <select value={lugarFiltro} onChange={(e) => setLugarFiltro(e.target.value as LugarFiltro)}>
+                  <option value="todos">Todos</option>
+                  <option value="cliente">Clientes</option>
+                  <option value="proveedor">Proveedores</option>
+                  <option value="administrador">Administradores</option>
+                </select>
+              </label>
+              <label className="filtro">
+                Orden
+                <select value={orden} onChange={(e) => setOrden(e.target.value as OrdenLista)}>
+                  <option value="marcas">Más marcas primero</option>
+                  <option value="nombre">Nombre</option>
+                  <option value="alta">Alta más reciente</option>
+                </select>
+              </label>
+              <button type="button" className="btn" onClick={() => void actualizarLista()}>
+                Actualizar
+              </button>
+              <p className="sello">{sello}</p>
+            </div>
           </div>
-        </div>
-      ) : null}
 
-      <div
-        className={[
-          "tablero-crm",
-          conDetalle ? "con-detalle" : "",
-          sinLista ? "sin-lista" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {conDetalle ? (
-          <aside className="crm-panel lista-compacta" aria-label="Lista lateral">
-            {modoAlta
-              ? perfilesFiltrados.map((p) => (
-                  <button key={p.id} type="button" className="item-compacto" onClick={() => abrirPerfil(p.id)}>
-                    <strong>{p.nombre}</strong>
-                    <span>
-                      {p.forma === "persona" ? "Persona" : "Empresa"} · {etiquetaTipoPerfil(p.tipo)}
-                    </span>
-                  </button>
-                ))
-              : usuariosLaterales.map((u) => (
-                  <button
-                    key={u.id}
-                    type="button"
-                    className={u.id === seleccionId ? "item-compacto activo" : "item-compacto"}
-                    onClick={() => abrirCuenta(u.id)}
-                  >
-                    <strong>{u.nombre}</strong>
-                    <span>{rolDe(u, perfilActivo!)}</span>
-                  </button>
-                ))}
-          </aside>
-        ) : null}
+          {avisoLista ? (
+            <p className="estado-alta" role="status">
+              {avisoLista}
+            </p>
+          ) : null}
 
-        {!conDetalle || modoAlta ? (
-          <section className="crm-panel tabla-completa" aria-label="Tabla de perfiles">
-            <div className="tabla-wrap">
-              {cargando ? (
-                <p className="crm-cargando">Cargando padrón…</p>
-              ) : perfilesFiltrados.length === 0 ? (
-                <p className="crm-cargando">No hay perfiles con estos filtros.</p>
-              ) : (
-                <table>
-                  <thead>
-                    <tr>
-                      {col("nombre") ? <th scope="col">Nombre</th> : null}
-                      {col("forma") ? <th scope="col">Forma</th> : null}
-                      {col("rol") ? <th scope="col">Rol</th> : null}
-                      {col("cuentas") ? <th scope="col">Cuentas</th> : null}
-                      {col("marcas") ? <th scope="col">Marcas</th> : null}
-                      {col("estado") ? <th scope="col">Estado</th> : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {perfilesFiltrados.map((p) => {
-                      const est = estadoPerfil(p);
-                      const marcasTxt = p.tipo === "plataforma" ? "—" : `${p.conteo_marcas}/3`;
-                      return (
-                        <tr key={p.id}>
-                          {col("nombre") ? (
-                            <td>
-                              <div className="identidad">
-                                <span className={`avatar ${p.tipo}`}>{iniciales(p.nombre)}</span>
-                                <button type="button" className="fila-cuenta" onClick={() => abrirPerfil(p.id)}>
-                                  {p.nombre}
-                                </button>
-                              </div>
-                            </td>
-                          ) : null}
-                          {col("forma") ? (
-                            <td>
-                              <span className={`chip-forma ${p.forma}`}>
-                                {p.forma === "persona" ? "Persona" : "Empresa"}
+          {cargando ? (
+            <p className="vacio">Cargando padrón…</p>
+          ) : cuentasVisibles.length === 0 ? (
+            <div className="vacio">
+              <p>
+                {busqueda.trim()
+                  ? `Ninguna cuenta coincide con «${busqueda.trim()}».`
+                  : "Ninguna cuenta está en este filtro."}
+              </p>
+              <button type="button" className="btn-texto" onClick={restablecerFiltros}>
+                Restablecer filtros
+              </button>
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Cuenta</th>
+                  <th scope="col">Lugar</th>
+                  <th scope="col">Perfil</th>
+                  <th className="marcas-col">Marcas</th>
+                  <th className="num">Alta</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cuentasVisibles.map((cuenta) => {
+                  const seleccionada = cuenta.id === seleccionId;
+                  const perfil = perfiles.find((p) => p.usuarios.some((u) => u.id === cuenta.id));
+                  return (
+                    <tr
+                      key={cuenta.id}
+                      aria-selected={seleccionada}
+                      tabIndex={0}
+                      onClick={() => abrirCuenta(cuenta.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          abrirCuenta(cuenta.id);
+                        }
+                      }}
+                    >
+                      <td className="cuenta-col">
+                        <div className="cuenta">
+                          <span className="avatar" style={{ ["--h" as string]: hueDeId(cuenta.id) }}>
+                            {iniciales(cuenta.nombre)}
+                          </span>
+                          <span className="cuenta-texto">
+                            <span className="cuenta-nombre">
+                              {cuenta.nombre}
+                              <PastillaEstadoCuenta cuenta={cuenta} />
+                            </span>
+                            <span className="cuenta-meta">{cuenta.correo}</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td className="lugar-col">{lugarCuenta(cuenta)}</td>
+                      <td className="perfil-col">
+                        {cuenta.tipo_cuenta === "administrador" ? (
+                          <span className="ausente">—</span>
+                        ) : (
+                          <>
+                            <span className="perfil-celda-nombre">{nombrePerfilDeCuenta(cuenta)}</span>
+                            {perfil ? (
+                              <span className="perfil-meta">
+                                {perfil.forma === "empresa" ? "Empresa" : perfil.tipo === "cliente" ? "Un usuario" : "Proveedor"}
                               </span>
-                            </td>
-                          ) : null}
-                          {col("rol") ? (
-                            <td>
-                              <span className="chip-rol">{etiquetaTipoPerfil(p.tipo)}</span>
-                            </td>
-                          ) : null}
-                          {col("cuentas") ? <td className="dato">{p.usuarios.length}</td> : null}
-                          {col("marcas") ? <td className="dato">{marcasTxt}</td> : null}
-                          {col("estado") ? (
-                            <td>
-                              <span className={`pill-estado ${est.cls}`}>{est.txt}</span>
-                            </td>
-                          ) : null}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-            <div className="crm-pie">
-              <span>
-                {perfilesFiltrados.length} persona{perfilesFiltrados.length === 1 ? "" : "s"} o empresa
-                {perfilesFiltrados.length === 1 ? "" : "s"}
-              </span>
-              <span>{perfilesFiltrados.length} en esta vista</span>
-            </div>
-          </section>
-        ) : null}
+                            ) : null}
+                          </>
+                        )}
+                      </td>
+                      <td className="marcas-col">
+                        <MarcasCelda cuenta={cuenta} />
+                      </td>
+                      <td className="alta-col num">
+                        <span className="ausente" title="La API aún no expone fecha de alta en el listado">
+                          —
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
 
-        {conDetalle ? (
-          <section className="crm-panel" aria-label="Detalle">
-            <div className="crm-detalle-scroll">
-              {modoAlta === "cliente" ? (
-                <PanelAlta titulo="Alta de cliente" meta="Crea el perfil y la única cuenta de esa persona o empresa." onVolver={() => setModoAlta(null)}>
-                  <AltaClienteForm
-                    onCreado={async (id) => {
-                      await recargar(id);
-                      setModoAlta(null);
-                      const p = agruparPerfiles(await listarUsuariosAdmin()).find((g) =>
-                        g.usuarios.some((u) => u.id === id),
-                      );
-                      if (p?.forma === "persona") {
-                        setPerfilActivoId(p.id);
-                        setSeleccionId(id);
-                      } else if (p) {
-                        setPerfilActivoId(p.id);
-                        setSeleccionId(null);
-                      }
-                    }}
-                  />
-                </PanelAlta>
-              ) : null}
-              {modoAlta === "proveedor" ? (
-                <PanelAlta
-                  titulo="Alta de proveedor"
-                  meta="Crea el perfil. La primera cuenta queda como administrativa."
-                  onVolver={() => setModoAlta(null)}
-                >
-                  <AltaProveedorForm
-                    onCreado={async (id) => {
-                      await recargar(id);
-                      setModoAlta(null);
-                      const p = agruparPerfiles(await listarUsuariosAdmin()).find((g) =>
-                        g.usuarios.some((u) => u.id === id),
-                      );
-                      if (p) {
-                        setPerfilActivoId(p.id);
-                        setSeleccionId(null);
-                      }
-                    }}
-                  />
-                </PanelAlta>
-              ) : null}
-              {modoAlta === "administrador" ? (
-                <PanelAlta
-                  titulo="Alta de administrador"
-                  meta="Cuenta de plataforma, sin perfil cliente ni proveedor."
-                  onVolver={() => setModoAlta(null)}
-                >
-                  <AltaAdministradorForm
-                    onCreado={async (id) => {
-                      await recargar(id);
-                      setModoAlta(null);
-                      setPerfilActivoId(ID_PLATAFORMA);
-                      setSeleccionId(id);
-                    }}
-                  />
-                </PanelAlta>
-              ) : null}
-
-              {!modoAlta && listandoEmpresa && perfilActivo ? (
-                <FichaEmpresa
-                  perfil={perfilActivo}
-                  detalle={detalle}
-                  cargando={cargandoDetalle}
-                  onVolver={volverDesdeFicha}
-                  onActualizado={onActualizadoDetalle}
-                />
-              ) : null}
-
-              {!modoAlta && seleccionId && detalle && perfilActivo ? (
-                <FichaCuenta
-                  detalle={detalle}
-                  perfil={perfilActivo}
-                  onVolver={volverDesdeFicha}
-                  onActualizado={onActualizadoDetalle}
-                />
-              ) : null}
-
-              {!modoAlta && !listandoEmpresa && seleccionId && cargandoDetalle ? (
-                <p className="crm-meta">Cargando cuenta…</p>
-              ) : null}
+        <aside className="riel" aria-label="Inspección de perfil y marcas">
+          <section className="riel-bloque" id="bloque-ficha">
+            <h2 className="riel-titulo">Ficha del perfil seleccionado</h2>
+            <div className="panel">
+              <RielFichaPerfil
+                perfil={perfilActivo}
+                cuentaActiva={cuentaActiva}
+                seleccionId={seleccionId}
+                onSeleccionar={abrirCuenta}
+                onAltaMiembroPlaceholder={() =>
+                  setAvisoLista("Sumar cuentas a un proveedor existente: la API aún no expone este alta; queda pendiente.")
+                }
+              />
             </div>
           </section>
-        ) : null}
+
+          <section className="riel-bloque">
+            <h2 className="riel-titulo">Perfiles según marcas</h2>
+            <div className="panel">
+              <ListaPerfilesMarcas
+                perfiles={perfiles}
+                perfilActivoId={perfilActivoId}
+                onSeleccionar={(id) => abrirCuenta(id)}
+              />
+              <button type="button" className="btn btn-bloque" onClick={alternarFiltroMarcas}>
+                {tabAcceso === "marca"
+                  ? `Ver las ${kpis.total} cuentas registradas`
+                  : `Filtrar las ${kpis.riesgoCuentas} cuentas a una marca`}
+              </button>
+            </div>
+          </section>
+
+          {seleccionId && perfilActivo && !modoAlta ? (
+            <section className="riel-bloque panel-edicion-cuenta" aria-label="Edición de cuenta y marcas">
+              <h2 className="riel-titulo">Cuenta seleccionada</h2>
+              <div className="panel">
+                {cargandoDetalle || !detalle ? (
+                  <p className="crm-meta">Cargando cuenta…</p>
+                ) : (
+                  <FichaCuenta
+                    detalle={detalle}
+                    perfil={perfilActivo}
+                    onVolver={() => undefined}
+                    onActualizado={onActualizadoDetalle}
+                    compacto
+                  />
+                )}
+              </div>
+            </section>
+          ) : null}
+        </aside>
       </div>
+
+      <ModalCapa
+        abierto={modoAlta === "cliente"}
+        titulo="Alta de cliente"
+        meta="La persona o la empresa no se registran por su cuenta. El perfil cliente queda con un solo usuario."
+        onCerrar={() => setModoAlta(null)}
+      >
+        <AltaClienteForm
+          onCreado={async (id) => {
+            await recargar(id);
+            setModoAlta(null);
+            setAvisoLista("Cliente registrado correctamente.");
+            abrirCuenta(id);
+          }}
+        />
+      </ModalCapa>
+
+      <ModalCapa
+        abierto={modoAlta === "proveedor"}
+        titulo="Alta de proveedor"
+        meta="Crea el perfil proveedor con su primera cuenta administrativa. Después se pueden sumar técnicos o administrativos desde su ficha."
+        onCerrar={() => setModoAlta(null)}
+      >
+        <AltaProveedorForm
+          onCreado={async (id) => {
+            await recargar(id);
+            setModoAlta(null);
+            setAvisoLista("Proveedor registrado correctamente.");
+            abrirCuenta(id);
+          }}
+        />
+      </ModalCapa>
+
+      <ModalCapa
+        abierto={modoAlta === "administrador"}
+        titulo="Alta de administrador"
+        meta="Cuenta de plataforma, sin perfil cliente ni proveedor."
+        onCerrar={() => setModoAlta(null)}
+      >
+        <AltaAdministradorForm
+          onCreado={async (id) => {
+            await recargar(id);
+            setModoAlta(null);
+            setAvisoLista("Administrador registrado correctamente.");
+            abrirCuenta(id);
+          }}
+        />
+      </ModalCapa>
     </section>
   );
 }
 
-function FiltroDesplegable({
-  clave,
-  texto,
+
+function ModalCapa({
   abierto,
-  activo,
-  onToggle,
+  titulo,
+  meta,
+  onCerrar,
   children,
 }: {
-  clave: string;
-  etiqueta: string;
-  texto: string;
   abierto: boolean;
-  activo: boolean;
-  onToggle: () => void;
+  titulo: string;
+  meta?: string;
+  onCerrar: () => void;
   children: ReactNode;
 }) {
+  if (!abierto) return null;
   return (
-    <div className={abierto ? "dd-filtro abierto" : "dd-filtro"} data-filtro={clave}>
-      <button
-        type="button"
-        className={activo ? "filtro-dd activo" : "filtro-dd"}
-        aria-expanded={abierto}
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle();
-        }}
+    <div
+      className="capa"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCerrar();
+      }}
+    >
+      <div
+        className="dialogo"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-modal-usuarios"
+        onClick={(e) => e.stopPropagation()}
       >
-        {texto}
-      </button>
-      <div className="dd-panel" role="listbox">
+        <h2 id="titulo-modal-usuarios">{titulo}</h2>
+        {meta ? <p>{meta}</p> : null}
         {children}
       </div>
     </div>
-  );
-}
-
-function PanelAlta({
-  titulo,
-  meta,
-  onVolver,
-  children,
-}: {
-  titulo: string;
-  meta: string;
-  onVolver: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <>
-      <header className="ficha-top">
-        <div>
-          <h2>{titulo}</h2>
-          <p className="crm-meta">{meta}</p>
-        </div>
-        <button type="button" className="volver-crm" onClick={onVolver}>
-          ← Volver al padrón
-        </button>
-      </header>
-      {children}
-    </>
   );
 }
 
@@ -924,62 +790,17 @@ function AltaCamposForm({
   conUbicacion: boolean;
 }) {
   return (
-    <form autoComplete="off" onSubmit={(e) => void onSubmit(e)}>
+    <form className="formulario" autoComplete="off" onSubmit={(e) => void onSubmit(e)}>
       {children}
-      <CamposCuenta classNameCampo="campo-crm" />
-      {conUbicacion ? <CamposUbicacion classNameCampo="campo-crm" /> : null}
-      {error ? <p className="error-crm">{error}</p> : null}
-      <button type="submit" className="btn-crm btn-crm-principal" disabled={enviando}>
-        {enviando ? "Registrando…" : "Registrar"}
-      </button>
-    </form>
-  );
-}
-
-function FichaEmpresa({
-  perfil,
-  detalle,
-  cargando,
-  onVolver,
-  onActualizado,
-}: {
-  perfil: PerfilGrupo;
-  detalle: UsuarioDetalle | null;
-  cargando: boolean;
-  onVolver: () => void;
-  onActualizado: (d: UsuarioDetalle) => Promise<void>;
-}) {
-  const est = estadoPerfil(perfil);
-  return (
-    <>
-      <header className="ficha-top">
-        <div>
-          <h2>{perfil.nombre}</h2>
-          <p className="crm-meta">
-            Empresa · {etiquetaTipoPerfil(perfil.tipo)} ·{" "}
-            <span className={`pill-estado ${est.cls}`}>{est.txt}</span>
-          </p>
-        </div>
-        <button type="button" className="volver-crm" onClick={onVolver}>
-          ← Volver al padrón
+      <CamposCuenta classNameCampo="campo-crm campo campo-ancho" />
+      {conUbicacion ? <CamposUbicacion classNameCampo="campo-crm campo" /> : null}
+      {error ? <p className="alerta">{error}</p> : null}
+      <div className="dialogo-acciones">
+        <button type="submit" className="btn btn-primario" disabled={enviando}>
+          {enviando ? "Registrando…" : "Registrar"}
         </button>
-      </header>
-      <dl className="props-crm">
-        <dt>Forma</dt>
-        <dd>Empresa</dd>
-        <dt>Rol</dt>
-        <dd>{etiquetaTipoPerfil(perfil.tipo)}</dd>
-        <dt>Cuentas</dt>
-        <dd>{perfil.usuarios.length}</dd>
-        <dt>Marcas</dt>
-        <dd>{perfil.tipo === "plataforma" ? "—" : `${perfil.conteo_marcas}/3`}</dd>
-      </dl>
-      {cargando || !detalle ? (
-        <p className="crm-meta">Cargando marcas del perfil…</p>
-      ) : (
-        <BloqueMarcas detalle={detalle} onActualizado={onActualizado} />
-      )}
-    </>
+      </div>
+    </form>
   );
 }
 
@@ -988,11 +809,13 @@ function FichaCuenta({
   perfil,
   onVolver,
   onActualizado,
+  compacto = false,
 }: {
   detalle: UsuarioDetalle;
   perfil: PerfilGrupo;
   onVolver: () => void;
   onActualizado: (d: UsuarioDetalle) => Promise<void>;
+  compacto?: boolean;
 }) {
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
@@ -1034,18 +857,27 @@ function FichaCuenta({
 
   return (
     <>
-      <header className="ficha-top">
-        <div>
-          <h2>{detalle.nombre}</h2>
-          <p className="crm-meta">
-            {rolDe(detalle, perfil)} · {perfil.nombre} ·{" "}
-            <span className={`pill-estado ${est.cls}`}>{est.txt}</span>
-          </p>
-        </div>
-        <button type="button" className="volver-crm" onClick={onVolver}>
-          {perfil.forma === "empresa" ? "← Volver a la empresa" : "← Volver al padrón"}
-        </button>
-      </header>
+      {compacto ? (
+        <p className="crm-meta">
+          {rolDe(detalle, perfil)} · {perfil.nombre} ·{" "}
+          <span className={`pastilla pastilla-${est.cls === "critico" ? "bloqueada" : est.cls === "alerta" ? "baja" : "positiva"}`}>
+            {est.txt}
+          </span>
+        </p>
+      ) : (
+        <header className="ficha-top">
+          <div>
+            <h2>{detalle.nombre}</h2>
+            <p className="crm-meta">
+              {rolDe(detalle, perfil)} · {perfil.nombre} ·{" "}
+              <span className={`pill-estado ${est.cls}`}>{est.txt}</span>
+            </p>
+          </div>
+          <button type="button" className="volver-crm" onClick={onVolver}>
+            {perfil.forma === "empresa" ? "← Volver a la empresa" : "← Volver al padrón"}
+          </button>
+        </header>
+      )}
       <dl className="props-crm">
         <dt>Correo</dt>
         <dd>{detalle.correo}</dd>
@@ -1245,6 +1077,342 @@ function VisualMarcas({
   );
 }
 
+function PastillaEstadoCuenta({ cuenta }: { cuenta: UsuarioLista }) {
+  if (cuenta.bloqueado) return <span className="pastilla pastilla-bloqueada">Bloqueada</span>;
+  if (cuenta.baja_solicitada) return <span className="pastilla pastilla-baja">Baja pedida</span>;
+  return null;
+}
+
+function MarcasCelda({ cuenta }: { cuenta: UsuarioLista }) {
+  if (cuenta.tipo_cuenta === "administrador") {
+    return <span className="ausente">—</span>;
+  }
+  const celdas = [0, 1, 2].map((indice) => {
+    const llena = indice < cuenta.conteo_marcas;
+    const bloquea = cuenta.bloqueado && indice === 2 && llena;
+    const clase = bloquea ? "marca marca-bloquea" : llena ? "marca marca-llena" : "marca";
+    return <span key={indice} className={clase} />;
+  });
+  return (
+    <span className="marcas-celda">
+      <span className="marcas">{celdas}</span>
+      <span className="marcas-razon num">
+        {cuenta.conteo_marcas}
+        <span>/3</span>
+      </span>
+    </span>
+  );
+}
+
+function RielFichaPerfil({
+  perfil,
+  cuentaActiva,
+  seleccionId,
+  onSeleccionar,
+  onAltaMiembroPlaceholder,
+}: {
+  perfil: PerfilGrupo | null;
+  cuentaActiva: UsuarioLista | null;
+  seleccionId: string | null;
+  onSeleccionar: (id: string) => void;
+  onAltaMiembroPlaceholder: () => void;
+}) {
+  if (!perfil || !cuentaActiva) {
+    return <p className="vacio">Selecciona una cuenta del directorio para ver su ficha.</p>;
+  }
+
+  if (perfil.tipo === "plataforma") {
+    const admins = perfil.usuarios;
+    return (
+      <>
+        <div className="ficha-cabecera">
+          <div>
+            <h3 className="ficha-nombre">{cuentaActiva.nombre}</h3>
+            <p className="ficha-sub">Administrador de plataforma · Sin perfil cliente ni proveedor</p>
+          </div>
+          <span className="pastilla pastilla-acento">Plataforma</span>
+        </div>
+        <div className="escalera-box">
+          <div className="escalera-tope">
+            <span>Régimen de sanciones</span>
+            <span>No aplica</span>
+          </div>
+          <p className="escalera-nota">
+            Las cuentas de administración supervisan usuarios, proveedores y trabajos. No acumulan marcas de perfil.
+          </p>
+        </div>
+        <dl className="ficha-datos">
+          <div className="ficha-par">
+            <dt>Correo y teléfono</dt>
+            <dd>
+              {cuentaActiva.correo} · <span className="num">{formatearTelefono(cuentaActiva.telefono)}</span>
+            </dd>
+          </div>
+        </dl>
+        <div className="ficha-cuentas-cab">
+          <span className="ficha-cuentas-titulo">Cuentas de plataforma ({admins.length})</span>
+        </div>
+        <div className="lista-filas">
+          {admins.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="fila-compacta fila-compacta-boton"
+              aria-current={item.id === seleccionId}
+              onClick={() => onSeleccionar(item.id)}
+            >
+              <span className="fila-compacta-izq">
+                <span className="fila-compacta-nombre">{item.nombre}</span>
+                <span className="fila-compacta-sub">{item.correo}</span>
+              </span>
+              <span className="pastilla">Admin</span>
+            </button>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  const tramos = [0, 1, 2].map((indice) => {
+    const activo = indice < perfil.conteo_marcas;
+    const clase =
+      perfil.bloqueado && activo ? "escalera-tramo bloqueo" : activo ? "escalera-tramo activo" : "escalera-tramo";
+    return <span key={indice} className={clase} />;
+  });
+  const est = estadoPerfil(perfil);
+  const pastillaEstado = perfil.bloqueado
+    ? "pastilla pastilla-bloqueada"
+    : perfil.baja
+      ? "pastilla pastilla-baja"
+      : "pastilla pastilla-acento";
+
+  return (
+    <>
+      <div className="ficha-cabecera">
+        <div>
+          <h3 className="ficha-nombre">{perfil.nombre}</h3>
+          <p className="ficha-sub">
+            {etiquetaTipoPerfil(perfil.tipo)} ({perfil.forma === "empresa" ? "empresa" : "persona"}) ·{" "}
+            {perfil.usuarios.length === 1 ? "1 cuenta ligada" : `${perfil.usuarios.length} cuentas ligadas`}
+          </p>
+        </div>
+        <span className={pastillaEstado}>
+          {est.txt === "Activo" ? `${etiquetaTipoPerfil(perfil.tipo)} · ${perfil.forma === "empresa" ? "Empresa" : "Persona"}` : est.txt}
+        </span>
+      </div>
+      <div className={`escalera-box${perfil.bloqueado ? " es-bloqueado" : ""}`}>
+        <div className="escalera-tope">
+          <span>Escalera de sanciones</span>
+          <span className="num">{perfil.conteo_marcas} /3 marcas</span>
+        </div>
+        <div className="escalera-pista" role="img" aria-label={`${perfil.conteo_marcas} de 3 marcas`}>
+          {tramos}
+        </div>
+        <div className="escalera-extremos">
+          <span>0 marcas</span>
+          <span>3 · bloqueo del perfil</span>
+        </div>
+        <p className="escalera-nota">
+          Las marcas son del perfil. A la tercera se bloquean todos sus usuarios.
+          {perfil.bloqueado ? " Este perfil está bloqueado." : ""}
+        </p>
+      </div>
+      <dl className="ficha-datos">
+        <div className="ficha-par">
+          <dt>Regla del perfil</dt>
+          <dd>
+            {perfil.tipo === "cliente"
+              ? "Un perfil cliente tiene un solo usuario y no puede pertenecer a un proveedor."
+              : "Los usuarios del proveedor comparten marcas y bloqueo del perfil."}
+          </dd>
+        </div>
+      </dl>
+      <div className="ficha-cuentas-cab">
+        <span className="ficha-cuentas-titulo">Cuentas en esta ficha ({perfil.usuarios.length})</span>
+        {perfil.tipo === "proveedor" && !perfil.bloqueado ? (
+          <button type="button" className="btn btn-acento-suave" onClick={onAltaMiembroPlaceholder}>
+            Sumar cuenta
+          </button>
+        ) : null}
+      </div>
+      <div className="lista-filas">
+        {perfil.usuarios.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className="fila-compacta fila-compacta-boton"
+            aria-current={item.id === seleccionId}
+            onClick={() => onSeleccionar(item.id)}
+          >
+            <span className="fila-compacta-izq">
+              <span className="fila-compacta-nombre">{item.nombre}</span>
+              <span className="fila-compacta-sub">
+                {item.correo}
+                {item.telefono ? ` · ${formatearTelefono(item.telefono)}` : ""}
+              </span>
+            </span>
+            <span className="pastilla">{rolDe(item, perfil)}</span>
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ListaPerfilesMarcas({
+  perfiles,
+  perfilActivoId,
+  onSeleccionar,
+}: {
+  perfiles: PerfilGrupo[];
+  perfilActivoId: string | null;
+  onSeleccionar: (cuentaId: string) => void;
+}) {
+  const ordenados = [...perfiles]
+    .filter((p) => p.tipo !== "plataforma")
+    .sort((a, b) => b.conteo_marcas - a.conteo_marcas || a.nombre.localeCompare(b.nombre, "es"))
+    .slice(0, 6);
+
+  if (!ordenados.length) {
+    return <p className="crm-meta">No hay perfiles con marcas registradas.</p>;
+  }
+
+  return (
+    <div className="lista-filas">
+      {ordenados.map((perfil) => {
+        const primera = perfil.usuarios[0];
+        const pillClase = perfil.bloqueado
+          ? "pastilla pastilla-bloqueada"
+          : perfil.conteo_marcas === 2
+            ? "pastilla pastilla-acento"
+            : "pastilla";
+        return (
+          <button
+            key={perfil.id}
+            type="button"
+            className="fila-compacta fila-compacta-boton"
+            disabled={!primera}
+            aria-current={perfil.id === perfilActivoId}
+            onClick={() => primera && onSeleccionar(primera.id)}
+          >
+            <span className="fila-compacta-izq">
+              <span className="fila-compacta-nombre">{perfil.nombre}</span>
+              <span className="fila-compacta-sub">
+                {etiquetaTipoPerfil(perfil.tipo)} · {perfil.usuarios.length === 1 ? "1 cuenta" : `${perfil.usuarios.length} cuentas`}
+              </span>
+            </span>
+            <span className={`${pillClase} num`}>{perfil.tipo === "plataforma" ? "—" : `${perfil.conteo_marcas} /3`}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function cuentaOpera(cuenta: UsuarioLista) {
+  return !cuenta.bloqueado && !cuenta.baja_solicitada;
+}
+
+function cuentaAUnaMarca(cuenta: UsuarioLista) {
+  return cuenta.tipo_cuenta !== "administrador" && cuenta.conteo_marcas === 2 && !cuenta.bloqueado;
+}
+
+function pasaTabAcceso(cuenta: UsuarioLista, tab: TabAcceso) {
+  if (tab === "operan") return cuentaOpera(cuenta);
+  if (tab === "marca") return cuentaAUnaMarca(cuenta);
+  if (tab === "bloqueadas") return cuenta.bloqueado;
+  if (tab === "baja") return cuenta.baja_solicitada;
+  return true;
+}
+
+function pasaLugar(cuenta: UsuarioLista, lugar: LugarFiltro) {
+  if (lugar === "todos") return true;
+  if (lugar === "administrador") return cuenta.tipo_cuenta === "administrador";
+  if (lugar === "cliente") return cuenta.tipo_cuenta === "cliente";
+  return cuenta.tipo_cuenta === "proveedor";
+}
+
+function pasaBusquedaCuenta(cuenta: UsuarioLista, q: string) {
+  const busqueda = q.trim().toLowerCase();
+  if (!busqueda) return true;
+  const perfil = nombrePerfilDeCuenta(cuenta);
+  return `${cuenta.nombre} ${cuenta.correo} ${perfil} ${lugarCuenta(cuenta)}`.toLowerCase().includes(busqueda);
+}
+
+function compararCuentas(orden: OrdenLista, a: UsuarioLista, b: UsuarioLista) {
+  if (orden === "nombre") return a.nombre.localeCompare(b.nombre, "es");
+  if (orden === "alta") return a.nombre.localeCompare(b.nombre, "es");
+  const marcasA = a.tipo_cuenta === "administrador" ? -1 : a.conteo_marcas;
+  const marcasB = b.tipo_cuenta === "administrador" ? -1 : b.conteo_marcas;
+  return marcasB - marcasA || a.nombre.localeCompare(b.nombre, "es");
+}
+
+function calcularKpis(cuentas: UsuarioLista[], perfiles: PerfilGrupo[]) {
+  const total = cuentas.length;
+  const enPerfiles = cuentas.filter((c) => c.tipo_cuenta !== "administrador").length;
+  const admins = total - enPerfiles;
+  const numPerfiles = perfiles.filter((p) => p.tipo !== "plataforma").length;
+
+  const operanCuentas = cuentas.filter(cuentaOpera);
+  const operanCli = operanCuentas.filter((c) => c.tipo_cuenta === "cliente").length;
+  const operanPro = operanCuentas.filter((c) => c.tipo_cuenta === "proveedor").length;
+  const operanAdm = operanCuentas.filter((c) => c.tipo_cuenta === "administrador").length;
+
+  const cuentasRiesgo = cuentas.filter(cuentaAUnaMarca);
+  const perfilesRiesgo = perfiles.filter((p) => p.tipo !== "plataforma" && p.conteo_marcas === 2 && !p.bloqueado).length;
+
+  const bloq = cuentas.filter((c) => c.bloqueado).length;
+  const bajas = cuentas.filter((c) => c.baja_solicitada).length;
+  const inactivas = bloq + bajas;
+
+  const subtitulo = `${total} cuentas registradas en ${numPerfiles} perfiles y ${admins} de plataforma. ${perfilesRiesgo} perfiles están a una marca del bloqueo y sus ${cuentasRiesgo.length} cuentas siguen entrando.`;
+
+  return {
+    total,
+    notaTotal: `${enPerfiles} en ${numPerfiles} perfiles y ${admins} de plataforma`,
+    operan: operanCuentas.length,
+    notaOperan: `${operanCli} clientes, ${operanPro} de proveedor y ${operanAdm} admin`,
+    riesgoCuentas: cuentasRiesgo.length,
+    notaRiesgo: `En ${perfilesRiesgo} ${perfilesRiesgo === 1 ? "perfil" : "perfiles"} con 2 /3 marcas`,
+    inactivas,
+    notaInactivas: `${bloq} bloqueadas (3 /3) y ${bajas} baja pedida`,
+    subtitulo,
+  };
+}
+
+function lugarCuenta(cuenta: UsuarioLista) {
+  if (cuenta.tipo_cuenta === "administrador") return "Plataforma";
+  if (cuenta.tipo_cuenta === "cliente") return "Cliente";
+  return cuenta.funcion === "tecnico" ? "Técnico" : "Administrativo";
+}
+
+function nombrePerfilDeCuenta(cuenta: UsuarioLista) {
+  if (cuenta.tipo_cuenta === "administrador") return "Plataforma";
+  return cuenta.perfil_nombre;
+}
+
+function hueDeId(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) % 360;
+  return hash;
+}
+
+function formatearSello(fecha: Date) {
+  return `Actualizado ${new Intl.DateTimeFormat("es-MX", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(fecha)}`;
+}
+
+function formatearTelefono(tel: string) {
+  const limpio = tel.replace(/\D+/g, "");
+  if (limpio.length !== 10) return tel;
+  return `${limpio.slice(0, 3)} ${limpio.slice(3, 6)} ${limpio.slice(6)}`;
+}
+
 function agruparPerfiles(cuentas: UsuarioLista[]): PerfilGrupo[] {
   const map = new Map<string, PerfilGrupo>();
   const admins: UsuarioLista[] = [];
@@ -1299,42 +1467,6 @@ function agruparPerfiles(cuentas: UsuarioLista[]): PerfilGrupo[] {
   return lista.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 }
 
-function filtrarPerfiles(
-  perfiles: PerfilGrupo[],
-  q: string,
-  rol: Set<TipoPerfil>,
-  estado: Set<string>,
-  forma: Set<string>,
-  marcas: FiltroMarcas,
-) {
-  const busqueda = q.trim().toLowerCase();
-  return perfiles.filter((p) => {
-    if (rol.size && !rol.has(p.tipo)) return false;
-    if (estado.size && !estado.has(claveEstado(p))) return false;
-    if (forma.size && !forma.has(p.forma)) return false;
-    const tieneMarcas = p.tipo !== "plataforma" && p.conteo_marcas > 0;
-    if (marcas === "con" && !tieneMarcas) return false;
-    if (marcas === "sin" && tieneMarcas) return false;
-    if (!busqueda) return true;
-    const correos = p.usuarios.map((u) => u.correo).join(" ");
-    return `${p.nombre} ${correos} ${etiquetaTipoPerfil(p.tipo)} ${p.forma}`.toLowerCase().includes(busqueda);
-  });
-}
-
-function usuariosVisiblesEnPerfil(perfil: PerfilGrupo, q: string) {
-  const busqueda = q.trim().toLowerCase();
-  return perfil.usuarios.filter((u) => {
-    if (!busqueda) return true;
-    return `${u.nombre} ${u.correo} ${u.telefono} ${rolDe(u, perfil)}`.toLowerCase().includes(busqueda);
-  });
-}
-
-function claveEstado(p: PerfilGrupo) {
-  if (p.bloqueado) return "bloqueado";
-  if (p.baja) return "baja";
-  return "activo";
-}
-
 function estadoPerfil(p: PerfilGrupo) {
   if (p.bloqueado) return { txt: "Bloqueado", cls: "critico" as const };
   if (p.baja) return { txt: "Baja solicitada", cls: "alerta" as const };
@@ -1363,10 +1495,4 @@ function iniciales(nombre: string) {
     .map((p) => p[0])
     .join("")
     .toUpperCase();
-}
-
-function etiquetaMulti(clave: string, set: Set<string>, etiquetas: Record<string, string>) {
-  if (!set.size) return clave;
-  const nombres = [...set].map((v) => etiquetas[v] ?? v);
-  return nombres.length === 1 ? `${clave}: ${nombres[0]}` : `${clave} (${nombres.length})`;
 }

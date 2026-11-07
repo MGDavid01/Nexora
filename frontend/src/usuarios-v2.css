@@ -1,0 +1,806 @@
+/* Vista Usuarios v2 · React (desde prototipo usuarios-v2) */
+
+.vista-usuarios-v2 {
+  --ground: #f6f9fc;
+  --surface: #ffffff;
+  --raised: #eef3f7;
+  --border: #e3e8ee;
+  --rule: #e9eef3;
+  --control: #cbd5e1;
+  --text: #111827;
+  --muted: #525b66;
+  --faint: #646d78;
+  --accent: #3573a4;
+  --accent-soft: #eaf2f8;
+  --accent-track: #cfe0ee;
+  --accent-ink: #163a59;
+  --primary: #111827;
+  --primary-ink: #ffffff;
+  --negative: #c4242a;
+  --pill-positive-bg: #dcfce7;
+  --pill-positive-ink: #14532d;
+  --pill-negative-bg: #ffedea;
+  --pill-negative-ink: #831c1e;
+  --pill-warning-bg: #fffbeb;
+  --pill-warning-ink: #92400e;
+  --pill-neutral-bg: #eef2f6;
+  --pill-neutral-ink: #374151;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs-title: 32px;
+  --fs-section: 18px;
+  --fs-kpi: 24px;
+  --fs-body: 14px;
+  --fs-small: 12px;
+  --gap: 24px;
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --control-height: 32px;
+  width: 100%;
+  max-width: 1210px;
+  margin: 0 auto;
+  color: var(--text);
+  font: var(--fs-body) / 20px var(--font);
+  font-variant-numeric: tabular-nums;
+}
+
+.vista-usuarios-v2 .num {
+  font-variant-numeric: tabular-nums;
+}
+
+.vista-usuarios-v2 .sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Lienzo ---------- */
+.vista-usuarios-v2 .lienzo {
+  grid-column: 2;
+  min-width: 0;
+  padding: 32px 28px 40px;
+}
+
+.vista-usuarios-v2 .titulo-fila {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.vista-usuarios-v2 h1 {
+  font-size: var(--fs-title);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.vista-usuarios-v2 .subtitulo-pagina {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: var(--fs-body);
+  max-width: 68ch;
+}
+.vista-usuarios-v2 .acciones-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+/* ---------- Botones y controles ---------- */
+.vista-usuarios-v2 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-height);
+  padding: 0 12px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms ease, transform 120ms ease;
+}
+.vista-usuarios-v2 .btn:hover { background: var(--raised); }
+.vista-usuarios-v2 .btn:active { transform: translateY(1px); }
+.vista-usuarios-v2 .btn-alto { height: 36px; padding: 0 14px; }
+.vista-usuarios-v2 .btn-primario {
+  background: var(--primary);
+  color: var(--primary-ink);
+  border-color: transparent;
+}
+.vista-usuarios-v2 .btn-primario:hover { background: #1f2937; }
+.vista-usuarios-v2 .btn-acento-suave {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-color: var(--accent-track);
+}
+.vista-usuarios-v2 .btn-acento-suave:hover { background: var(--accent-track); }
+.vista-usuarios-v2 .btn-bloque {
+  width: 100%;
+  height: 30px;
+  font-size: 13px;
+}
+.vista-usuarios-v2 .btn-texto {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-ink);
+  font-weight: 500;
+  cursor: pointer;
+}
+.vista-usuarios-v2 .btn-texto:hover { text-decoration: underline; text-underline-offset: 3px; }
+.vista-usuarios-v2 .btn:disabled, .btn-primario:disabled {
+  background: var(--raised);
+  color: var(--muted);
+  border-color: transparent;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- Tira de KPIs dividida ---------- */
+.vista-usuarios-v2 .kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: var(--gap);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+.vista-usuarios-v2 .kpi {
+  padding: 16px 20px;
+  min-width: 0;
+}
+.vista-usuarios-v2 .kpi + .kpi { border-left: 1px solid var(--border); }
+.vista-usuarios-v2 .kpi-etiqueta {
+  color: var(--muted);
+  font-size: var(--fs-body);
+  font-weight: 400;
+}
+.vista-usuarios-v2 .kpi-valor {
+  margin-top: 6px;
+  font-size: var(--fs-kpi);
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.vista-usuarios-v2 .kpi-principal .kpi-valor {
+  font-size: 31px;
+}
+.vista-usuarios-v2 .kpi-unidad {
+  margin-left: 4px;
+  font-size: var(--fs-body);
+  font-weight: 400;
+  color: var(--muted);
+}
+.vista-usuarios-v2 .kpi-nota {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+/* ---------- Mesa de trabajo: 1fr + riel fijo de 384px ---------- */
+.vista-usuarios-v2 .mesa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 384px;
+  gap: var(--gap);
+  align-items: start;
+  margin-top: var(--gap);
+}
+
+.vista-usuarios-v2 .columna-lista { min-width: 0; }
+
+.vista-usuarios-v2 .resumen-movil-perfil { display: none; }
+
+/* ---------- Pestañas con subrayado de 2px ---------- */
+.vista-usuarios-v2 .pestanias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.vista-usuarios-v2 .pestania {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  cursor: pointer;
+}
+.vista-usuarios-v2 .pestania:hover { color: var(--text); }
+.vista-usuarios-v2 .pestania[aria-selected="true"] {
+  color: var(--text);
+  font-weight: 600;
+}
+.vista-usuarios-v2 .pestania[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent);
+}
+.vista-usuarios-v2 .cuenta-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: var(--fs-small);
+  font-weight: 500;
+}
+.vista-usuarios-v2 .cuenta-tab:empty { display: none; }
+.vista-usuarios-v2 .pestania[data-tab="bloqueadas"] .cuenta-tab {
+  background: var(--pill-negative-bg);
+  color: var(--pill-negative-ink);
+}
+.vista-usuarios-v2 .pestania[data-tab="baja"] .cuenta-tab {
+  background: var(--pill-warning-bg);
+  color: var(--pill-warning-ink);
+}
+
+/* ---------- Barra de herramientas de la tabla ---------- */
+.vista-usuarios-v2 .herramientas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 16px;
+}
+.vista-usuarios-v2 .herramientas-izq {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.vista-usuarios-v2 .buscar {
+  position: relative;
+  width: 264px;
+}
+.vista-usuarios-v2 .buscar svg {
+  position: absolute;
+  left: 11px;
+  top: 9px;
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.vista-usuarios-v2 .buscar input {
+  width: 100%;
+  height: var(--control-height);
+  padding: 0 10px 0 34px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: var(--fs-body);
+}
+.vista-usuarios-v2 .buscar input::placeholder { color: var(--faint); }
+
+.vista-usuarios-v2 .btn.btn-filtros { display: none; }
+
+.vista-usuarios-v2 .herramientas-controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.vista-usuarios-v2 .conteo {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.vista-usuarios-v2 .filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.vista-usuarios-v2 .filtro select, .entrada, .area {
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+.vista-usuarios-v2 .filtro select {
+  height: var(--control-height);
+  padding: 0 8px;
+  color: var(--text);
+  font-size: 13px;
+}
+.vista-usuarios-v2 .sello {
+  color: var(--faint);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+.vista-usuarios-v2 .estado-alta {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-track);
+  color: var(--accent-ink);
+  font-size: 13px;
+}
+.vista-usuarios-v2 .estado-alta:empty { display: none; }
+
+/* ---------- Tabla sobre el plano abierto (sin tarjeta alrededor) ---------- */
+.vista-usuarios-v2 table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.vista-usuarios-v2 th:nth-child(1) { width: 38%; }
+.vista-usuarios-v2 th:nth-child(2) { width: 15%; }
+.vista-usuarios-v2 th:nth-child(3) { width: 21%; }
+.vista-usuarios-v2 th:nth-child(4) { width: 13%; }
+.vista-usuarios-v2 th:nth-child(5) { width: 13%; }
+
+.vista-usuarios-v2 th {
+  height: 36px;
+  padding: 0 10px;
+  text-align: left;
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.vista-usuarios-v2 td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+  font-size: var(--fs-body);
+}
+.vista-usuarios-v2 th:first-child, td:first-child { padding-left: 8px; }
+.vista-usuarios-v2 th:last-child, td:last-child { padding-right: 8px; }
+.vista-usuarios-v2 th.num, td.num, th.marcas-col, td.marcas-col { text-align: right; }
+.vista-usuarios-v2 tbody tr {
+  cursor: pointer;
+}
+.vista-usuarios-v2 tbody tr:hover td {
+  background: var(--raised);
+}
+.vista-usuarios-v2 tbody tr[aria-selected="true"] td {
+  background: var(--accent-soft);
+}
+.vista-usuarios-v2 tbody tr[aria-selected="true"] td:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.vista-usuarios-v2 tbody tr[aria-selected="true"] td:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.vista-usuarios-v2 .cuenta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.vista-usuarios-v2 .avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: hsl(var(--h) 34% 89%);
+  color: var(--text);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  flex: none;
+}
+.vista-usuarios-v2 .cuenta-texto { min-width: 0; }
+.vista-usuarios-v2 .cuenta-nombre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-weight: 500;
+  color: var(--text);
+}
+.vista-usuarios-v2 .cuenta-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vista-usuarios-v2 .perfil-celda-nombre {
+  display: block;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vista-usuarios-v2 .perfil-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vista-usuarios-v2 .ausente { color: var(--faint); }
+
+/* Marcas en la tabla: tres peldaños + razón numérica */
+.vista-usuarios-v2 .marcas-celda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.vista-usuarios-v2 .marcas {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
+}
+.vista-usuarios-v2 .marca {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--accent-track);
+}
+.vista-usuarios-v2 .marca-llena { background: var(--accent); }
+.vista-usuarios-v2 .marca-bloquea { background: var(--negative); }
+.vista-usuarios-v2 .marcas-razon {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+.vista-usuarios-v2 .marcas-razon span {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Pastillas y etiquetas de la escalera de acento */
+.vista-usuarios-v2 .pastilla {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--pill-neutral-bg);
+  color: var(--pill-neutral-ink);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  white-space: nowrap;
+  flex: none;
+}
+.vista-usuarios-v2 .pastilla-acento {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.vista-usuarios-v2 .pastilla-positiva {
+  background: var(--pill-positive-bg);
+  color: var(--pill-positive-ink);
+}
+.vista-usuarios-v2 .pastilla-bloqueada {
+  background: var(--pill-negative-bg);
+  color: var(--pill-negative-ink);
+}
+.vista-usuarios-v2 .pastilla-baja {
+  background: var(--pill-warning-bg);
+  color: var(--pill-warning-ink);
+  border: 1px solid #fde68a;
+}
+
+/* ---------- Riel derecho (384px): títulos de 16px fuera de sus tarjetas ---------- */
+.vista-usuarios-v2 .riel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+.vista-usuarios-v2 .riel-bloque {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+.vista-usuarios-v2 .riel-titulo {
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.vista-usuarios-v2 .panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.vista-usuarios-v2 .ficha-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+.vista-usuarios-v2 .ficha-cabecera > div {
+  min-width: 0;
+  flex: 1 1 180px;
+}
+.vista-usuarios-v2 .ficha-nombre {
+  font-size: var(--fs-section);
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--text);
+}
+.vista-usuarios-v2 .ficha-sub {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Escalera de sanciones (firma de Accent ladder) */
+.vista-usuarios-v2 .escalera-box {
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-track);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.vista-usuarios-v2 .escalera-box.es-bloqueado {
+  background: var(--pill-negative-bg);
+  border-color: #f5c2c0;
+}
+.vista-usuarios-v2 .escalera-tope {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-ink);
+}
+.vista-usuarios-v2 .escalera-box.es-bloqueado .escalera-tope {
+  color: var(--pill-negative-ink);
+}
+.vista-usuarios-v2 .escalera-pista {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  height: 8px;
+}
+.vista-usuarios-v2 .escalera-tramo {
+  border-radius: 999px;
+  background: var(--accent-track);
+}
+.vista-usuarios-v2 .escalera-tramo.activo { background: var(--accent); }
+.vista-usuarios-v2 .escalera-tramo.bloqueo { background: var(--negative); }
+.vista-usuarios-v2 .escalera-extremos {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+.vista-usuarios-v2 .escalera-nota {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+/* Datos de la ficha del perfil */
+.vista-usuarios-v2 .ficha-datos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding-top: 2px;
+}
+.vista-usuarios-v2 .ficha-par {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+.vista-usuarios-v2 .ficha-par dt {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+.vista-usuarios-v2 .ficha-par dd {
+  font-size: 13px;
+  color: var(--text);
+}
+.vista-usuarios-v2 .chips-categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Lista de cuentas dentro del perfil seleccionado */
+.vista-usuarios-v2 .ficha-cuentas-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--rule);
+}
+.vista-usuarios-v2 .ficha-cuentas-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.vista-usuarios-v2 .lista-filas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.vista-usuarios-v2 .fila-compacta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 45px;
+  padding: 8px 0;
+}
+.vista-usuarios-v2 .fila-compacta + .fila-compacta {
+  border-top: 1px solid var(--rule);
+}
+.vista-usuarios-v2 .fila-compacta-boton {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  padding: 8px;
+  margin: 0;
+  border-radius: 6px;
+}
+.vista-usuarios-v2 .fila-compacta-boton:hover {
+  background: var(--raised);
+}
+.vista-usuarios-v2 .fila-compacta-boton[aria-current="true"] {
+  background: var(--accent-soft);
+}
+.vista-usuarios-v2 .fila-compacta-izq {
+  min-width: 0;
+}
+.vista-usuarios-v2 .fila-compacta-nombre {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vista-usuarios-v2 .fila-compacta-sub {
+  display: block;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Estados vacío, carga y error ---------- */
+.vista-usuarios-v2 .vacio {
+  padding: 16px;
+  border: 1px dashed var(--control);
+  border-radius: var(--radius-card);
+  color: var(--muted);
+  text-align: left;
+}
+.vista-usuarios-v2 .vacio p + .btn-texto { margin-top: 8px; }
+
+/* ---------- Diálogos modales ---------- */
+.vista-usuarios-v2 .capa {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(17 24 39 / 42%);
+}
+.vista-usuarios-v2 .capa[hidden] { display: none; }
+.vista-usuarios-v2 .dialogo {
+  width: min(640px, 100%);
+  max-height: min(860px, calc(100svh - 32px));
+  overflow: auto;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 16%); /* taste-skill-ignore: sombra solo del diálogo, que flota */
+}
+.vista-usuarios-v2 .dialogo h2 {
+  font-size: var(--fs-section);
+  font-weight: 600;
+}
+.vista-usuarios-v2 .dialogo > p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.vista-usuarios-v2 .formulario {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+.vista-usuarios-v2 .campo {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.vista-usuarios-v2 .campo-ancho { grid-column: 1 / -1; }
+.vista-usuarios-v2 .campo label, .campo legend {
+  font-size: var(--fs-body);
+  font-weight: 500;
+}
+.vista-usuarios-v2 .pista {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+.vista-usuarios-v2 .entrada, .area {
+  width: 100%;
+  padding: 0 12px;
+  font-size: var(--fs-body);
+}
+.vista-usuarios-v2 .entrada { height: 38px; }
+.vista-usuarios-v2 .area {
+  min-height: 76px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.vista-usuarios-v2 .casillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.vista-usuarios-v2 .casillas label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+.vista-usuarios-v2 .alerta {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--pill-negative-ink);
+  font-size: 13px;
+}
+.vista-usuarios-v2 .dialogo-acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
