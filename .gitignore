@@ -28,3 +28,7 @@ Thumbs.db
 *.log
 .impeccable/
 PRODUCT.md
+
+# Ignore Rama David
+.taste-skill/
+prototipos/
