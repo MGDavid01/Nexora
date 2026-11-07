@@ -14,7 +14,7 @@ from app.schemas.usuarios import (
     UsuarioDetalleOut,
     UsuarioListaOut,
 )
-from app.services.marcas import aplicar_marca, marcas_del_usuario
+from app.services.marcas import aplicar_marca, marcas_del_usuario, perfil_ligado
 
 
 async def listar_usuarios(session: AsyncSession) -> list[UsuarioListaOut]:
@@ -58,6 +58,24 @@ async def editar_cuenta(session: AsyncSession, usuario_id: UUID, datos: EditarCu
 async def registrar_marca(session: AsyncSession, usuario_id: UUID, datos: MarcaIn) -> UsuarioDetalleOut:
     usuario = await _usuario(session, usuario_id)
     await aplicar_marca(session, usuario, datos)
+    return await detalle_usuario(session, usuario.id)
+
+
+async def desbloquear_perfil(session: AsyncSession, usuario_id: UUID) -> UsuarioDetalleOut:
+    usuario = await _usuario(session, usuario_id)
+    if usuario.tipo_cuenta == TipoCuenta.administrador:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="El desbloqueo aplica a un perfil cliente o proveedor",
+        )
+    perfil = await perfil_ligado(session, usuario)
+    if not perfil.bloqueado:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="El perfil no está bloqueado",
+        )
+    perfil.bloqueado = False
+    await session.flush()
     return await detalle_usuario(session, usuario.id)
 
 
