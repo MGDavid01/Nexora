@@ -159,9 +159,9 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 | `uso_indebido_reclamacion` | Uso indebido de reclamación | Ambos. Abuso del trámite de RN-017. |
 | `alcance_distinto_solicitud` | El trabajo pedido no corresponde a la solicitud | Cliente. En el sitio piden algo distinto a lo publicado o cotizado. El proveedor puede cancelar el servicio (RN-007) y, en un acto aparte, abrir reclamación (RN-017). |
 
-### RN-012 Ubicación del proveedor
-- Cuando: se consulta un proveedor.
-- Entonces: el mapa (OpenStreetMap) muestra su ubicación dentro de Nexora.
+### RN-012 Ubicación
+- Cuando: hay ubicación de un perfil o de una solicitud.
+- Entonces: se **guarda** (OpenStreetMap / geocodificación) y se **muestra** en el mapa dentro de Nexora. Calle, colonia, ciudad, estado y código postal siguen obligatorios. Si hace falta latitud y longitud para el punto, se persisten (Andrés, modelo).
 
 ### RN-013 Archivos
 - Cuando: hay fotos o documentos de perfil, proveedor o evidencia.
@@ -175,8 +175,9 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
   - Crea y edita usuarios de un perfil proveedor, con función `administrativo` o `técnico` (RN-002, ADR-031).
   - Consulta usuarios, proveedores, solicitudes, cotizaciones, servicios, reportes, calificaciones, advertencias, sanciones, reclamaciones e ingresos simulados.
   - Registra advertencias y sanciones (RN-011), levanta un bloqueo (RN-003) y procesa una baja voluntaria (RN-015).
-  - Opera dispositivos ESP32: autorizar, consultar datos, enviar comandos y consultar estado (ADR-033). El flujo web no depende del dispositivo (ADR-003).
-  - Consulta el log de auditoría: altas, ediciones de cuenta, marcas, desbloqueo, baja procesada, edición de tramos (RN-016), operaciones de dispositivos y consultas de historial acotadas (RN-015 y ADR-023). No es un volcado de toda la API ni un listado libre de historiales.
+  - Opera dispositivos ESP32: asignar al perfil (alquiler, ADR-042), autorizar, consultar datos, enviar comandos y consultar estado (ADR-033). El flujo web no depende del dispositivo (ADR-003).
+  - Edita tarifas: tramos de comisión (RN-016) y N % del alquiler (RN-018 Alquiler de ESP32). Cada cambio se audita.
+  - Consulta el log de auditoría: altas, ediciones de cuenta, marcas, desbloqueo, baja procesada, edición de tarifas, operaciones de dispositivos y consultas de historial acotadas (RN-015 y ADR-023). No es un volcado de toda la API ni un listado libre de historiales.
 - Esas acciones se auditan.
 - En la barra no hay un icono por cada consulta. Agrupación de herramientas: ADR-039. No cambia qué puede hacer el administrador.
 - El historial de un perfil lo ve solo al atender una advertencia, sanción, bloqueo o reclamación (RN-015, RN-017).
@@ -184,7 +185,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 ### RN-016 Ingresos simulados
 - Cuando: un servicio queda `cerrado`.
 - Entonces: la herramienta de ingresos del administrador contabiliza una comisión simulada sobre el costo (MXN) de la cotización aceptada de ese servicio, «como si» hubiera habido un pago real. No hay cobro, pasarela ni movimiento de dinero.
-- Solo entran servicios `cerrado`. Cotizaciones aceptadas con servicio aún abierto no suman al total; no hay vista de proyección en el MVP.
+- Solo entran servicios `cerrado`. Cotizaciones aceptadas con servicio aún abierto no suman al total; no hay vista de proyección en esta fase.
 - Un servicio `cancelado` no genera comisión simulada.
 - El porcentaje es escalonado según el costo de esa cotización. Valores por defecto (ADR-027):
 
@@ -195,7 +196,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 | $8,000 – $24,999 | 8 % |
 | $25,000 o más | 9 % |
 
-- El administrador edita en la UI los tramos y sus porcentajes. Cada cambio se audita. Los ingresos ya contabilizados no se recalculan al cambiar la tabla; el % vigente al cerrar el servicio es el que queda registrado.
+- El administrador edita en la UI los tramos y sus porcentajes (misma entidad de tarifas que el N % de RN-018 Alquiler de ESP32). Cada cambio se audita. Los ingresos ya contabilizados no se recalculan al cambiar la tabla; el % vigente al cerrar el servicio es el que queda registrado.
 
 ### RN-015 Datos personales
 - Se guardan cuenta (nombre, correo, teléfono, contraseña hasheada), perfil, ubicación, solicitudes, cotizaciones, servicios, historial, calificaciones, advertencias, sanciones y la referencia de archivos en Cloudinary.
@@ -229,7 +230,21 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 - Abrir una reclamación no cancela el servicio. Cancelar el servicio no abre una reclamación. Son dos actos (ADR-035).
 - El administrador atiende la reclamación `abierta`. En ese contexto ve el historial de ambos perfiles de ese servicio. Cada consulta se audita. Eso no es un listado libre de historiales.
 - Al cerrar elige un desenlace: **sin marca** o **con marca** (advertencia o sanción) sobre el perfil que corresponda. Si hay marca, aplica RN-011.
-- Fuera de este MVP: chat o hilo, apelación del 4.5, adjuntos extra (valen las evidencias ya ligadas al servicio), SLA, reasignar técnico, indemnizaciones.
+- Fuera de esta fase: chat o hilo, apelación del 4.5, adjuntos extra (valen las evidencias ya ligadas al servicio), SLA, reasignar técnico, indemnizaciones.
+
+### RN-018 Alquiler de ESP32
+- Cuando: el administrador asigna un dispositivo a un perfil cliente o proveedor.
+- Entonces: ese perfil **alquila** el aparato (no es una suscripción ni una cuota fija). ADR-033: el admin es quien asigna.
+- El cobro es simulado: gasto de tokens de IA + **N %**. El administrador edita N % en tarifas (la misma entidad que los tramos de RN-016 Ingresos simulados). No hay pasarela.
+- RN-016 (comisión sobre la cotización al cerrar) es **otra** cuenta. No se mezclan los montos.
+- Sin aparato asignado, el perfil sigue usando la web.
+
+### RN-019 Canal de voz
+- Cuando: un perfil con ESP32 alquilado habla al aparato.
+- Entonces: audio del ESP32 → texto (STT) → agente de IA (Deepseek) → texto → voz (TTS) → bocina del ESP32.
+- Cliente: el agente ayuda a dejar una **solicitud** más clara; la solicitud sigue siendo RN-004 Publicar solicitud (mismos campos y estados).
+- Proveedor / técnico: el agente ayuda a dictar el **informe de servicio** (RN-008 Informe de servicio al cerrar).
+- La web puede publicar, cotizar y cerrar **sin** el aparato (ADR-003).
 
 ## Campos obligatorios
 
@@ -239,7 +254,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 
 **Perfil proveedor:** tipo `persona | empresa`, nombre comercial o razón social, descripción de servicios, al menos una categoría.
 
-**Ubicación** (obligatoria en ambos perfiles): calle y número, colonia, ciudad, estado, código postal.
+**Ubicación** (obligatoria en ambos perfiles y en la solicitud): calle y número, colonia, ciudad, estado, código postal. Se guarda y se muestra con OpenStreetMap; latitud y longitud si el punto del mapa las necesita.
 
 **Usuario del proveedor,** además: función `administrativo | técnico`.
 

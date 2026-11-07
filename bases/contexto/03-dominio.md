@@ -87,8 +87,12 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 - Hay que agregarla al DER.
 
 ### DispositivoEsp32
-- Equipo de campo autorizado, ligado a la captura del informe de servicio vía ESP-Claw.
+- Equipo de campo. El administrador lo asigna a un perfil cliente o a un perfil proveedor (alquiler, RN-018 Alquiler de ESP32).
+- Canal de voz ida y vuelta hacia el agente de IA (RN-019 Canal de voz).
 - Hay que agregarlo al DER.
+
+### Tarifa
+- Tramos de comisión al cerrar un servicio (RN-016 Ingresos simulados) y N % del alquiler de ESP32 (RN-018). El admin los edita. Hay que agregarla al DER.
 
 ## Relaciones vigentes
 
@@ -108,6 +112,7 @@ Perfil 1──N Reporte
 Servicio 1──2 Calificacion       (una de cada lado)
 Servicio 1──N Reclamacion
 Perfil 1──N Sancion
+Perfil 0..1──N DispositivoEsp32   (alquiler; cliente o proveedor)
 ```
 
 La entidad `Tecnico` del dibujo original queda reemplazada por el usuario del perfil proveedor con función técnico (ADR-007).

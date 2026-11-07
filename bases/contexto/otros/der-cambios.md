@@ -1,6 +1,6 @@
 # Cambios respecto al DER original
 
-El dibujo de [`bases/NEXORA_DR_ER-DER.jpg`](../../bases/NEXORA_DR_ER-DER.jpg) es la base. El modelo vigente está en [`03-dominio.md`](../03-dominio.md). Este archivo solo lista el delta; las reglas viven allá y en los ADR de [`06-decisiones.md`](../06-decisiones.md).
+El dibujo de [`bases/NEXORA_DR_ER-DER.jpg`](../../NEXORA_DR_ER-DER.jpg) es la base. El modelo vigente está en [`03-dominio.md`](../03-dominio.md). Este archivo solo lista el delta; las reglas viven allá y en los ADR de [`06-decisiones.md`](../06-decisiones.md).
 
 Fecha del contraste: 2026-10-27.
 
@@ -22,7 +22,8 @@ No estaban dibujadas.
 | `Sancion` | Advertencia o sanción sobre un perfil cliente o proveedor. A la tercera marca distinta se bloquean todos sus usuarios. | ADR-008, ADR-010, ADR-022 |
 | `Reporte` | Medición de una acción del perfil. Distinto del informe de servicio y del historial. | ADR-008, ADR-038 |
 | `InformeServicio` | Documento de campo al cerrar. Antes `HistorialServicio`. | ADR-038 |
-| `DispositivoEsp32` | Equipo de campo del perfil proveedor, ligado a la captura por ESP-Claw. | ADR-003, ADR-008 |
+| `DispositivoEsp32` | Equipo alquilado a un perfil cliente o proveedor. Canal de voz (RN-018, RN-019). | ADR-003, ADR-008, ADR-041, ADR-042 |
+| `Tarifa` | Tramos de comisión (RN-016) y N % de alquiler ESP32 (RN-018). | ADR-027, ADR-042 |
 | `Participacion` | La relación `Notifica` (proveedor N:M solicitud) es tabla, con estado: `pendiente`, `rechazada`, `aceptada`, `vencida`, `retirada` o `cotizada`. | ADR-016 |
 | Usuario administrador | Cuenta de plataforma sin perfil cliente ni perfil proveedor. | ADR-007 |
 | `Reclamacion` | Ligada a un servicio. La abre el cliente o un administrativo del proveedor. `abierta` o `cerrada`. | ADR-035 |

@@ -1,10 +1,10 @@
 # Contexto Nexora (para la IA)
 
-Capa operativa de contexto. Son bases para decidir y codear sin inventar requisitos.
+Capa operativa de contexto. Resume y decide; no duplica los PDF.
 
 ## Fuentes crudas
 
-Material original (SRS, DER, plan básico) vive en [`../bases/`](../bases/). Este directorio resume y decide; no duplica los PDF.
+Material original (SRS, DER, plan básico) vive en el padre [`../`](../) (`bases/`). El equipo vive en [`../equipo/`](../equipo/README.md).
 
 | Fuente | Uso |
 |--------|-----|
@@ -37,4 +37,4 @@ Material original (SRS, DER, plan básico) vive en [`../bases/`](../bases/). Est
 
 ## Reglas Cursor
 
-Las normas cortas viven en [`.cursor/rules/`](../.cursor/rules/).
+Las normas cortas viven en [`.cursor/rules/`](../../.cursor/rules/).

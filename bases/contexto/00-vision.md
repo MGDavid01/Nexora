@@ -26,7 +26,7 @@ Decisión de equipo (2026-10-27, ADR-028): el solicitante es **persona o empresa
 - Sustituto físico del técnico en el lugar del servicio.
 - Gestión integral de inventarios empresariales del proveedor.
 
-El ESP32-S3 con ESP-Claw **sí entra en el MVP**, como complemento de captura en campo, no como el núcleo de la intermediación. Ver ADR-003.
+El ESP32-S3 con ESP-Claw **entra en esta entrega**: canal de voz alquilado (cliente y proveedor) hacia un agente de IA. No sustituye la web. Ver ADR-003, ADR-041 y ADR-042.
 
 ## Objetivos del plan básico (materia)
 

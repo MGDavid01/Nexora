@@ -1,6 +1,6 @@
 # Establecido
 
-Hechos cerrados al 2026-11-01. Lo que sigue en duda está en `02-pendiente.md`. Los porqués están en `06-decisiones.md`.
+Hechos cerrados al 2026-11-07. Lo que sigue en duda está en `02-pendiente.md`. Los porqués están en `06-decisiones.md`. Esta entrega de cuatrimestre es el **producto**, no un MVP recortado.
 
 ## Producto
 
@@ -30,9 +30,10 @@ Hechos cerrados al 2026-11-01. Lo que sigue en duda está en `02-pendiente.md`. 
 - Datos personales: se conservan mientras la cuenta está activa. Baja voluntaria: la pide el usuario del perfil cliente o un administrativo del perfil proveedor; el administrador de plataforma la procesa. El corte de acceso y el reloj de 12 meses corren al procesar, no al pedir. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial cerrado se queda sin esos datos de contacto. El detalle está en `04-logica-negocio.md` (ADR-024, ADR-032).
 - El DER de `bases/` es una base. Se agregan, modifican o eliminan entidades cuando el desarrollo lo pida.
 - Panel de administración: las mismas facultades de RN-014. En la barra del administrador: Inicio, Usuarios, Trabajos, Reportes, Ingresos, Dispositivos y Auditoría. Usuarios es el padrón (altas, edición, marcas y bloqueo del perfil). Trabajos junta solicitud, cotización y servicio; el detalle de ese caso muestra calificación, reclamación y la marca originada en ese caso. Auditoría es el log (ADR-034), no el historial. El detalle vive en `04-logica-negocio.md` (RN-014, ADR-029 a ADR-034, ADR-039).
-- No hay pasarela de pagos en esta fase (proyecto académico). Sí hay una herramienta de ingresos para el administrador que calcula comisión «como si» los pagos fueran reales, sobre el costo de las cotizaciones ligadas a servicios cerrados (ADR-026). La comisión es escalonada (5 % a 9 % por defecto) y el administrador la edita en la UI (ADR-027). El detalle vive en `04-logica-negocio.md`.
+- No hay pasarela de pagos en esta fase (proyecto académico). Sí hay ingresos simulados: comisión escalonada 5–9 % sobre la cotización al cerrar el servicio (ADR-026, ADR-027) y, aparte, tokens de IA + N % por el alquiler del ESP32 (ADR-042). El administrador edita tramos y N % en tarifas. El detalle vive en `04-logica-negocio.md`.
+- El administrador asigna un ESP32 a un perfil cliente o proveedor (alquiler, no suscripción). Canal de voz en esta fase: audio → texto → agente Deepseek → voz → bocina (ADR-041). La web no depende del aparato (ADR-003).
 - Idioma: español.
-- La interfaz del MVP es responsive (escritorio y celular).
+- La interfaz es responsive (escritorio y celular).
 
 ## Stack
 
@@ -46,10 +47,10 @@ Decisión de equipo: vale lo nombrado en el SRS §3.1.3, por encima del §2.1 qu
 | Acceso a datos | SQLModel, Alembic, asyncpg y psycopg2-binary |
 | Auth | JWT (clientes web y dispositivos). Contraseñas con hash, nunca en texto plano. |
 | Archivos | Cloudinary (fotos de perfil, documentación, evidencias). En BD solo la referencia. |
-| Mapas | OpenStreetMap para ubicación de proveedor o empresa. |
-| Correo | SMTP o API (SendGrid o Mailgun) para notificaciones, confirmaciones, recordatorios y recuperación de contraseña. El proveedor concreto de correo no está elegido. |
-| IA | API externa para estimaciones y análisis a partir de reportes. El proveedor del modelo no está elegido. |
-| Campo | ESP32-S3 + framework ESP-Claw, dentro del MVP. Wi-Fi, backend por REST/JSON y autenticación por JWT o API key. |
+| Mapas | OpenStreetMap: guardar y mostrar ubicaciones (ADR-040). |
+| Correo | Google (notificaciones, confirmaciones, recordatorios, recuperación de contraseña). |
+| IA | Deepseek (API key). Estimaciones a partir de reportes y agente de voz del ESP32 (ADR-040, ADR-041). |
+| Campo | ESP32-S3 + ESP-Claw. Wi-Fi, REST/JSON, JWT o API key. Canal de voz ida y vuelta. El admin asigna el aparato al perfil. |
 
 ## Interfaz
 
@@ -63,7 +64,7 @@ Decisión de equipo: vale lo nombrado en el SRS §3.1.3, por encima del §2.1 qu
 
 - Sin contabilidad de proveedores.
 - Sin venta directa de refacciones o productos.
-- Sin hardware especializado como núcleo del producto. El ESP32 es complemento de captura, y sí entra en esta fase.
+- Sin hardware especializado como núcleo del producto. El ESP32 es canal de voz alquilado; la intermediación web no depende de él.
 - Sin sustituir al técnico en sitio.
 - Sin inventario empresarial completo del proveedor.
 - Funciones limitadas por rol.

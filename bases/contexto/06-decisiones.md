@@ -370,3 +370,30 @@ El estado vigente también está en `01-establecido.md`.
 - Motivo: la barra cabe en un rail vertical; solicitud → cotización → servicio es un expediente; sanción es del perfil; calificación y reclamación son del servicio; el log no es un padrón.
 - Alternativas descartadas: un icono por facultad de RN-014; mezclar Reportes con Trabajos; dejar Sanciones como icono aparte; llamar Usuarios «Personas y empresas»; meter Auditoría dentro de Trabajos o de Usuarios.
 - Consecuencias: `01`, RN-014 (facultades iguales; agrupación de UI). Rutas sueltas de esas consultas redirigen a Usuarios, Trabajos o Auditoría.
+
+### ADR-040 Proveedores concretos (cierra P-013)
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: ADR-002 dejó abiertos el modelo de IA, el correo y si OSM lleva API key.
+- Decisión: IA = **Deepseek** (API key). Correo = **Google**. Mapas = **OpenStreetMap** para **guardar y mostrar** ubicaciones.
+- Motivo: el equipo lo eligió para la entrega de cuatrimestre.
+- Alternativas descartadas: SendGrid/Mailgun; modelo de IA sin elegir; OSM solo como tesela sin persistir el punto.
+- Consecuencias: P-013 cerrado. Claves en `.env`, nunca en git. RN-012 Ubicación pasa a guardar y mostrar. Estimaciones y agente de voz usan Deepseek.
+
+### ADR-041 Canal de voz ESP32 (cierra P-014)
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: ADR-003 ponía el ESP32 como captura de voz para el informe. El equipo definió ida y vuelta.
+- Decisión: el flujo es ESP32 (audio) → STT → agente Deepseek → TTS → bocina del ESP32. Lo usan **cliente** (armar solicitud, RN-004) y **proveedor/técnico** (informe, RN-008). Entra en **esta** entrega, no después. La web sigue pudiendo operar sin el aparato (ADR-003 no se revierte).
+- Motivo: producto completo del cuatrimestre, no un recorte tipo MVP.
+- Alternativas descartadas: solo captura hacia el informe; dejar el canal de voz para una fase posterior.
+- Consecuencias: P-014 cerrado. RN-019 Canal de voz. Firmware + STT/TTS/agente. No se inventan sensores extra (ni GPS ni cámara).
+
+### ADR-042 Alquiler de ESP32 (cierra P-022)
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: se barajó una suscripción fija. Un fijo puede no cubrir tokens.
+- Decisión: no es suscripción. El admin **asigna** el aparato a un perfil cliente o proveedor (ADR-033). Cobro **simulado**: gasto de tokens + **N %**. El admin edita N % en la entidad de **tarifas** (junto a los tramos de RN-016). Sin pasarela. Distinto de la comisión 5–9 % al cerrar el servicio.
+- Motivo: el costo real es el de la IA; N % deja margen sin cuota ciega.
+- Alternativas descartadas: cuota mensual fija; mezclar el alquiler con la comisión de la cotización.
+- Consecuencias: P-022 cerrado. RN-018 Alquiler de ESP32. Tablas: Andrés. API de alquiler, estatus y servicios externos: David. Backend cliente/proveedor y aplicar N % y comisión: Héctor.
