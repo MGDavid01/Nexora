@@ -32,3 +32,5 @@ PRODUCT.md
 # Ignore Rama David
 .taste-skill/
 prototipos/
+skills-lock.json
+.agents/
