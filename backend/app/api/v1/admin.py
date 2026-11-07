@@ -22,7 +22,13 @@ from app.services.trabajos import (
     obtener_expediente,
     registrar_marca_del_caso,
 )
-from app.services.usuarios import detalle_usuario, editar_cuenta, listar_usuarios, registrar_marca
+from app.services.usuarios import (
+    desbloquear_perfil,
+    detalle_usuario,
+    editar_cuenta,
+    listar_usuarios,
+    registrar_marca,
+)
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -115,6 +121,17 @@ async def alta_marca(
 ) -> UsuarioDetalleOut:
     detalle = await registrar_marca(session, usuario_id, datos)
     logger.info("administrador %s registró una marca sobre la cuenta %s", administrador.id, usuario_id)
+    return detalle
+
+
+@router.post("/usuarios/{usuario_id}/desbloqueo", response_model=UsuarioDetalleOut)
+async def desbloquear_cuenta(
+    usuario_id: UUID,
+    session: SessionDep,
+    administrador: AdministradorActual,
+) -> UsuarioDetalleOut:
+    detalle = await desbloquear_perfil(session, usuario_id)
+    logger.info("administrador %s desbloqueó el perfil de la cuenta %s", administrador.id, usuario_id)
     return detalle
 
 
