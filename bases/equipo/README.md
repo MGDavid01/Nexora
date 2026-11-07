@@ -16,9 +16,9 @@ Lee: [`fronteras.md`](fronteras.md) → tu archivo → [`actividades.md`](activi
 |---------|------|--------|
 | Ariel | Todo el frontend | [ArielThi](https://github.com/ArielThi) |
 | Andrés | Seed, base de datos (entidades y migraciones), ESP32 | [ToastStoler](https://github.com/ToastStoler) |
-| Héctor | Backend de cliente y proveedor | [HectorMtz01](https://github.com/HectorMtz01) |
+| Héctor | Backend de cliente, `empresa` y `negocio` | [HectorMtz01](https://github.com/HectorMtz01) |
 | David | Backend de administrador y servicios externos | [MGDavid01](https://github.com/MGDavid01) |
 
 Servicios externos (David): correo Google, Cloudinary, OpenStreetMap, Deepseek.
 
-El flujo web se entrega aunque falte el mail, Cloudinary o el ESP32.
+`tipo_cuenta`: `cliente | empresa | negocio | administrador` (ADR-044). El flujo web se entrega aunque falte el mail, Cloudinary o el ESP32.

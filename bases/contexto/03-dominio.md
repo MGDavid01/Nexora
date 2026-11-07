@@ -8,9 +8,13 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 |---------|------------------------|
 | Usuario solicitante | Usuario del perfil cliente. Publica solicitudes. |
 | Perfil cliente | Lado solicitante. Persona o empresa. Tiene un solo usuario. |
-| Perfil proveedor | Organización que ofrece soporte. Tiene muchos usuarios. |
-| Usuario de proveedor | Cuenta dentro del perfil proveedor. Función: administrativo o técnico. |
-| Técnico | Usuario del perfil proveedor que realiza el servicio. |
+| `tipo_cuenta` | `cliente`, `empresa`, `negocio` o `administrador`. El valor `proveedor` queda fuera de uso. No confundir `empresa` aquí con `PerfilCliente.tipo = empresa`. |
+| Perfil proveedor | Lo tienen las cuentas `empresa` y `negocio`. |
+| Empresa (`tipo_cuenta`) | Proveedor multi-usuario (administrativos y técnicos). |
+| Negocio (`tipo_cuenta`) | Proveedor de una sola cuenta, función `administrativo_campo`. |
+| Usuario de proveedor | En `empresa`: función `administrativo` o `tecnico`. En `negocio`: `administrativo_campo`. |
+| Administrativo de campo | Única cuenta de un `negocio`. Oficina, campo y reclamación. |
+| Técnico | En `empresa`, usuario con función `tecnico` que realiza el servicio. En `negocio`, el `administrativo_campo` es el técnico del servicio. |
 | Administrador de plataforma | Supervisa el sistema. No pertenece a un perfil cliente ni proveedor. |
 | Solicitud | Petición publicada por un perfil cliente. Puede recibir varias cotizaciones. |
 | Cotización | Propuesta de un proveedor con costo y condiciones. |
@@ -35,7 +39,7 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 - Tiene ubicación y equipos de cómputo (1:N).
 
 ### PerfilProveedor
-- Muchos usuarios (administrativos y técnicos).
+- Si `tipo_cuenta = empresa`: muchos usuarios (administrativos y técnicos). Si `tipo_cuenta = negocio`: un solo usuario (`administrativo_campo`) (ADR-044).
 - N:M con `CategoriaServicio`.
 - N:M `Notifica` con `Solicitud`. Cada participación tiene un estado: `pendiente`, `rechazada`, `aceptada`, `vencida`, `retirada` o `cotizada` (ADR-016).
 
@@ -98,7 +102,7 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 
 ```text
 Usuario 1──1 PerfilCliente
-Usuario N──1 PerfilProveedor   (muchos usuarios por perfil proveedor)
+Usuario N──1 PerfilProveedor   (empresa: muchos; negocio: 1──1)
 Usuario 1──N TokenRecuperacion
 PerfilCliente 1──N EquipoComputo
 PerfilCliente 1──N Solicitud
@@ -120,7 +124,7 @@ La entidad `Tecnico` del dibujo original queda reemplazada por el usuario del pe
 ## Invariantes
 
 - Una solicitud la crea un perfil cliente.
-- Un usuario no tiene los dos perfiles.
+- Un usuario no tiene los dos perfiles. Un `negocio` no tiene un segundo usuario.
 - Varios proveedores pueden cotizar la misma solicitud abierta. Aceptar no la reserva. Solo se asigna al elegir una cotización enviada.
 - Tras aceptar hay 24 horas para cotizar. Al vencer, o si el cliente retira esa participación, la solicitud sigue abierta.
 - Denegar oculta la solicitud para ese proveedor y avisa al cliente. No cierra la solicitud.

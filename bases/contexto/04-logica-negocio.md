@@ -5,20 +5,23 @@ Reglas que el SRS afirma o que el equipo cerró.
 ## Reglas
 
 ### RN-001 Registro de solicitante
-- Cuando: el administrador de plataforma registra un solicitante desde su vista.
+- Cuando: el administrador de plataforma registra un solicitante desde su vista (`tipo_cuenta = cliente`).
 - Entonces: se crea un perfil cliente con un solo usuario. El alta pide los campos de la sección Campos obligatorios y se rechaza si falta uno o es inválido.
 - El solicitante no se registra por su cuenta.
 
 ### RN-002 Registro de proveedor
-- Cuando: el administrador de plataforma registra un proveedor desde su vista.
-- Entonces: se crea un perfil proveedor con al menos un usuario. La primera cuenta queda como administrativa. La ficha describe los servicios que ofrece y se liga a solicitudes, cotizaciones, servicios, calificaciones e historial.
-- Después del alta, un administrativo de ese perfil puede crear más usuarios del mismo perfil, administrativos o técnicos. El administrador de plataforma también puede crearlos y editarlos (RN-014). No hay flujo de petición empresa → Nexora (ADR-031).
+- Cuando: el administrador de plataforma registra un proveedor desde su vista, elige `tipo_cuenta` `empresa` o `negocio`.
+- Entonces: se crea un perfil proveedor. La ficha describe los servicios que ofrece y se liga a solicitudes, cotizaciones, servicios, calificaciones e historial.
+- `empresa`: al menos un usuario; la primera cuenta queda como `administrativo`. Después del alta, un administrativo de ese perfil puede crear más usuarios del mismo perfil, administrativos o técnicos. El administrador de plataforma también puede crearlos y editarlos (RN-014, ADR-031).
+- `negocio`: un solo usuario con función `administrativo_campo` (etiqueta «Administrativo de Campo»). Nadie crea extras en ese perfil (ADR-044).
 - Un usuario de este perfil no puede ser además perfil cliente.
 - La persona o empresa no se registra por su cuenta.
+- La primera cuenta es la creada en ese alta. No se puede dar de baja como usuario. Solo deja de entrar si se procesa la baja de perfil (RN-015, ADR-043).
+- Conversión solo `empresa` ↔ `negocio`: la pide un administrativo de esa `empresa` o el `administrativo_campo` de ese `negocio`, sobre **ese** perfil. El administrador de plataforma autoriza o rechaza. El pedido queda visible; el cambio de `tipo_cuenta` y de `funcion` corre al **autorizar**. Rechazar no cambia nada. Al autorizar `empresa` → `negocio`: permanece la primera cuenta (`administrativo_campo`); las extras se dan de baja como usuario (dejan de entrar al momento, sin 12 meses); si un extra es técnico de un servicio activo, se reasigna en el mismo acto a quien permanece; si hay más de un usuario, la autorización incluye el listado a eliminar; sin esa confirmación no se autoriza. Al autorizar `negocio` → `empresa`: esa cuenta pasa a `administrativo` y ya puede sumar extras. No hay conversión desde/hacia `cliente` ni `administrador` (ADR-044).
 
 ### RN-003 Acceso por rol
 - Cuando: un usuario autenticado entra a una función.
-- Entonces: solo ve y ejecuta lo de su lugar: cliente, usuario de un proveedor (administrativo o técnico) o administrador de plataforma.
+- Entonces: solo ve y ejecuta lo de su lugar: `cliente`; `empresa` (`administrativo` o `tecnico`); `negocio` (`administrativo_campo`); o administrador de plataforma.
 - La API autentica con JWT o API key a clientes web y a dispositivos autorizados.
 - Con el perfil bloqueado por tres marcas distintas, ninguno de sus usuarios opera. Esa cuenta no puede crear ni unirse a otro perfil. El administrador de plataforma levanta el bloqueo cuando Nexora atiende el contacto. El conteo de marcas no vuelve a cero al desbloquear. Tres marcas son bloqueo, no baja (ADR-032).
 
@@ -50,12 +53,14 @@ Reglas que el SRS afirma o que el equipo cerró.
 ### RN-007 Confirmación y seguimiento
 - Cuando: el cliente acepta una cotización.
 - Entonces: la solicitud pasa a `asignada`, nace el servicio en `pendiente` y las demás cotizaciones `enviada` pasan a `descartada`.
-- Antes de pasar a `en_curso` el servicio tiene un técnico de ese mismo perfil. Administrativo o técnico pueden mover los estados; el técnico registrado es quien realiza el servicio.
+- Antes de pasar a `en_curso` el servicio tiene un técnico de ese mismo perfil. En `empresa`, el técnico registrado es un usuario `tecnico`; administrativo o técnico pueden mover los estados. En `negocio`, el `administrativo_campo` es el técnico del servicio (`tecnico_usuario_id`): mueve estados, registra el informe y consulta historial como asignado y como lado administrativo (ADR-044).
 - Recorrido: `pendiente` → `en_curso` → `pendiente_informe` → `cerrado`.
 - Al pasar a `cerrado` se registra el informe de servicio, la solicitud pasa a `cerrada` y cada lado queda calificado (RN-009).
 - Cliente o proveedor pueden cancelar solo desde `pendiente` o `en_curso`. La otra parte recibe aviso, el servicio queda `cancelado` y la solicitud pasa de `asignada` a `cancelada`. La cotización aceptada se conserva como antecedente.
 - Cancelar el servicio y abrir una reclamación son actos distintos (ADR-035). Uno no dispara el otro.
-- Desde `pendiente_informe` no se cancela: se completa el informe de servicio y se cierra.
+- Desde `pendiente_informe` no se cancela: se completa el informe de servicio y se cierra. Excepción: al procesar la baja de perfil de un `negocio` (RN-015, ADR-044).
+- Al dar de baja al técnico de un servicio activo (baja de usuario en una `empresa`, RN-015), en el mismo acto un administrativo de ese perfil asigna otro técnico del mismo perfil. El estado del servicio no cambia. Sin ese reemplazo no hay baja (ADR-043).
+- Al procesar la baja de perfil de un `negocio`: si hay servicio `pendiente` o `en_curso`, se cancela (aviso, servicio `cancelado`, solicitud `asignada` → `cancelada`); la cotización aceptada se conserva. Si está en `pendiente_informe`, se registra un informe con descripción «Este servicio fue cancelado y no se tiene datos precisos. Los cambios son desconocidos.», tipo `otro servicio`, técnico = la cuenta del negocio; el servicio pasa a `cancelado`; la solicitud `asignada` → `cancelada`; no hay calificación mutua ni comisión simulada (ADR-044).
 
 ## Estados
 
@@ -170,11 +175,11 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 ### RN-014 Administración
 - Cuando: un administrador de plataforma entra al panel.
 - Entonces, dentro de sus permisos:
-  - Registra perfiles cliente y perfiles proveedor (RN-001, RN-002) y a otros administradores de plataforma (ADR-030).
-  - Edita cuentas ya dadas de alta: nombre, correo único, teléfono y contraseña. No cambia `tipo_cuenta` ni mueve a un usuario de cliente a proveedor (ADR-029).
-  - Crea y edita usuarios de un perfil proveedor, con función `administrativo` o `técnico` (RN-002, ADR-031).
+  - Registra cuentas según `tipo_cuenta` `cliente`, `empresa` o `negocio` (RN-001, RN-002) y a otros administradores de plataforma (ADR-030).
+  - Edita cuentas ya dadas de alta: nombre, correo único, teléfono y contraseña. No cambia `tipo_cuenta` salvo autorizar o rechazar la conversión `empresa` ↔ `negocio` (RN-002, ADR-044). No pasa un usuario de cliente a empresa/negocio ni hacia administrador (ADR-029 acotado).
+  - Crea y edita usuarios extras solo en una `empresa`, con función `administrativo` o `tecnico` (RN-002, ADR-031). No crea extras en un `negocio`.
   - Consulta usuarios, proveedores, solicitudes, cotizaciones, servicios, reportes, calificaciones, advertencias, sanciones, reclamaciones e ingresos simulados.
-  - Registra advertencias y sanciones (RN-011), levanta un bloqueo (RN-003) y procesa una baja voluntaria (RN-015).
+  - Registra advertencias y sanciones (RN-011), levanta un bloqueo (RN-003) y procesa una baja de perfil (RN-015, ADR-032). No ejecuta la baja de usuario de cuentas extra de una `empresa` (eso lo hace un administrativo de ese perfil; RN-015, ADR-043).
   - Opera dispositivos ESP32: asignar al perfil (alquiler, ADR-042), autorizar, consultar datos, enviar comandos y consultar estado (ADR-033). El flujo web no depende del dispositivo (ADR-003).
   - Edita tarifas: tramos de comisión (RN-016) y N % del alquiler (RN-018 Alquiler de ESP32). Cada cambio se audita.
   - Consulta el log de auditoría: altas, ediciones de cuenta, marcas, desbloqueo, baja procesada, edición de tarifas, operaciones de dispositivos y consultas de historial acotadas (RN-015 y ADR-023). No es un volcado de toda la API ni un listado libre de historiales.
@@ -201,17 +206,16 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 ### RN-015 Datos personales
 - Se guardan cuenta (nombre, correo, teléfono, contraseña hasheada), perfil, ubicación, solicitudes, cotizaciones, servicios, historial, calificaciones, advertencias, sanciones y la referencia de archivos en Cloudinary.
 - El cliente ve lo suyo.
-- Con servicio activo, el técnico asignado y los administrativos de ese proveedor ven el historial de ese cliente. Otros técnicos de la misma empresa no. Cada consulta se audita.
+- Con servicio activo, el técnico asignado y los administrativos de ese proveedor ven el historial de ese cliente. En `negocio`, el `administrativo_campo` es ese técnico y ese lado administrativo. Otros técnicos de la misma `empresa` no. Cada consulta se audita.
 - El administrador de plataforma ve historial ajeno solo al atender una advertencia, sanción, bloqueo o reclamación. En una reclamación ve el historial de **ambos** perfiles de ese servicio, no un padrón libre (RN-017). Cada consulta se audita.
 - Mientras la cuenta está activa, se conservan sus datos.
-- Baja voluntaria: la pide el usuario del perfil cliente o un administrativo del perfil proveedor, sobre **ese perfil** (todos sus usuarios). Un técnico que deja la empresa no es baja del perfil. El administrador de plataforma la procesa. El pedido queda registrado y visible; el corte de acceso y el reloj de 12 meses corren al **procesar**, no al pedir (ADR-032).
-- Al procesar la baja, las cuentas de ese perfil dejan de entrar. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial de servicios ya cerrados se queda sin esos datos de contacto.
-- Contraseñas y tokens no se conservan después de la baja.
-- Tres marcas no disparan baja. El admin no da de baja por el bloqueo; puede levantar el bloqueo (RN-003, RN-011).
+- Baja de perfil (voluntaria): la pide el usuario del perfil cliente, un administrativo de una `empresa` o el `administrativo_campo` de un `negocio`, sobre **ese perfil** (todos sus usuarios). El administrador de plataforma la procesa. El pedido queda registrado y visible; el corte de acceso de **todas** las cuentas de ese perfil y el reloj de 12 meses corren al **procesar**, no al pedir (ADR-032). Al procesar, esas cuentas dejan de entrar. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial de servicios ya cerrados se queda sin esos datos de contacto. Contraseñas y tokens no se conservan después de la baja de perfil. Si el perfil es `negocio`, al procesar aplica el párrafo de RN-007 sobre servicios activos (ADR-044).
+- Baja de usuario: no es baja de perfil. Solo aplica a cuentas **extra** de una `empresa` (creadas después del alta). La ejecuta **solo** un administrativo de **ese** perfil. El técnico no la ejecuta. El administrador de plataforma no la ejecuta. Un administrativo puede dar de baja a otro usuario extra (técnico u otro administrativo) y puede darse de baja a sí mismo si él no es la primera cuenta. La primera cuenta del alta (RN-002) no se da de baja como usuario, ni por sí misma ni por otro. Al dar de baja esa cuenta extra, deja de entrar **al momento**. No corre el reloj de 12 meses ni el borrado de contacto de RN-015; esos valen solo en la baja de perfil. El perfil cliente y el `negocio` no tienen baja de usuario: su única cuenta es la del alta; para cerrarla vale solo la baja de perfil. Un técnico que deja la empresa se atiende con baja de usuario, no con baja de perfil. Si la cuenta a dar de baja es el técnico de un servicio activo (`pendiente`, `en_curso` o `pendiente_informe`), el administrativo indica en el mismo acto otro técnico de ese perfil; sin reemplazo la baja se rechaza. No aplica a un extra con función administrativa (no es el técnico del servicio). No aplica a la baja de perfil.
+- Tres marcas no disparan baja de perfil ni de usuario. El admin no da de baja por el bloqueo; puede levantar el bloqueo (RN-003, RN-011).
 
 ### RN-017 Reclamación
 - Cuando: hay un servicio (`pendiente`, `en_curso`, `pendiente_informe`, `cerrado` o `cancelado`).
-- Entonces: el usuario del perfil cliente o un administrativo del perfil proveedor de **ese** servicio puede abrir una reclamación ligada a ese servicio. El técnico no la abre. No hay reclamación anónima ni de oficio por el administrador.
+- Entonces: el usuario del perfil cliente, un administrativo de la `empresa` de **ese** servicio o el `administrativo_campo` del `negocio` de ese servicio puede abrir una reclamación ligada a ese servicio. El `tecnico` de una `empresa` no la abre. No hay reclamación anónima ni de oficio por el administrador.
 - Al abrir elige **una** categoría del catálogo fijo y escribe un texto de motivo. El servicio y el reclamante salen del acto. Sin categoría o sin motivo no se abre.
 - El admin no edita el catálogo. La categoría no dispara marca ni elige sola la causa de RN-011 Advertencias y sanciones.
 - Al cerrar **con marca**, el admin elige tipo y causa de RN-011 Advertencias y sanciones sobre el perfil que corresponda. La categoría solo orienta. Si el trámite se usó de forma indebida, la causa es `uso_indebido_reclamacion`, sea cual sea la categoría.
@@ -248,15 +252,17 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 
 ## Campos obligatorios
 
-**Usuario:** nombre, correo único, contraseña, teléfono.
+**Usuario:** nombre, correo único, contraseña, teléfono, `tipo_cuenta` `cliente | empresa | negocio | administrador` (sin el valor `proveedor`; ADR-044).
 
-**Perfil cliente** (un usuario): tipo `persona | empresa`. Si es empresa, nombre comercial.
+**Perfil cliente** (un usuario): tipo `persona | empresa`. Si es empresa, nombre comercial. No confundir con `tipo_cuenta = empresa`.
 
-**Perfil proveedor:** tipo `persona | empresa`, nombre comercial o razón social, descripción de servicios, al menos una categoría.
+**Perfil proveedor:** tipo `persona | empresa`, nombre comercial o razón social, descripción de servicios, al menos una categoría. Lo usan cuentas `empresa` y `negocio`.
 
 **Ubicación** (obligatoria en ambos perfiles y en la solicitud): calle y número, colonia, ciudad, estado, código postal. Se guarda y se muestra con OpenStreetMap; latitud y longitud si el punto del mapa las necesita.
 
-**Usuario del proveedor,** además: función `administrativo | técnico`.
+**Usuario de `empresa`,** además: función `administrativo | tecnico`.
+
+**Usuario de `negocio`,** además: función `administrativo_campo` (única cuenta del perfil).
 
 **Solicitud:** título, descripción del problema, categoría, ubicación del servicio (precarga la del cliente y se puede cambiar).
 

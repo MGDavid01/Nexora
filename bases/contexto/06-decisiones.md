@@ -397,3 +397,39 @@ El estado vigente también está en `01-establecido.md`.
 - Motivo: el costo real es el de la IA; N % deja margen sin cuota ciega.
 - Alternativas descartadas: cuota mensual fija; mezclar el alquiler con la comisión de la cotización.
 - Consecuencias: P-022 cerrado. RN-018 Alquiler de ESP32. Tablas: Andrés. API de alquiler, estatus y servicios externos: David. Backend cliente/proveedor y aplicar N % y comisión: Héctor.
+
+### ADR-043 Baja de usuario (cuenta extra) vs baja de perfil
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: ADR-032 cerró la baja de perfil (pedir + procesar; corte al procesar) frente al bloqueo. El equipo aclaró un segundo acto: dar de baja una cuenta individual sin cerrar el perfil, y qué pasa si ese técnico tiene un servicio activo (P-023).
+- Decisión:
+  - La baja de perfil no cambia: la pide el usuario del perfil cliente o un administrativo del perfil proveedor; el administrador de plataforma la procesa; el corte de acceso y el reloj de 12 meses corren al procesar (ADR-032, RN-015).
+  - El perfil cliente no tiene baja de usuario. Su única cuenta es la del alta (RN-001); para cerrarla vale solo la baja de perfil.
+  - Baja de usuario: solo cuentas extra del perfil proveedor. La primera cuenta es la creada en el alta de RN-002 y no se da de baja como usuario.
+  - Quién ejecuta la baja de usuario: solo un administrativo de ese mismo perfil. El técnico no. El administrador de plataforma no (él sigue procesando la baja de perfil).
+  - Un administrativo puede dar de baja a otro extra (técnico u otro administrativo) y puede darse de baja a sí mismo si no es la primera cuenta.
+  - Al dar de baja la cuenta extra, esa cuenta deja de entrar al momento. No hay retención de 12 meses ni borrado de contacto por este acto; el reloj de 12 meses sigue solo en la baja de perfil.
+  - Si la cuenta extra es el técnico de un servicio activo (`pendiente`, `en_curso` o `pendiente_informe`, misma definición que el historial en `04`), la baja no se completa sin asignar en el mismo acto otro técnico de ese perfil. Elige el reemplazo el administrativo que ejecuta la baja. El estado del servicio no cambia. Sin reemplazo indicado o sin otro técnico disponible, la baja se rechaza. No aplica a un extra solo administrativo. No aplica a la baja de perfil.
+- Motivo: el proveedor opera varias cuentas; que un extra deje de entrar no debe borrar el perfil. Un servicio a medias no puede quedar sin técnico.
+- Alternativas descartadas: un solo acto que corte el perfil al pedir (ya en ADR-032); baja de usuario en el perfil cliente; baja de la primera cuenta; que el admin de plataforma ejecute la baja de usuario; aplicar 12 meses a la cuenta extra; completar la baja del técnico y reasignar después; cancelar el servicio al dar de baja al técnico.
+- Consecuencias: RN-002, RN-007, RN-014, RN-015, `01` y `05`. ADR-032 se acota, no se revierte. ADR-024 sigue acotado por ADR-032 en el corte de perfil. P-023 cerrado.
+- Supuestos explícitos (autorizados al cerrar): «solo un administrativo» incluye auto-baja del extra y baja de otro administrativo que no sea el primero. El reemplazo es otro técnico del mismo perfil, en el mismo acto; sin él se rechaza. Función `administrativo` no está asignada al servicio; la regla de reasignar aplica a `tecnico` con servicio activo. En `negocio`, el técnico del servicio es el `administrativo_campo` (ADR-044); ADR-043 sigue para extras de `empresa`.
+
+### ADR-044 tipo_cuenta empresa/negocio y proveedor unipersonal
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: `tipo_cuenta` era `cliente | proveedor | administrador`. El proveedor era siempre multi-usuario (ADR-007, RN-002). Se necesita el unipersonal y que cliente/empresa/negocio sean `tipo_cuenta`. ADR-029 prohibía cambiar `tipo_cuenta`. La baja de perfil ya es pedir + procesar (ADR-032). ADR-043 cubre extras de empresa, no la persona única.
+- Decisión:
+  - `tipo_cuenta` = `cliente | empresa | negocio | administrador`. Se depreca `proveedor`; filas actuales `proveedor` → `empresa`.
+  - `cliente` = RN-001. `empresa` = perfil proveedor multi-usuario. `negocio` = un usuario, primera cuenta del alta, función `administrativo_campo` (administrativo + técnico asignado + reclamación). `negocio` no suma extras.
+  - Conversión solo `empresa` ↔ `negocio`. La pide un administrativo de esa `empresa` o el `administrativo_campo` de ese `negocio`. El administrador de plataforma autoriza o rechaza. Pedido visible; el cambio corre al autorizar (mismo patrón que ADR-032).
+  - Al autorizar `empresa` → `negocio`: queda la primera cuenta (`administrativo_campo`). Extras: baja de usuario. Técnico de servicio activo: reasignar a quien permanece. Si hay más de un usuario, la autorización incluye el listado a eliminar; sin esa confirmación no se autoriza.
+  - Al autorizar `negocio` → `empresa`: esa cuenta pasa a `administrativo`; aplica ADR-031.
+  - ADR-029 se acota: único cambio de `tipo_cuenta` permitido es ese par. Cliente no pide ni obtiene cambio de `tipo_cuenta` en este ADR.
+  - Baja de perfil `negocio` al procesar: `pendiente`/`en_curso` → servicio `cancelado`; cotización aceptada se conserva. `pendiente_informe` → informe por defecto («Este servicio fue cancelado y no se tiene datos precisos. Los cambios son desconocidos.») y servicio `cancelado` (excepción a RN-007 solo en este acto); sin calificación mutua ni comisión.
+- Motivo: una persona no opera con XOR administrativo/técnico; el tipo de cuenta es el discriminante; el perfil opera el pedido y Nexora autoriza, como en la baja.
+- Alternativas descartadas: dejar el valor `proveedor`; campo aparte de `tipo_cuenta`; que el admin de plataforma dispare el cambio sin pedido; dejar 1 admin + 1 técnico como negocio; cliente→empresa en este ADR; descartar la cotización; `cerrado`+4.5+comisión al forzar informe.
+- Supuestos: S1 destino negocio = la primera cuenta. S2b la solicitud de `tipo_cuenta` es solo empresa↔negocio. S3 `pendiente_informe` → `cancelado` con informe default. S4 `Perfil*.tipo` persona|empresa no es `tipo_cuenta`.
+- Consecuencias: `01`, `03`, `04` (RN-001, 002, 003, 007, 014, 015, 017, campos), `05`. ADR-007 y ADR-031 acotados. ADR-029 acotado. ADR-043 intacto para extras de `empresa`. Migración `proveedor` → `empresa`. Un «cliente pide cambio de tipo» no está cerrado: P-025 si el equipo lo quiere después.
+
+
