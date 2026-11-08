@@ -19,15 +19,30 @@ git pull origin master
 git checkout -b {quien}/{actividad}
 ```
 
-PR a `master`: qué hiciste, qué RN, qué no tocaste. No lo mergeas tú. Conflicto: abortar y avisar.
+## PR
 
-Tras el merge del PR se **borra** la feature branch (local y remota). En GitHub: «Delete branch». En remoto, si aún existe:
+PR a `master`: qué hiciste, qué RN, qué no tocaste.
+
+- **No mergeas tu propio PR.** Lo revisa y mergea otro (en el plan: David, D0).
+- Misma actividad: puedes seguir empujando commits a la rama; el PR abierto los acumula.
+- Otra actividad: otra rama desde `master` actualizado. No sigas en la rama del PR ya abierto o ya mergeado.
+- Tras el merge se **borra** la feature branch (local y remota). En GitHub: «Delete branch». En remoto, si aún existe:
 
 ```text
 git push origin --delete {quien}/{actividad}
 ```
 
-Siguiente actividad: nueva rama desde `master` actualizado (mismo bloque `fetch` + `checkout master` + `pull` + `checkout -b` de arriba). No se reutiliza la rama mergeada.
+- Siguiente actividad: nueva rama desde `master` actualizado (mismo bloque `fetch` + `checkout master` + `pull` + `checkout -b` de arriba). No se reutiliza la rama mergeada.
+
+## Conflictos
+
+Si `master` avanzó (p. ej. ya entró el PR de otro) y tu PR marca conflicto:
+
+1. **No cierres el PR.** “Abortar” = no forzar el merge a ciegas; avisar si el choque es gordo o toca código ajeno.
+2. Trae `master` a **tu** rama (`merge` o `rebase` de `origin/master`). Nadie edita `master` a mano para “limpiar”.
+3. Resuelves **tú** (autor) archivo por archivo: conviene lo de ambos cuando aplica; no borrar a ciegas lo del otro.
+4. Commit de la resolución → push a tu rama → el mismo PR se actualiza.
+5. Otro revisa/mergea (D0).
 
 ## Capa
 
