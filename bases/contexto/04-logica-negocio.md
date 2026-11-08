@@ -58,9 +58,11 @@ Reglas que el SRS afirma o que el equipo cerró.
 - Al pasar a `cerrado` se registra el informe de servicio, la solicitud pasa a `cerrada` y cada lado queda calificado (RN-009).
 - Cliente o proveedor pueden cancelar solo desde `pendiente` o `en_curso`. La otra parte recibe aviso, el servicio queda `cancelado` y la solicitud pasa de `asignada` a `cancelada`. La cotización aceptada se conserva como antecedente.
 - Cancelar el servicio y abrir una reclamación son actos distintos (ADR-035). Uno no dispara el otro.
-- Desde `pendiente_informe` no se cancela: se completa el informe de servicio y se cierra. Excepción: al procesar la baja de perfil de un `negocio` (RN-015, ADR-044).
+- Desde `pendiente_informe` no se cancela: se completa el informe de servicio y se cierra. Excepción: al procesar la baja de perfil de `cliente`, `empresa` o `negocio` (RN-015, ADR-045).
 - Al dar de baja al técnico de un servicio activo (baja de usuario en una `empresa`, RN-015), en el mismo acto un administrativo de ese perfil asigna otro técnico del mismo perfil. El estado del servicio no cambia. Sin ese reemplazo no hay baja (ADR-043).
-- Al procesar la baja de perfil de un `negocio`: si hay servicio `pendiente` o `en_curso`, se cancela (aviso, servicio `cancelado`, solicitud `asignada` → `cancelada`); la cotización aceptada se conserva. Si está en `pendiente_informe`, se registra un informe con descripción «Este servicio fue cancelado y no se tiene datos precisos. Los cambios son desconocidos.», tipo `otro servicio`, técnico = la cuenta del negocio; el servicio pasa a `cancelado`; la solicitud `asignada` → `cancelada`; no hay calificación mutua ni comisión simulada (ADR-044).
+- Al procesar la baja de perfil (`cliente`, `empresa` o `negocio`): servicios `pendiente` o `en_curso` se cancelan (aviso a la otra parte, servicio `cancelado`, solicitud `asignada` → `cancelada`); la cotización aceptada se conserva. Si está en `pendiente_informe`, se registra un informe con descripción «Este servicio fue cancelado y no se tiene datos precisos. Los cambios son desconocidos.», tipo `otro servicio` (en `negocio`, técnico = la cuenta del negocio); el servicio pasa a `cancelado`; la solicitud `asignada` → `cancelada`; no hay calificación mutua ni comisión simulada. Excepción a «desde pendiente_informe no se cancela» solo en este acto, para los tres tipos (ADR-045; extiende ADR-044).
+- Al procesar baja de perfil `cliente`, además: solicitudes `abierta` → `cancelada` y cierre de participaciones/cotizaciones de RN-005 y RN-006 (mismo patrón que el bloqueo de cliente en RN-011; esto es baja, no bloqueo). No se copia el resto de RN-011.
+- Al procesar baja de perfil `empresa`, además: cotizaciones `enviada` → `descartada`. No se reasignan técnicos (ADR-043 no aplica a baja de perfil).
 
 ## Estados
 
@@ -83,7 +85,7 @@ Un rechazo, un vencimiento o un retiro no cambian el estado global de la solicit
 |----|---|--------|
 | — | abierta | El cliente la publica |
 | abierta | asignada | El cliente acepta una cotización. Dejan de entrar cotizaciones nuevas. Las demás enviadas pasan a descartadas |
-| abierta | cancelada | El cliente la retira |
+| abierta | cancelada | El cliente la retira, o el sistema al procesar la baja de perfil de ese cliente (RN-015, ADR-045) |
 | asignada | cancelada | El sistema, cuando el servicio se cancela |
 | asignada | cerrada | El sistema, cuando el servicio queda cerrado |
 
@@ -94,7 +96,7 @@ Un rechazo, un vencimiento o un retiro no cambian el estado global de la solicit
 | enviada | Un usuario del proveedor, después de aceptar. Una por perfil y solicitud. No se modifica |
 | aceptada | El cliente. Solo una por solicitud |
 | rechazada | El cliente rechaza esa propuesta. La solicitud sigue abierta. No se envía otra |
-| descartada | El cliente aceptó otra, la solicitud se canceló o el proveedor quedó bloqueado |
+| descartada | El cliente aceptó otra, la solicitud se canceló, el proveedor quedó bloqueado o se procesó la baja de perfil `empresa` de ese proveedor (ADR-045) |
 
 ### Servicio
 
@@ -106,7 +108,7 @@ Nace al aceptar la cotización.
 | en_curso | El trabajo empezó |
 | pendiente_informe | El trabajo terminó y falta el informe de servicio |
 | cerrado | El informe de servicio ya quedó registrado |
-| cancelado | Se canceló desde `pendiente` o `en_curso`. Avisa a la otra parte. La solicitud pasa a `cancelada` |
+| cancelado | Se canceló desde `pendiente` o `en_curso`, o desde `pendiente_informe` al procesar baja de perfil (RN-007, ADR-045). Avisa a la otra parte. La solicitud pasa a `cancelada` |
 
 Servicio activo, para ver el historial del cliente: `pendiente`, `en_curso` o `pendiente_informe`.
 
@@ -117,7 +119,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 | Estado | Quién lo provoca |
 |--------|------------------|
 | abierta | El cliente o un administrativo del proveedor, sobre un servicio (RN-017) |
-| cerrada | El administrador de plataforma, con o sin marca |
+| cerrada | El administrador de plataforma, con o sin marca; o el proceso de baja de perfil de un lado de ese servicio, siempre sin marca (RN-015, ADR-047) |
 
 ### RN-008 Informe de servicio al cerrar
 - Cuando: termina la atención.
@@ -209,7 +211,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 - Con servicio activo, el técnico asignado y los administrativos de ese proveedor ven el historial de ese cliente. En `negocio`, el `administrativo_campo` es ese técnico y ese lado administrativo. Otros técnicos de la misma `empresa` no. Cada consulta se audita.
 - El administrador de plataforma ve historial ajeno solo al atender una advertencia, sanción, bloqueo o reclamación. En una reclamación ve el historial de **ambos** perfiles de ese servicio, no un padrón libre (RN-017). Cada consulta se audita.
 - Mientras la cuenta está activa, se conservan sus datos.
-- Baja de perfil (voluntaria): la pide el usuario del perfil cliente, un administrativo de una `empresa` o el `administrativo_campo` de un `negocio`, sobre **ese perfil** (todos sus usuarios). El administrador de plataforma la procesa. El pedido queda registrado y visible; el corte de acceso de **todas** las cuentas de ese perfil y el reloj de 12 meses corren al **procesar**, no al pedir (ADR-032). Al procesar, esas cuentas dejan de entrar. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial de servicios ya cerrados se queda sin esos datos de contacto. Contraseñas y tokens no se conservan después de la baja de perfil. Si el perfil es `negocio`, al procesar aplica el párrafo de RN-007 sobre servicios activos (ADR-044).
+- Baja de perfil (voluntaria): la pide el usuario del perfil cliente, un administrativo de una `empresa` o el `administrativo_campo` de un `negocio`, sobre **ese perfil** (todos sus usuarios). El administrador de plataforma la procesa. El pedido queda registrado y visible; el corte de acceso de **todas** las cuentas de ese perfil y el reloj de 12 meses corren al **procesar**, no al pedir (ADR-032). Al procesar, esas cuentas dejan de entrar. A los 12 meses se borran nombre, correo, teléfono y archivos de perfil. El historial de servicios ya cerrados se queda sin esos datos de contacto. Contraseñas y tokens no se conservan después de la baja de perfil. Al procesar, aplica RN-007 (servicios de los tres tipos; además solicitudes del cliente y cotizaciones de la empresa), RN-017 (reclamaciones abiertas) y RN-018 (ESP32 asignado) (ADR-045, ADR-046, ADR-047).
 - Baja de usuario: no es baja de perfil. Solo aplica a cuentas **extra** de una `empresa` (creadas después del alta). La ejecuta **solo** un administrativo de **ese** perfil. El técnico no la ejecuta. El administrador de plataforma no la ejecuta. Un administrativo puede dar de baja a otro usuario extra (técnico u otro administrativo) y puede darse de baja a sí mismo si él no es la primera cuenta. La primera cuenta del alta (RN-002) no se da de baja como usuario, ni por sí misma ni por otro. Al dar de baja esa cuenta extra, deja de entrar **al momento**. No corre el reloj de 12 meses ni el borrado de contacto de RN-015; esos valen solo en la baja de perfil. El perfil cliente y el `negocio` no tienen baja de usuario: su única cuenta es la del alta; para cerrarla vale solo la baja de perfil. Un técnico que deja la empresa se atiende con baja de usuario, no con baja de perfil. Si la cuenta a dar de baja es el técnico de un servicio activo (`pendiente`, `en_curso` o `pendiente_informe`), el administrativo indica en el mismo acto otro técnico de ese perfil; sin reemplazo la baja se rechaza. No aplica a un extra con función administrativa (no es el técnico del servicio). No aplica a la baja de perfil.
 - Tres marcas no disparan baja de perfil ni de usuario. El admin no da de baja por el bloqueo; puede levantar el bloqueo (RN-003, RN-011).
 
@@ -231,7 +233,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 | `cancelacion_servicio` | Cancelación del servicio | ambos | `cancelacion_reiterada_servicio` |
 
 - Estados: `abierta` → `cerrada`. No se reabre. Un servicio no tiene dos reclamaciones `abierta` a la vez.
-- Abrir una reclamación no cancela el servicio. Cancelar el servicio no abre una reclamación. Son dos actos (ADR-035).
+- Abrir una reclamación no cancela el servicio. Cancelar el servicio no abre una reclamación. Son dos actos (ADR-035). Cancelar el servicio **sigue sin** cerrar ni abrir reclamación. Excepción: al procesar baja de perfil, toda reclamación `abierta` de un servicio de **ese** perfil (como cliente o como proveedor) pasa a `cerrada` **sin marca**; no se reabre; no aplica RN-011 Advertencias y sanciones por este cierre (ADR-047). El admin ya está en el acto; el cierre es consecuencia.
 - El administrador atiende la reclamación `abierta`. En ese contexto ve el historial de ambos perfiles de ese servicio. Cada consulta se audita. Eso no es un listado libre de historiales.
 - Al cerrar elige un desenlace: **sin marca** o **con marca** (advertencia o sanción) sobre el perfil que corresponda. Si hay marca, aplica RN-011.
 - Fuera de esta fase: chat o hilo, apelación del 4.5, adjuntos extra (valen las evidencias ya ligadas al servicio), SLA, reasignar técnico, indemnizaciones.
@@ -242,6 +244,7 @@ Lo mueven los usuarios del perfil proveedor (administrativo o técnico). Para pa
 - El cobro es simulado: gasto de tokens de IA + **N %**. El administrador edita N % en tarifas (la misma entidad que los tramos de RN-016 Ingresos simulados). No hay pasarela.
 - RN-016 (comisión sobre la cotización al cerrar) es **otra** cuenta. No se mezclan los montos.
 - Sin aparato asignado, el perfil sigue usando la web.
+- Al procesar la baja de perfil con aparato asignado: se desasigna; el dispositivo vuelve al pool (disponible para otra asignación). Cortan los tokens de ese alquiler y el N % deja de correr desde el proceso. No se destruye el hardware ni el historial de asignación. La web no dependía del aparato (ADR-003, ADR-046).
 
 ### RN-019 Canal de voz
 - Cuando: un perfil con ESP32 alquilado habla al aparato.

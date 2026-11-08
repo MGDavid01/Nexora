@@ -27,6 +27,7 @@ from app.services.usuarios import (
     detalle_usuario,
     editar_cuenta,
     listar_usuarios,
+    procesar_baja_perfil,
     registrar_marca,
 )
 
@@ -132,6 +133,17 @@ async def desbloquear_cuenta(
 ) -> UsuarioDetalleOut:
     detalle = await desbloquear_perfil(session, usuario_id)
     logger.info("administrador %s desbloqueó el perfil de la cuenta %s", administrador.id, usuario_id)
+    return detalle
+
+
+@router.post("/usuarios/{usuario_id}/baja", response_model=UsuarioDetalleOut)
+async def procesar_baja_de_perfil(
+    usuario_id: UUID,
+    session: SessionDep,
+    administrador: AdministradorActual,
+) -> UsuarioDetalleOut:
+    detalle = await procesar_baja_perfil(session, usuario_id)
+    logger.info("administrador %s procesó la baja de perfil de la cuenta %s", administrador.id, usuario_id)
     return detalle
 
 

@@ -11,7 +11,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login", response_model=TokenResponse)
 async def login(datos: Login, session: SessionDep) -> TokenResponse:
     usuario = await buscar_por_correo(session, datos.correo)
-    if usuario is None or usuario.baja_solicitada_en is not None:
+    if usuario is None or usuario.baja_procesada_en is not None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Correo o contraseña incorrectos")
     if not verify_password(datos.contrasena, usuario.contrasena_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Correo o contraseña incorrectos")

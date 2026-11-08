@@ -4,12 +4,15 @@ from enum import Enum
 class TipoCuenta(str, Enum):
     cliente = "cliente"
     proveedor = "proveedor"
+    empresa = "empresa"
+    negocio = "negocio"
     administrador = "administrador"
 
 
 class FuncionProveedor(str, Enum):
     administrativo = "administrativo"
     tecnico = "tecnico"
+    administrativo_campo = "administrativo_campo"
 
 
 class TipoPerfilCliente(str, Enum):

@@ -27,7 +27,7 @@ async def usuario_actual(
     except (jwt.PyJWTError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido") from exc
     usuario = await session.get(Usuario, usuario_id)
-    if usuario is None or usuario.baja_solicitada_en is not None:
+    if usuario is None or usuario.baja_procesada_en is not None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
     if await perfil_esta_bloqueado(session, usuario):
         raise HTTPException(

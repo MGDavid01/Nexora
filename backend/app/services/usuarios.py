@@ -1,3 +1,5 @@
+import secrets
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -5,8 +7,30 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.security import hash_password
-from app.models.entities import PerfilCliente, PerfilProveedor, Sancion, Usuario
-from app.models.enums import TipoCuenta, etiqueta_codigo_marca
+from app.models.entities import (
+    Cotizacion,
+    HistorialServicio,
+    Participacion,
+    PerfilCliente,
+    PerfilProveedor,
+    Reclamacion,
+    Sancion,
+    Servicio,
+    Solicitud,
+    TokenRecuperacion,
+    Usuario,
+)
+from app.models.enums import (
+    EstadoCotizacion,
+    EstadoParticipacion,
+    EstadoReclamacion,
+    EstadoServicio,
+    EstadoSolicitud,
+    TipoCuenta,
+    TipoHistorial,
+    etiqueta_codigo_marca,
+)
+from app.services.reclamaciones import cerrar_reclamacion
 from app.schemas.usuarios import (
     EditarCuenta,
     MarcaIn,
@@ -15,6 +39,12 @@ from app.schemas.usuarios import (
     UsuarioListaOut,
 )
 from app.services.marcas import aplicar_marca, marcas_del_usuario, perfil_ligado
+
+INFORME_BAJA_PERFIL = (
+    "Este servicio fue cancelado y no se tiene datos precisos. Los cambios son desconocidos."
+)
+INFORME_BAJA_NEGOCIO = INFORME_BAJA_PERFIL
+_TIPOS_EMPRESA = frozenset({TipoCuenta.proveedor.value, TipoCuenta.empresa.value})
 
 
 async def listar_usuarios(session: AsyncSession) -> list[UsuarioListaOut]:
@@ -79,6 +109,164 @@ async def desbloquear_perfil(session: AsyncSession, usuario_id: UUID) -> Usuario
     return await detalle_usuario(session, usuario.id)
 
 
+async def procesar_baja_perfil(session: AsyncSession, usuario_id: UUID) -> UsuarioDetalleOut:
+    usuario = await _usuario(session, usuario_id)
+    if usuario.tipo_cuenta == TipoCuenta.administrador or not _tiene_perfil(usuario):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="La baja de perfil aplica a un perfil cliente o proveedor",
+        )
+    cuentas = await _cuentas_del_perfil(session, usuario)
+    if any(cuenta.baja_procesada_en is not None for cuenta in cuentas):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="La baja de perfil ya fue procesada",
+        )
+    if all(cuenta.baja_solicitada_en is None for cuenta in cuentas):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No hay un pedido de baja de perfil",
+        )
+    await _aplicar_efectos_al_procesar_baja(session, usuario)
+    ahora = datetime.now(UTC)
+    ids = {cuenta.id for cuenta in cuentas}
+    for cuenta in cuentas:
+        cuenta.baja_procesada_en = ahora
+        cuenta.contrasena_hash = hash_password(secrets.token_urlsafe(32))
+    for token in (await session.exec(select(TokenRecuperacion))).all():
+        if token.usuario_id in ids:
+            token.usado = True
+    await session.flush()
+    return await detalle_usuario(session, usuario.id)
+
+
+def _tiene_perfil(usuario: Usuario) -> bool:
+    return usuario.perfil_cliente_id is not None or usuario.perfil_proveedor_id is not None
+
+
+async def _cuentas_del_perfil(session: AsyncSession, usuario: Usuario) -> list[Usuario]:
+    cuentas = list((await session.exec(select(Usuario))).all())
+    if usuario.perfil_cliente_id is not None:
+        return [cuenta for cuenta in cuentas if cuenta.perfil_cliente_id == usuario.perfil_cliente_id]
+    if usuario.perfil_proveedor_id is not None:
+        return [cuenta for cuenta in cuentas if cuenta.perfil_proveedor_id == usuario.perfil_proveedor_id]
+    return [usuario]
+
+
+def _es_empresa(usuario: Usuario) -> bool:
+    return usuario.tipo_cuenta.value in _TIPOS_EMPRESA
+
+
+async def _aplicar_efectos_al_procesar_baja(session: AsyncSession, usuario: Usuario) -> None:
+    solicitudes = list((await session.exec(select(Solicitud))).all())
+    servicios = list((await session.exec(select(Servicio))).all())
+    participaciones = list((await session.exec(select(Participacion))).all())
+    cotizaciones = list((await session.exec(select(Cotizacion))).all())
+    informes = {fila.servicio_id: fila for fila in (await session.exec(select(HistorialServicio))).all()}
+    reclamaciones = list((await session.exec(select(Reclamacion))).all())
+    del_perfil = _servicios_del_perfil(usuario, solicitudes, servicios)
+    ids_servicios = {servicio.id for servicio in del_perfil}
+
+    for servicio in del_perfil:
+        await _cancelar_servicio_activo(session, servicio, usuario, informes, solicitudes, participaciones, cotizaciones)
+
+    if usuario.tipo_cuenta == TipoCuenta.cliente and usuario.perfil_cliente_id is not None:
+        for solicitud in solicitudes:
+            if solicitud.perfil_cliente_id != usuario.perfil_cliente_id:
+                continue
+            if solicitud.estado == EstadoSolicitud.abierta:
+                _marcar_solicitud_cancelada(solicitud, participaciones, cotizaciones)
+
+    if _es_empresa(usuario) and usuario.perfil_proveedor_id is not None:
+        for cotizacion in cotizaciones:
+            if cotizacion.perfil_proveedor_id != usuario.perfil_proveedor_id:
+                continue
+            if cotizacion.estado == EstadoCotizacion.enviada:
+                cotizacion.estado = EstadoCotizacion.descartada
+
+    for reclamacion in reclamaciones:
+        if reclamacion.servicio_id not in ids_servicios:
+            continue
+        if reclamacion.estado != EstadoReclamacion.abierta:
+            continue
+        await cerrar_reclamacion(session, reclamacion, desenlace="sin_marca")
+
+
+def _servicios_del_perfil(
+    usuario: Usuario,
+    solicitudes: list[Solicitud],
+    servicios: list[Servicio],
+) -> list[Servicio]:
+    if usuario.perfil_cliente_id is not None:
+        ids = {item.id for item in solicitudes if item.perfil_cliente_id == usuario.perfil_cliente_id}
+        return [servicio for servicio in servicios if servicio.solicitud_id in ids]
+    if usuario.perfil_proveedor_id is not None:
+        return [servicio for servicio in servicios if servicio.perfil_proveedor_id == usuario.perfil_proveedor_id]
+    return []
+
+
+async def _cancelar_servicio_activo(
+    session: AsyncSession,
+    servicio: Servicio,
+    usuario: Usuario,
+    informes: dict[UUID, HistorialServicio],
+    solicitudes: list[Solicitud],
+    participaciones: list[Participacion],
+    cotizaciones: list[Cotizacion],
+) -> None:
+    if servicio.estado in (EstadoServicio.pendiente, EstadoServicio.en_curso):
+        servicio.estado = EstadoServicio.cancelado
+        _cancelar_solicitud_del_servicio(servicio.solicitud_id, solicitudes, participaciones, cotizaciones)
+        return
+    if servicio.estado != EstadoServicio.pendiente_historial:
+        return
+    if servicio.id not in informes:
+        tecnico_id = usuario.id if usuario.tipo_cuenta == TipoCuenta.negocio else servicio.tecnico_usuario_id
+        if tecnico_id is None:
+            tecnico_id = usuario.id
+        session.add(
+            HistorialServicio(
+                servicio_id=servicio.id,
+                tecnico_usuario_id=tecnico_id,
+                descripcion=INFORME_BAJA_PERFIL,
+                tipo=TipoHistorial.otro_servicio,
+                fecha=datetime.now(UTC),
+            )
+        )
+    servicio.estado = EstadoServicio.cancelado
+    _cancelar_solicitud_del_servicio(servicio.solicitud_id, solicitudes, participaciones, cotizaciones)
+
+
+def _cancelar_solicitud_del_servicio(
+    solicitud_id: UUID,
+    solicitudes: list[Solicitud],
+    participaciones: list[Participacion],
+    cotizaciones: list[Cotizacion],
+) -> None:
+    solicitud = next((item for item in solicitudes if item.id == solicitud_id), None)
+    if solicitud is None or solicitud.estado != EstadoSolicitud.asignada:
+        return
+    _marcar_solicitud_cancelada(solicitud, participaciones, cotizaciones)
+
+
+def _marcar_solicitud_cancelada(
+    solicitud: Solicitud,
+    participaciones: list[Participacion],
+    cotizaciones: list[Cotizacion],
+) -> None:
+    solicitud.estado = EstadoSolicitud.cancelada
+    for participacion in participaciones:
+        if participacion.solicitud_id != solicitud.id:
+            continue
+        if participacion.estado in (EstadoParticipacion.pendiente, EstadoParticipacion.aceptada):
+            participacion.estado = EstadoParticipacion.retirada
+    for cotizacion in cotizaciones:
+        if cotizacion.solicitud_id != solicitud.id:
+            continue
+        if cotizacion.estado == EstadoCotizacion.enviada:
+            cotizacion.estado = EstadoCotizacion.descartada
+
+
 def _marca_out(marca: Sancion) -> MarcaOut:
     return MarcaOut(
         id=marca.id,
@@ -138,6 +326,7 @@ def _fila(
         bloqueado=bloqueado,
         conteo_marcas=conteo,
         baja_solicitada=usuario.baja_solicitada_en is not None,
+        baja_procesada=usuario.baja_procesada_en is not None,
     )
 
 

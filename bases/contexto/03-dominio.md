@@ -23,7 +23,7 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 | Informe de servicio | Documento de campo de un servicio: qué se hizo. Obligatorio para cerrar. No es el reporte. |
 | Reporte | Mediciones relevantes de las acciones de un perfil cliente o proveedor. No es el historial ni el informe. |
 | Sanción | Aviso registrado contra un perfil cliente o proveedor. A la tercera marca distinta, bloquea a todos los usuarios de ese perfil. |
-| Reclamación | Trámite sobre un servicio. La abre el cliente o un administrativo del proveedor. El administrador la cierra con o sin marca. |
+| Reclamación | Trámite sobre un servicio. La abre el cliente o un administrativo del proveedor. El administrador la cierra con o sin marca. Al procesar baja de perfil, las `abierta` de ese perfil pasan a `cerrada` sin marca. |
 | Soporte técnico | Identificar, solucionar, mantener o reparar equipos, dispositivos o software. |
 
 ## Entidades
@@ -86,12 +86,12 @@ El DER (`bases/NEXORA_DR_ER-DER.jpg`) es la base. No está congelado: se agregan
 
 ### Reclamacion
 - Ligada a un servicio. La abre el usuario del perfil cliente o un administrativo del proveedor de ese servicio.
-- Estados: `abierta` o `cerrada`. Cancelar el servicio y reclamar son actos distintos (ADR-035).
+- Estados: `abierta` o `cerrada`. Cancelar el servicio y reclamar son actos distintos (ADR-035). Al procesar baja de perfil, las `abierta` de servicios de ese perfil pasan a `cerrada` sin marca (ADR-047).
 - Al abrir: categoría del catálogo fijo y texto de motivo (ADR-037). Ese catálogo no es el de causas de marca (RN-011 Advertencias y sanciones).
 - Hay que agregarla al DER.
 
 ### DispositivoEsp32
-- Equipo de campo. El administrador lo asigna a un perfil cliente o a un perfil proveedor (alquiler, RN-018 Alquiler de ESP32).
+- Equipo de campo. El administrador lo asigna a un perfil cliente o a un perfil proveedor (alquiler, RN-018 Alquiler de ESP32). Al procesar baja de perfil se desasigna y vuelve al pool (ADR-046).
 - Canal de voz ida y vuelta hacia el agente de IA (RN-019 Canal de voz).
 - Hay que agregarlo al DER.
 
