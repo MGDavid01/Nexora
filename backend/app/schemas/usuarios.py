@@ -22,6 +22,7 @@ class UsuarioListaOut(BaseModel):
     bloqueado: bool
     conteo_marcas: int
     baja_solicitada: bool
+    baja_procesada: bool
 
 
 class MarcaOut(BaseModel):

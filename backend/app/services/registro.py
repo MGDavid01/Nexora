@@ -19,6 +19,11 @@ from app.schemas.auth import RegistroCliente, RegistroProveedor, UbicacionIn
 from app.schemas.usuarios import RegistroAdministrador
 
 _SOLO_ADMIN = "Solo el administrador de plataforma puede registrar clientes y proveedores"
+_NO_PIDE_BAJA = (
+    "Solo el usuario del perfil cliente, un administrativo de una empresa "
+    "o el administrativo de campo de un negocio pueden pedir la baja de perfil"
+)
+_TIPOS_EMPRESA = frozenset({TipoCuenta.proveedor.value, TipoCuenta.empresa.value})
 
 
 async def registrar_cliente(
@@ -103,7 +108,20 @@ def _exigir_administrador(usuario: Usuario) -> None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=_SOLO_ADMIN)
 
 
+def puede_pedir_baja_perfil(usuario: Usuario) -> bool:
+    tipo = usuario.tipo_cuenta.value
+    if tipo == TipoCuenta.cliente.value:
+        return True
+    if tipo in _TIPOS_EMPRESA and usuario.funcion == FuncionProveedor.administrativo:
+        return True
+    if tipo == TipoCuenta.negocio.value and usuario.funcion == FuncionProveedor.administrativo_campo:
+        return True
+    return False
+
+
 def marcar_baja(usuario: Usuario) -> None:
+    if not puede_pedir_baja_perfil(usuario):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=_NO_PIDE_BAJA)
     if usuario.baja_solicitada_en is None:
         usuario.baja_solicitada_en = datetime.now(UTC)
 

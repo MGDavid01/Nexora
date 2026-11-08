@@ -326,7 +326,7 @@ El estado vigente también está en `01-establecido.md`.
 - Decisión: una reclamación va ligada a un servicio (cualquier estado). La abren el usuario del perfil cliente o un administrativo del proveedor de ese servicio. El técnico no. Estados `abierta` → `cerrada`; no se reabre; una sola `abierta` por servicio. Cancelar el servicio y reclamar son dos actos: uno no dispara el otro. Al atender, el admin ve el historial de ambos perfiles de ese servicio, no un padrón. Al cerrar: sin marca o con marca (RN-011). Fuera del MVP: chat, apelación del 4.5, anónima, de oficio, adjuntos extra, SLA, indemnizaciones.
 - Motivo: dar sentido a la palabra de RN-015 sin una mesa de ayuda.
 - Alternativas descartadas: quitar la palabra; que solo abra el cliente; historial de un solo perfil al atender.
-- Consecuencias: RN-007, RN-014, RN-015, RN-017, `03` y `05`.
+- Consecuencias: RN-007, RN-014, RN-015, RN-017, `03` y `05`. Acotación 2026-11-07: cancelar el servicio sigue sin cerrar ni abrir reclamación. Excepción: procesar baja de perfil (ADR-047).
 
 ### ADR-036 Catálogo fijo de causas
 - Fecha: 2026-11-01
@@ -430,6 +430,34 @@ El estado vigente también está en `01-establecido.md`.
 - Motivo: una persona no opera con XOR administrativo/técnico; el tipo de cuenta es el discriminante; el perfil opera el pedido y Nexora autoriza, como en la baja.
 - Alternativas descartadas: dejar el valor `proveedor`; campo aparte de `tipo_cuenta`; que el admin de plataforma dispare el cambio sin pedido; dejar 1 admin + 1 técnico como negocio; cliente→empresa en este ADR; descartar la cotización; `cerrado`+4.5+comisión al forzar informe.
 - Supuestos: S1 destino negocio = la primera cuenta. S2b la solicitud de `tipo_cuenta` es solo empresa↔negocio. S3 `pendiente_informe` → `cancelado` con informe default. S4 `Perfil*.tipo` persona|empresa no es `tipo_cuenta`.
-- Consecuencias: `01`, `03`, `04` (RN-001, 002, 003, 007, 014, 015, 017, campos), `05`. ADR-007 y ADR-031 acotados. ADR-029 acotado. ADR-043 intacto para extras de `empresa`. Migración `proveedor` → `empresa`. Un «cliente pide cambio de tipo» no está cerrado: P-025 si el equipo lo quiere después.
+- Consecuencias: `01`, `03`, `04` (RN-001, 002, 003, 007, 014, 015, 017, campos), `05`. ADR-007 y ADR-031 acotados. ADR-029 acotado. ADR-043 intacto para extras de `empresa`. Migración `proveedor` → `empresa`. Un «cliente pide cambio de tipo» no está cerrado: P-025 si el equipo lo quiere después. Acotación 2026-11-07: los efectos de servicio al procesar baja valen también para `cliente` y `empresa` (ADR-045).
+
+### ADR-045 Baja de perfil: efectos de servicio para cliente, empresa y negocio (cierra P-026)
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: ADR-044 cerró servicios activos solo al procesar baja de `negocio`. P-026 preguntaba por `cliente` y `empresa`. Bloqueo ≠ baja (RN-011 Advertencias y sanciones no se copia).
+- Decisión: al **procesar** baja de perfil, los mismos efectos de servicio de ADR-044 aplican a `cliente`, `empresa` y `negocio`: `pendiente`/`en_curso` → `cancelado` (aviso a la otra parte; solicitud `asignada` → `cancelada`); cotización aceptada se conserva; `pendiente_informe` → informe por defecto («Este servicio fue cancelado y no se tiene datos precisos. Los cambios son desconocidos.»), tipo `otro servicio`, servicio `cancelado`, sin calificación mutua ni comisión simulada. Excepción a «desde pendiente_informe no se cancela» (RN-007 Confirmación y seguimiento) solo en este acto, para los tres tipos. Cliente además: solicitudes `abierta` → `cancelada` y cierre de participaciones/cotizaciones como RN-005 y RN-006. Empresa además: cotizaciones `enviada` → `descartada`. No reasignar técnicos (ADR-043 no aplica a baja de perfil).
+- Motivo: no dejar colgados servicios ni pre-servicio de un perfil que ya no opera; la cotización aceptada sigue como antecedente.
+- Alternativas descartadas: dejar colgados; solo limpiar pre-servicio.
+- Consecuencias: P-026 cerrado. RN-007, RN-015, estados de solicitud/cotización/servicio, `01` y `05`. ADR-044 se acota, no se revierte.
+
+### ADR-046 ESP32 al procesar baja de perfil (cierra P-027)
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: RN-018 Alquiler de ESP32 / ADR-042 cubren el alquiler. No decían el desenlace al procesar baja.
+- Decisión: al procesar baja de perfil con aparato asignado, se **desasigna**: el dispositivo vuelve al pool. Cortan tokens de ese alquiler y el N % deja de correr desde el proceso. No se destruye el hardware ni el historial de asignación. La web no dependía del aparato (ADR-003 intacto).
+- Motivo: el aparato es de Nexora; el perfil que se va no debe dejarlo huérfano ni dar de baja el hardware.
+- Alternativas descartadas: dejar huérfano; dar de baja el hardware.
+- Consecuencias: P-027 cerrado. RN-018, `01`, `03`, `05`. Implementación de código: D3/D5, no D2; la regla sí queda establecida.
+
+### ADR-047 Reclamación abierta al procesar baja de perfil (cierra P-028)
+- Fecha: 2026-11-07
+- Estado: aceptada
+- Contexto: ADR-035: cancelar el servicio y reclamar son actos distintos. ADR-044 cancelaba servicios de `negocio` y no mencionaba reclamaciones.
+- Decisión: al procesar baja de perfil, toda reclamación `abierta` de un servicio de **ese** perfil (como cliente o como proveedor) pasa a `cerrada` **sin marca**. No se reabre. No aplica RN-011 Advertencias y sanciones por este cierre. Cancelar el servicio **sigue sin** cerrar ni abrir reclamación; la excepción es este acto (el admin ya está en él; el cierre es consecuencia, sin marca).
+- Motivo: no dejar un trámite abierto sobre un perfil que deja de operar; sin marca porque no hay juicio de RN-011 en la baja.
+- Alternativas descartadas: dejar abierta; cerrar con marca.
+- Consecuencias: P-028 cerrado. RN-017 Reclamación, `01`, `03`, `05`. ADR-035 se acota, no se revierte.
+
 
 

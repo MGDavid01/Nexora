@@ -358,16 +358,16 @@ async def obtener_tablero_admin(session: AsyncSession) -> TableroAdminOut:
         for u in usuarios
         if u.tipo_cuenta == TipoCuenta.proveedor
         and u.funcion == FuncionProveedor.administrativo
-        and u.baja_solicitada_en is None
+        and u.baja_procesada_en is None
     )
     usuarios_tecnicos = sum(
         1
         for u in usuarios
         if u.tipo_cuenta == TipoCuenta.proveedor
         and u.funcion == FuncionProveedor.tecnico
-        and u.baja_solicitada_en is None
+        and u.baja_procesada_en is None
     )
-    cuentas_en_baja = sum(1 for u in usuarios if u.baja_solicitada_en is not None)
+    cuentas_en_baja = sum(1 for u in usuarios if u.baja_procesada_en is not None)
 
     # Cobertura de categorías
     proveedores_activos_por_cat: dict[UUID, int] = {}
