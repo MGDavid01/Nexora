@@ -24,10 +24,15 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
-.cursor/
 *.log
 .impeccable/
 PRODUCT.md
+
+.cursor/
+**/.cursor/
+.cursorignore
+.cursorindexingignore
+AGENTS.md
 
 # Ignore Rama David
 .taste-skill/
