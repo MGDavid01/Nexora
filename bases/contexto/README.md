@@ -34,7 +34,3 @@ Material original (SRS, DER, plan básico) vive en el padre [`../`](../) (`bases
 **Flujo pendiente → cerrado:** al resolver un ítem de `02`, pasarlo a `01` y registrar ADR en `06`; quitarlo de `02`.
 
 **Una verdad por tema:** no repetir la misma regla en varios archivos; enlaza.
-
-## Reglas Cursor
-
-Las normas cortas viven en [`.cursor/rules/`](../../.cursor/rules/).
