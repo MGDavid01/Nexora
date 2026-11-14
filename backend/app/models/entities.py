@@ -64,13 +64,22 @@ class Usuario(SQLModel, table=True):
             "tipo_cuenta = 'cliente' AND perfil_cliente_id IS NOT NULL "
             "AND perfil_proveedor_id IS NULL AND funcion IS NULL"
             ") OR ("
-            "tipo_cuenta = 'proveedor' AND perfil_proveedor_id IS NOT NULL "
-            "AND perfil_cliente_id IS NULL AND funcion IS NOT NULL"
+            "tipo_cuenta = 'empresa' AND perfil_proveedor_id IS NOT NULL "
+            "AND perfil_cliente_id IS NULL AND funcion IN ('administrativo', 'tecnico')"
+            ") OR ("
+            "tipo_cuenta = 'negocio' AND perfil_proveedor_id IS NOT NULL "
+            "AND perfil_cliente_id IS NULL AND funcion = 'administrativo_campo'"
             ") OR ("
             "tipo_cuenta = 'administrador' AND perfil_cliente_id IS NULL "
             "AND perfil_proveedor_id IS NULL AND funcion IS NULL"
             ")",
             name="usuario_un_perfil",
+        ),
+        Index(
+            "usuario_negocio_un_usuario",
+            "perfil_proveedor_id",
+            unique=True,
+            postgresql_where=text("tipo_cuenta = 'negocio'"),
         ),
     )
 
@@ -116,6 +125,13 @@ class Ubicacion(SQLModel, table=True):
             "(solicitud_id IS NOT NULL)::int = 1",
             name="ubicacion_un_dueno",
         ),
+        CheckConstraint(
+            "(latitud IS NULL AND longitud IS NULL) OR ("
+            "latitud IS NOT NULL AND longitud IS NOT NULL AND "
+            "latitud BETWEEN -90 AND 90 AND longitud BETWEEN -180 AND 180"
+            ")",
+            name="ubicacion_coords_validas",
+        ),
     )
 
     id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
@@ -127,6 +143,8 @@ class Ubicacion(SQLModel, table=True):
     perfil_cliente_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_cliente.id", unique=True)
     perfil_proveedor_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_proveedor.id", unique=True)
     solicitud_id: uuid.UUID | None = Field(default=None, foreign_key="solicitud.id", unique=True)
+    latitud: float | None = Field(default=None, sa_column=Column(Numeric(9, 6), nullable=True))
+    longitud: float | None = Field(default=None, sa_column=Column(Numeric(10, 6), nullable=True))
 
 
 class CategoriaServicio(SQLModel, table=True):
@@ -322,8 +340,98 @@ class Reporte(SQLModel, table=True):
 
 class DispositivoEsp32(SQLModel, table=True):
     __tablename__ = "dispositivo_esp32"
+    __table_args__ = (
+        CheckConstraint(
+            "(perfil_cliente_id IS NOT NULL)::int + (perfil_proveedor_id IS NOT NULL)::int <= 1",
+            name="dispositivo_esp32_un_perfil",
+        ),
+    )
 
     id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
-    perfil_proveedor_id: uuid.UUID = Field(foreign_key="perfil_proveedor.id", index=True)
     identificador: str = Field(unique=True)
     nombre: str
+    perfil_cliente_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_cliente.id", index=True)
+    perfil_proveedor_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_proveedor.id", index=True)
+
+
+class AlquilerEsp32(SQLModel, table=True):
+    __tablename__ = "alquiler_esp32"
+    __table_args__ = (
+        CheckConstraint(
+            "(perfil_cliente_id IS NOT NULL)::int + (perfil_proveedor_id IS NOT NULL)::int = 1",
+            name="alquiler_esp32_un_perfil",
+        ),
+        Index(
+            "alquiler_esp32_activo_por_dispositivo",
+            "dispositivo_id",
+            unique=True,
+            postgresql_where=text("desasignado_en IS NULL"),
+        ),
+    )
+
+    id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
+    dispositivo_id: uuid.UUID = Field(foreign_key="dispositivo_esp32.id", index=True)
+    perfil_cliente_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_cliente.id", index=True)
+    perfil_proveedor_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_proveedor.id", index=True)
+    tokens_consumidos: int = 0
+    porcentaje_n: Decimal = Field(sa_column=Column(Numeric(5, 2), nullable=False))
+    asignado_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )
+    desasignado_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+    )
+
+
+class TarifaTramo(SQLModel, table=True):
+    __tablename__ = "tarifa_tramo"
+    __table_args__ = (
+        CheckConstraint("costo_desde_mxn >= 0", name="tarifa_tramo_desde"),
+        CheckConstraint(
+            "costo_hasta_mxn IS NULL OR costo_hasta_mxn >= costo_desde_mxn",
+            name="tarifa_tramo_rango",
+        ),
+        CheckConstraint("porcentaje >= 0 AND porcentaje <= 100", name="tarifa_tramo_porcentaje"),
+        UniqueConstraint("costo_desde_mxn", name="tarifa_tramo_desde_unico"),
+    )
+
+    id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
+    costo_desde_mxn: Decimal = Field(sa_column=Column(Numeric(12, 2), nullable=False))
+    costo_hasta_mxn: Decimal | None = Field(default=None, sa_column=Column(Numeric(12, 2), nullable=True))
+    porcentaje: Decimal = Field(sa_column=Column(Numeric(5, 2), nullable=False))
+    actualizado_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )
+
+
+class TarifaAlquiler(SQLModel, table=True):
+    __tablename__ = "tarifa_alquiler"
+    __table_args__ = (
+        CheckConstraint("porcentaje_n >= 0 AND porcentaje_n <= 100", name="tarifa_alquiler_porcentaje"),
+    )
+
+    id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
+    clave: str = Field(default="esp32_n", unique=True, index=True)
+    porcentaje_n: Decimal = Field(sa_column=Column(Numeric(5, 2), nullable=False))
+    actualizado_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )
+
+
+class Auditoria(SQLModel, table=True):
+    __tablename__ = "auditoria"
+
+    id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
+    actor_usuario_id: uuid.UUID | None = Field(default=None, foreign_key="usuario.id", index=True)
+    accion: str
+    entidad: str
+    entidad_id: uuid.UUID | None = None
+    detalle: str | None = None
+    creado_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )

@@ -104,9 +104,13 @@ ETIQUETAS_CODIGO_MARCA: dict[CodigoMarca, str] = {
     CodigoMarca.alcance_distinto_solicitud: "El trabajo pedido no corresponde a la solicitud",
 }
 
-_SOLO_PROVEEDOR = frozenset({TipoCuenta.proveedor})
+# `proveedor` queda en el enumerado de Python por código previo; el esquema
+# vigente es empresa | negocio (ADR-044). Las marcas aplican a ambos.
+_SOLO_PROVEEDOR = frozenset({TipoCuenta.proveedor, TipoCuenta.empresa, TipoCuenta.negocio})
 _SOLO_CLIENTE = frozenset({TipoCuenta.cliente})
-_CLIENTE_Y_PROVEEDOR = frozenset({TipoCuenta.cliente, TipoCuenta.proveedor})
+_CLIENTE_Y_PROVEEDOR = frozenset(
+    {TipoCuenta.cliente, TipoCuenta.proveedor, TipoCuenta.empresa, TipoCuenta.negocio}
+)
 
 PERFILES_CODIGO_MARCA: dict[CodigoMarca, frozenset[TipoCuenta]] = {
     CodigoMarca.reiteracion_vencimiento_24h: _SOLO_PROVEEDOR,
