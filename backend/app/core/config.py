@@ -10,6 +10,17 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
     jwt_algorithm: str = "HS256"
 
+    # URL pública de la app (enlaces de recuperación de contraseña).
+    app_public_url: str = "http://localhost:5173"
+
+    # D6 — Google SMTP
+    google_smtp_host: str = "smtp.gmail.com"
+    google_smtp_port: int = 587
+    google_smtp_user: str = ""
+    google_smtp_password: str = ""
+    google_smtp_from: str = ""
+    recuperacion_token_minutos: int = 60
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
