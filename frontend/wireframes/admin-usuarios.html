@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>WF — Admin · Usuarios</title>
+  <link rel="stylesheet" href="wireframe.css" />
+</head>
+<body>
+  <div class="wf-page">
+    <aside class="wf-sidebar">
+      <div class="wf-logo">Nexora</div>
+      <div class="wf-nav-item">Inicio</div>
+      <div class="wf-nav-item active">Usuarios</div>
+      <div class="wf-nav-item">Trabajos</div>
+      <div class="wf-nav-item">Reportes</div>
+      <div class="wf-nav-item">Ingresos</div>
+      <div class="wf-nav-item">Dispositivos</div>
+      <div class="wf-nav-item">Auditoría</div>
+    </aside>
+    <div class="wf-main">
+      <header class="wf-header">
+        <div class="wf-title">Padrón de usuarios y perfiles</div>
+        <div class="wf-header-actions">
+          <div class="wf-filter">Tipo cuenta</div>
+          <div class="wf-filter">Estado</div>
+          <input class="wf-filter" style="width: 140px;" placeholder="Buscar" />
+          <button type="button" class="wf-cta">Alta empresa / negocio</button>
+        </div>
+      </header>
+      <div class="wf-content" style="padding: 12px 20px;">
+        <div class="wf-split">
+          <div style="padding: 12px;">
+            <div class="wf-table-head">
+              <span style="flex:1.5">Perfil / correo</span>
+              <span style="flex:0.8">Tipo</span>
+              <span style="flex:0.6">Marcas</span>
+              <span style="flex:0.6">Estado</span>
+            </div>
+            <div class="wf-row" style="background:#e8e8e8;">
+              <span class="wf-cell" style="flex:1.5;background:transparent;height:auto;">cliente@…</span>
+              <span>cliente</span>
+              <span>0</span>
+              <span class="wf-badge">Activo</span>
+            </div>
+            <div class="wf-row"><span class="wf-cell" style="flex:1.5"></span><span>empresa</span><span>1</span><span class="wf-badge">Riesgo</span></div>
+            <div class="wf-row"><span class="wf-cell" style="flex:1.5"></span><span>negocio</span><span>3</span><span class="wf-badge">Bloqueado</span></div>
+          </div>
+          <div class="wf-drawer">
+            <h2 class="wf-panel-title">Ficha perfil (primario)</h2>
+            <p class="wf-meta">Edición, conversión, desbloqueo, baja</p>
+            <div class="wf-placeholder"></div>
+            <div class="wf-placeholder" style="height: 100px;"></div>
+            <p class="wf-meta">Secundario: auditoría reciente, dispositivo asignado</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="wf-annot">Etapa 1 — admin usuarios</p>
+</body>
+</html>

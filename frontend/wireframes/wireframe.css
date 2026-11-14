@@ -1,0 +1,136 @@
+/* Etapa 1 — wireframes en escala de grises, sin marca */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  color: #333;
+  background: #e8e8e8;
+  line-height: 1.4;
+}
+.wf-page { display: flex; min-height: 100vh; background: #f5f5f5; }
+.wf-sidebar {
+  width: 200px;
+  background: #d0d0d0;
+  border-right: 2px solid #999;
+  padding: 16px 12px;
+  flex-shrink: 0;
+}
+.wf-logo { height: 28px; background: #bbb; margin-bottom: 20px; border: 1px dashed #888; }
+.wf-nav-item {
+  height: 32px;
+  margin-bottom: 6px;
+  background: #c4c4c4;
+  border: 1px solid #999;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+}
+.wf-nav-item.active { background: #a8a8a8; border-width: 2px; }
+.wf-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.wf-header {
+  height: 56px;
+  background: #e0e0e0;
+  border-bottom: 2px solid #999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  gap: 12px;
+}
+.wf-title { font-weight: 700; font-size: 16px; }
+.wf-header-actions { display: flex; gap: 8px; align-items: center; }
+.wf-filter { width: 120px; height: 28px; background: #fff; border: 1px solid #888; }
+.wf-cta {
+  height: 32px;
+  padding: 0 14px;
+  background: #666;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+}
+.wf-content { flex: 1; padding: 20px; overflow: auto; }
+.wf-grid { display: grid; gap: 16px; }
+.wf-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.wf-grid-2-1 { grid-template-columns: 2fr 1fr; }
+.wf-kpi {
+  height: 72px;
+  background: #fff;
+  border: 1px solid #999;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.wf-kpi span { color: #666; font-size: 10px; text-transform: uppercase; }
+.wf-kpi strong { font-size: 22px; }
+.wf-panel {
+  background: #fff;
+  border: 1px solid #999;
+  min-height: 200px;
+  padding: 12px;
+}
+.wf-panel-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ccc;
+}
+.wf-row {
+  height: 36px;
+  margin-bottom: 4px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 12px;
+}
+.wf-row .wf-cell { flex: 1; height: 12px; background: #ddd; }
+.wf-row .wf-cell.sm { flex: 0 0 60px; }
+.wf-table-head {
+  display: flex;
+  gap: 12px;
+  padding: 8px 10px;
+  background: #d8d8d8;
+  border: 1px solid #999;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.wf-drawer {
+  border-left: 3px solid #666;
+  background: #fafafa;
+  padding: 16px;
+  min-height: 400px;
+}
+.wf-stepper { display: flex; gap: 8px; margin-bottom: 20px; }
+.wf-step {
+  flex: 1;
+  height: 40px;
+  background: #ddd;
+  border: 1px solid #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+.wf-step.done { background: #bbb; }
+.wf-step.current { background: #888; color: #fff; border-width: 2px; }
+.wf-placeholder {
+  height: 48px;
+  background: repeating-linear-gradient(90deg, #eee, #eee 8px, #ddd 8px, #ddd 16px);
+  border: 1px dashed #999;
+  margin: 8px 0;
+}
+.wf-badge { display: inline-block; padding: 2px 6px; background: #ccc; border: 1px solid #888; font-size: 10px; }
+.wf-meta { color: #666; font-size: 10px; margin-top: 4px; }
+.wf-annot { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #888; }
+.wf-split { display: grid; grid-template-columns: 1fr 320px; gap: 0; height: 100%; border: 1px solid #999; }
+.wf-map { height: 280px; background: #ccc; border: 1px solid #888; position: relative; }
+.wf-map::after { content: "Mapa / OSM"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #666; }
+.wf-card {
+  border: 1px solid #999;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+.wf-card.selected { border: 2px solid #555; background: #f0f0f0; }

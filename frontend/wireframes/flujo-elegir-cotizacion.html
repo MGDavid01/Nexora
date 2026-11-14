@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>WF — Flujo · Elegir cotización</title>
+  <link rel="stylesheet" href="wireframe.css" />
+</head>
+<body>
+  <div class="wf-page">
+    <aside class="wf-sidebar">
+      <div class="wf-logo">Nexora</div>
+      <div class="wf-nav-item">Inicio</div>
+      <div class="wf-nav-item active">Solicitudes</div>
+      <div class="wf-nav-item">Servicios</div>
+    </aside>
+    <div class="wf-main">
+      <header class="wf-header">
+        <div class="wf-title">Publicar y elegir proveedor</div>
+        <div class="wf-header-actions">
+          <button type="button" class="wf-filter" style="width:auto;padding:0 8px;">Guardar borrador</button>
+        </div>
+      </header>
+      <div class="wf-content" style="max-width: 960px;">
+        <nav class="wf-stepper" aria-label="Pasos">
+          <div class="wf-step done">1 · Detalle</div>
+          <div class="wf-step done">2 · Ubicación</div>
+          <div class="wf-step current">3 · Elegir cotización</div>
+          <div class="wf-step">4 · Confirmación</div>
+        </nav>
+        <section class="wf-panel">
+          <h2 class="wf-panel-title">Cotizaciones recibidas (primario)</h2>
+          <div class="wf-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <div class="wf-card">
+              <strong>Proveedor A</strong>
+              <p class="wf-meta">$4,500 · 2 días</p>
+              <div class="wf-placeholder" style="height: 32px;"></div>
+              <button type="button" class="wf-cta" style="width:100%;margin-top:8px;background:#888;">Seleccionar</button>
+            </div>
+            <div class="wf-card selected">
+              <strong>Proveedor B</strong>
+              <p class="wf-meta">$3,900 · mañana</p>
+              <div class="wf-placeholder" style="height: 32px;"></div>
+              <button type="button" class="wf-cta" style="width:100%;margin-top:8px;">Confirmar elección</button>
+            </div>
+            <div class="wf-card">
+              <strong>Proveedor C</strong>
+              <p class="wf-meta">$5,100 · hoy</p>
+              <div class="wf-placeholder" style="height: 32px;"></div>
+              <button type="button" class="wf-cta" style="width:100%;margin-top:8px;background:#888;">Seleccionar</button>
+            </div>
+          </div>
+          <p class="wf-meta" style="margin-top:16px;">Secundario: comparar condiciones, ver perfil proveedor, retirar participación</p>
+        </section>
+        <aside class="wf-panel" style="margin-top:16px;">
+          <h2 class="wf-panel-title">Resumen solicitud</h2>
+          <div class="wf-placeholder"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+  <p class="wf-annot">Etapa 1 — flujo guiado (stepper)</p>
+</body>
+</html>
