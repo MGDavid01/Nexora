@@ -3,7 +3,10 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, status
+from pydantic import BaseModel
 
+from app.adaptadores.osm import vista_mapa
+from app.adaptadores._resultado import EstadoEnvio
 from app.api.deps import AdministradorActual, SessionDep
 from app.schemas.auth import RegistroCliente, RegistroProveedor, UsuarioOut
 from app.schemas.tablero import TableroAdminOut
@@ -34,6 +37,17 @@ from app.services.usuarios import (
 logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+class MapaOut(BaseModel):
+    latitud: float | None
+    longitud: float | None
+    etiqueta: str
+    mapa_url: str
+    tesela_url: str
+    atribucion: str
+    estado: EstadoEnvio
+    detalle: str
 
 
 @router.get("/tablero", response_model=TableroAdminOut)
@@ -212,3 +226,36 @@ async def alta_marca_del_caso(
     expediente = await registrar_marca_del_caso(session, solicitud_id, datos)
     logger.info("administrador %s registró una marca del caso %s", administrador.id, solicitud_id)
     return expediente
+
+
+@router.get("/mapa", response_model=MapaOut)
+async def consultar_mapa(
+    administrador: AdministradorActual,
+    calle_numero: str,
+    colonia: str,
+    ciudad: str,
+    estado: str,
+    codigo_postal: str,
+) -> MapaOut:
+    """D8 — geocodifica y devuelve URL OSM + plantilla de teselas con atribución.
+
+    No persiste lat/lon: la tabla `ubicacion` aún no las tiene (Andrés / RN-012).
+    """
+    vista = await vista_mapa(
+        calle_numero=calle_numero,
+        colonia=colonia,
+        ciudad=ciudad,
+        estado=estado,
+        codigo_postal=codigo_postal,
+    )
+    logger.info("administrador %s consultó mapa OSM (%s)", administrador.id, vista.punto.geocodificacion.estado.value)
+    return MapaOut(
+        latitud=vista.punto.latitud,
+        longitud=vista.punto.longitud,
+        etiqueta=vista.punto.etiqueta,
+        mapa_url=vista.punto.mapa_url,
+        tesela_url=vista.tesela_url,
+        atribucion=vista.atribucion,
+        estado=vista.punto.geocodificacion.estado,
+        detalle=vista.punto.geocodificacion.detalle,
+    )
