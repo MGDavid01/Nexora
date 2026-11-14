@@ -10,6 +10,13 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
     jwt_algorithm: str = "HS256"
 
+    # D10 usa el SMTP de Google (mismo que D6). Sin USER/PASSWORD el aviso se omite.
+    google_smtp_host: str = "smtp.gmail.com"
+    google_smtp_port: int = 587
+    google_smtp_user: str = ""
+    google_smtp_password: str = ""
+    google_smtp_from: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
