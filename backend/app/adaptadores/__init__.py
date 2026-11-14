@@ -5,6 +5,12 @@ archivo no salen. Héctor llama estas funciones desde sus routers.
 """
 
 from app.adaptadores.archivos import ReferenciaArchivo, subir_archivo
+from app.adaptadores.avisos import (
+    aviso_cancelar_servicio,
+    aviso_denegar_solicitud,
+    aviso_marca,
+    aviso_vencimiento_cotizacion,
+)
 from app.adaptadores.correo import ResultadoCorreo, enviar_correo
 from app.adaptadores.osm import (
     PuntoMapa,
@@ -38,4 +44,8 @@ __all__ = [
     "tesela_url",
     "atribucion_osm",
     "vista_mapa",
+    "aviso_marca",
+    "aviso_denegar_solicitud",
+    "aviso_vencimiento_cotizacion",
+    "aviso_cancelar_servicio",
 ]

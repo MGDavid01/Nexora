@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # URL pública de la app (enlaces de recuperación de contraseña).
     app_public_url: str = "http://localhost:5173"
 
-    # D6 — Google SMTP
+    # D6 / D10 — Google SMTP. Sin USER/PASSWORD el correo o aviso se omite.
     google_smtp_host: str = "smtp.gmail.com"
     google_smtp_port: int = 587
     google_smtp_user: str = ""
