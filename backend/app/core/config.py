@@ -10,6 +10,12 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
     jwt_algorithm: str = "HS256"
 
+    # D7 — Cloudinary. Vale CLOUDINARY_URL o el trío name/key/secret.
+    cloudinary_url: str = ""
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

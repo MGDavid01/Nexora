@@ -2,8 +2,11 @@ import logging
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, File, Form, UploadFile, status
+from pydantic import BaseModel
 
+from app.adaptadores.archivos import subir_archivo
+from app.adaptadores._resultado import EstadoEnvio
 from app.api.deps import AdministradorActual, SessionDep
 from app.schemas.auth import RegistroCliente, RegistroProveedor, UsuarioOut
 from app.schemas.tablero import TableroAdminOut
@@ -34,6 +37,12 @@ from app.services.usuarios import (
 logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+class ArchivoSubidoOut(BaseModel):
+    estado: EstadoEnvio
+    detalle: str
+    referencia: str | None = None
 
 
 @router.get("/tablero", response_model=TableroAdminOut)
@@ -212,3 +221,26 @@ async def alta_marca_del_caso(
     expediente = await registrar_marca_del_caso(session, solicitud_id, datos)
     logger.info("administrador %s registró una marca del caso %s", administrador.id, solicitud_id)
     return expediente
+
+
+@router.post("/archivos", response_model=ArchivoSubidoOut)
+async def subir_archivo_admin(
+    administrador: AdministradorActual,
+    archivo: UploadFile = File(...),
+    carpeta: str = Form(default="nexora"),
+) -> ArchivoSubidoOut:
+    """D7 — POST a Cloudinary. Sin credencial responde estado=omitido (el acto no falla)."""
+    contenido = await archivo.read()
+    nombre = archivo.filename or "archivo.bin"
+    resultado = await subir_archivo(contenido=contenido, nombre_archivo=nombre, carpeta=carpeta.strip() or "nexora")
+    logger.info(
+        "administrador %s subió archivo %s → %s",
+        administrador.id,
+        nombre,
+        resultado.estado.value,
+    )
+    return ArchivoSubidoOut(
+        estado=resultado.estado,
+        detalle=resultado.detalle,
+        referencia=resultado.referencia,
+    )
