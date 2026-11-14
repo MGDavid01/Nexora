@@ -6,6 +6,7 @@ from app.models.entities import (
     ComandoEsp32,
     Cotizacion,
     DispositivoEsp32,
+    EquipoComputo,
     HistorialServicio,
     Participacion,
     PerfilCliente,
@@ -56,6 +57,7 @@ class SesionMemoria:
             TokenRecuperacion: [],
             DispositivoEsp32: [],
             ComandoEsp32: [],
+            EquipoComputo: [],
             AlquilerEsp32: [],
             TarifaTramo: [],
             TarifaAlquiler: [],
@@ -69,6 +71,13 @@ class SesionMemoria:
         if clave not in self.objetos and tipo in self.listas:
             self.listas[tipo].append(obj)
         self.objetos[clave] = obj
+
+    async def delete(self, obj: object) -> None:
+        tipo = type(obj)
+        clave = (tipo, getattr(obj, "id", id(obj)))
+        self.objetos.pop(clave, None)
+        if tipo in self.listas and obj in self.listas[tipo]:
+            self.listas[tipo].remove(obj)
 
     async def get(self, modelo: type, pk: object):
         return self.objetos.get((modelo, pk))

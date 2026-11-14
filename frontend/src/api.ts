@@ -803,6 +803,27 @@ export function bajaUsuarioEmpresa(usuarioId: string, tecnicoReemplazoId?: strin
   });
 }
 
+export type EquipoComputo = {
+  id: string;
+  perfil_cliente_id: string;
+  nombre: string;
+};
+
+export function listarEquipos() {
+  return api<EquipoComputo[]>("/api/v1/equipos");
+}
+
+export function altaEquipo(nombre: string) {
+  return api<EquipoComputo>("/api/v1/equipos", {
+    method: "POST",
+    body: JSON.stringify({ nombre }),
+  });
+}
+
+export function borrarEquipo(equipoId: string) {
+  return api<void>(`/api/v1/equipos/${equipoId}`, { method: "DELETE" });
+}
+
 export function pedirConversion(hacia: "empresa" | "negocio") {
   return api<Conversion>("/api/v1/empresa/conversion", {
     method: "POST",

@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { historialPropio, listarReportesPerfil, type HistorialItem, type Reporte, servicioEstaActivo } from "../../api";
+import {
+  altaEquipo,
+  borrarEquipo,
+  historialPropio,
+  listarEquipos,
+  listarReportesPerfil,
+  type EquipoComputo,
+  type HistorialItem,
+  type Reporte,
+  servicioEstaActivo,
+} from "../../api";
 import { fechaCorta, dineroMxn } from "../../utilidades/formato";
 import { ServicioDetalle } from "../flujo/ServicioDetalle";
 
@@ -90,18 +100,69 @@ export function HistorialCliente() {
 }
 
 export function EquiposCliente() {
+  const [items, setItems] = useState<EquipoComputo[]>([]);
+  const [error, setError] = useState("");
+  const [nombre, setNombre] = useState("");
+
+  async function recargar() {
+    setItems(await listarEquipos());
+  }
+
+  useEffect(() => {
+    recargar().catch((causa) => setError(causa instanceof Error ? causa.message : "No se pudo cargar"));
+  }, []);
+
   return (
     <section className="vista-operacion">
       <header className="encabezado-vista">
         <div>
           <p className="kicker">Cliente</p>
           <h1>Equipos</h1>
+          <p className="lede">Equipos de cómputo del perfil. Solo el nombre, como en el esquema.</p>
         </div>
       </header>
-      <p className="aviso">
-        El registro de equipos de cómputo del perfil se activará cuando la API de equipos esté disponible en esta
-        rama. Mientras tanto, describe el equipo en la solicitud.
-      </p>
+      {error ? <p className="error">{error}</p> : null}
+      <form
+        className="formulario-flujo panel-superficie"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          try {
+            await altaEquipo(nombre);
+            setNombre("");
+            await recargar();
+          } catch (causa) {
+            setError(causa instanceof Error ? causa.message : "No se pudo registrar");
+          }
+        }}
+      >
+        <label>
+          Nombre
+          <input value={nombre} onChange={(ev) => setNombre(ev.target.value)} required maxLength={120} />
+        </label>
+        <button type="submit">Agregar equipo</button>
+      </form>
+      <ul className="lista-casos">
+        {items.map((eq) => (
+          <li key={eq.id} className="caso-fila">
+            <strong>{eq.nombre}</strong>
+            <button
+              type="button"
+              className="secundario"
+              onClick={async () => {
+                try {
+                  await borrarEquipo(eq.id);
+                  await recargar();
+                } catch (causa) {
+                  setError(causa instanceof Error ? causa.message : "No se pudo borrar");
+                }
+              }}
+            >
+              Quitar
+            </button>
+          </li>
+        ))}
+      </ul>
+      {items.length === 0 ? <p className="ayuda">No hay equipos registrados.</p> : null}
     </section>
   );
 }
