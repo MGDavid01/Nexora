@@ -6,6 +6,17 @@ archivo no salen. Héctor llama estas funciones desde sus routers.
 
 from app.adaptadores.archivos import ReferenciaArchivo, subir_archivo
 from app.adaptadores.correo import ResultadoCorreo, enviar_correo
+from app.adaptadores.osm import (
+    PuntoMapa,
+    VistaMapa,
+    atribucion_osm,
+    geocodificar_ubicacion,
+    guardar_ubicacion,
+    persistir_coordenadas,
+    tesela_url,
+    url_mapa,
+    vista_mapa,
+)
 from app.adaptadores.recuperacion import confirmar_recuperacion, solicitar_recuperacion
 from app.adaptadores._resultado import EstadoEnvio, ResultadoExterno
 
@@ -18,4 +29,13 @@ __all__ = [
     "confirmar_recuperacion",
     "ReferenciaArchivo",
     "subir_archivo",
+    "PuntoMapa",
+    "VistaMapa",
+    "geocodificar_ubicacion",
+    "guardar_ubicacion",
+    "persistir_coordenadas",
+    "url_mapa",
+    "tesela_url",
+    "atribucion_osm",
+    "vista_mapa",
 ]
