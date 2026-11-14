@@ -1,0 +1,226 @@
+:root,
+[data-tema="claro"] {
+  --fuente-display: "Source Serif 4", Georgia, serif;
+  --fuente-cuerpo: "Manrope", system-ui, sans-serif;
+  --acento-fuerte: #1a5f8c;
+  --acento-suave: #e8f2fa;
+  --senal: #e8b31e;
+  font-family: var(--fuente-cuerpo);
+}
+
+[data-tema="oscuro"] {
+  --acento-fuerte: #7ec0ef;
+  --acento-suave: #152231;
+  --senal: #ffd342;
+}
+
+h1,
+h2,
+.nexora-wordmark {
+  font-family: var(--fuente-display);
+  letter-spacing: -0.02em;
+}
+
+.marco-sesion main {
+  width: min(72rem, calc(100% - 2rem));
+  margin-inline: auto;
+  padding: 1.5rem 1rem 2.5rem 4.5rem;
+}
+
+.encabezado-vista {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.encabezado-vista .lede {
+  max-width: 40rem;
+  margin: 0.35rem 0 0;
+  color: var(--texto-suave);
+}
+
+.hero-soporte {
+  padding-block: 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.vista-operacion {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.lista-casos {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.caso-fila {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  background: var(--superficie);
+}
+
+.caso-acciones,
+.fila-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.meta-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+  color: var(--texto-suave);
+  font-size: 0.88rem;
+}
+
+.estado-chip {
+  display: inline-flex;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--acento-suave);
+  color: var(--acento-fuerte);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.panel-superficie {
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  background: var(--superficie-suave);
+}
+
+.formulario-flujo {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.enlace-caso {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--superficie);
+  color: inherit;
+  text-decoration: none;
+}
+
+.enlace-caso:hover {
+  border-color: var(--cerulean);
+}
+
+.enlace-secundario {
+  color: var(--cerulean);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tabla-nexora {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla-nexora th,
+.tabla-nexora td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--borde);
+  text-align: left;
+}
+
+.fila-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ficha-servicio {
+  display: grid;
+  gap: 1rem;
+}
+
+.bloque-accion,
+.bloque-datos {
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--borde);
+  border-radius: 12px;
+}
+
+.login-split {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+}
+
+.login-marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 3.5rem);
+  background: linear-gradient(145deg, #0a0a0a 0%, #163a57 55%, #3573a4 100%);
+  color: #fbfbfb;
+}
+
+.login-marca .nexora-wordmark {
+  font-size: clamp(2.4rem, 6vw, 3.5rem);
+  margin: 0;
+}
+
+.login-marca p {
+  max-width: 28rem;
+  line-height: 1.55;
+  color: #d7e6f3;
+}
+
+.login-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.login-panel form {
+  width: min(22rem, 100%);
+}
+
+.barra-wordmark {
+  margin-bottom: 0.35rem;
+  color: var(--pollen);
+  font-family: var(--fuente-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 820px) {
+  .login-split {
+    grid-template-columns: 1fr;
+  }
+
+  .login-marca {
+    min-height: auto;
+    padding-block: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .marco-sesion main {
+    padding-left: 3.8rem;
+  }
+}

@@ -38,7 +38,7 @@ export type Herramienta = {
 export function lugarDe(usuario: Usuario): Lugar {
   if (usuario.tipo_cuenta === "cliente") return "cliente";
   if (usuario.tipo_cuenta === "administrador") return "administrador";
-  if (usuario.funcion === "tecnico") return "tecnico";
+  if (usuario.funcion === "tecnico" || usuario.funcion === "administrativo_campo") return "tecnico";
   return "administrativo";
 }
 
@@ -51,16 +51,8 @@ const cliente: Herramienta[] = [
     texto: "Publicas una solicitud abierta con el problema, la categoría y la ubicación. Si ya cerraste servicios, al publicar ves «Solicitar para:» con esos proveedores. Aquí también consultas las cotizaciones enviadas y eliges una.",
     lugares: ["cliente"],
     accion: "Publicar solicitud",
-    secciones: [
-      {
-        titulo: "Abiertas",
-        texto: "Cuando publiques una, queda abierta hasta que elijas una cotización o la canceles.",
-      },
-      {
-        titulo: "Cotizaciones por elegir",
-        texto: "Solo puedes elegir entre cotizaciones ya enviadas.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/cliente/servicios",
@@ -69,12 +61,8 @@ const cliente: Herramienta[] = [
     resumen: "Seguimiento hasta el cierre y la calificación.",
     texto: "Al aceptar una cotización nace el servicio. Lo sigues hasta el cierre. Puedes cancelarlo solo si sigue pendiente o en curso. Al cerrar puedes calificar al proveedor de 1 a 5; si no calificas, queda 4.5.",
     lugares: ["cliente"],
-    secciones: [
-      {
-        titulo: "En seguimiento",
-        texto: "Pendiente, en curso o pendiente de historial.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/cliente/historial",
@@ -83,12 +71,8 @@ const cliente: Herramienta[] = [
     resumen: "Servicios ya dados. No es el reporte.",
     texto: "El historial registra los servicios que ya se dieron. El reporte es otra cosa: mide acciones del perfil.",
     lugares: ["cliente"],
-    secciones: [
-      {
-        titulo: "Servicios cerrados",
-        texto: "Cada servicio cerrado conserva la calificación de ese cierre.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/cliente/equipos",
@@ -98,12 +82,8 @@ const cliente: Herramienta[] = [
     texto: "Equipos de cómputo registrados en tu perfil.",
     lugares: ["cliente"],
     accion: "Agregar equipo",
-    secciones: [
-      {
-        titulo: "Del perfil",
-        texto: "Cuando registres un equipo, aparece aquí.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/cliente/reportes",
@@ -112,12 +92,8 @@ const cliente: Herramienta[] = [
     resumen: "Mediciones de tu perfil.",
     texto: "Mediciones de las acciones de tu perfil. Las genera el sistema. No sustituyen al historial.",
     lugares: ["cliente"],
-    secciones: [
-      {
-        titulo: "Mediciones",
-        texto: "Cada medición guarda la acción, la métrica, el valor y la fecha.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
 ];
 
@@ -129,16 +105,8 @@ const proveedor: Herramienta[] = [
     resumen: "Aceptar, denegar o cotizar.",
     texto: "Solicitudes abiertas que tu perfil puede atender. Aceptar abre 24 horas para cotizar y no reserva la solicitud. Denegar la oculta para tu perfil. La cotización es una por solicitud y no se modifica.",
     lugares: ["administrativo", "tecnico"],
-    secciones: [
-      {
-        titulo: "Por decidir",
-        texto: "Todavía no hay una decisión de tu perfil.",
-      },
-      {
-        titulo: "Dentro del plazo",
-        texto: "Aceptadas y todavía a tiempo de cotizar.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/proveedor/servicios",
@@ -147,16 +115,8 @@ const proveedor: Herramienta[] = [
     resumen: "Del pendiente al cierre.",
     texto: "Servicios asignados a tu perfil. El recorrido es pendiente, en curso, pendiente de historial y cerrado. Para empezar hace falta un técnico de este perfil.",
     lugares: ["administrativo", "tecnico"],
-    secciones: [
-      {
-        titulo: "Del perfil",
-        texto: "Cuando un cliente acepte una cotización, el servicio aparece aquí.",
-      },
-      {
-        titulo: "Detalle del cliente",
-        texto: "El técnico asignado y los administrativos lo ven solo con un servicio activo. Cada consulta queda auditada.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/proveedor/historial",
@@ -165,12 +125,8 @@ const proveedor: Herramienta[] = [
     resumen: "Servicios dados por tu perfil.",
     texto: "Registro de los servicios que tu perfil ya dio. No es el reporte de mediciones.",
     lugares: ["administrativo"],
-    secciones: [
-      {
-        titulo: "Servicios dados",
-        texto: "Al cerrar un servicio queda el registro de lo realizado.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/proveedor/equipo",
@@ -180,16 +136,8 @@ const proveedor: Herramienta[] = [
     texto: "Usuarios administrativos y técnicos de tu perfil, y las categorías de servicio que atiendes.",
     lugares: ["administrativo"],
     accion: "Agregar usuario",
-    secciones: [
-      {
-        titulo: "Usuarios",
-        texto: "Cada usuario es administrativo o técnico.",
-      },
-      {
-        titulo: "Categorías",
-        texto: "El perfil declara al menos una categoría.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/proveedor/mapa",
@@ -198,12 +146,8 @@ const proveedor: Herramienta[] = [
     resumen: "Ubicación del perfil.",
     texto: "Ubicación de tu perfil. El mapa es OpenStreetMap.",
     lugares: ["administrativo"],
-    secciones: [
-      {
-        titulo: "Ubicación",
-        texto: "Calle, colonia, ciudad, estado y código postal del perfil.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/proveedor/reportes",
@@ -212,12 +156,8 @@ const proveedor: Herramienta[] = [
     resumen: "Mediciones del perfil.",
     texto: "Mediciones de las acciones de tu perfil. No son el historial de servicios.",
     lugares: ["administrativo"],
-    secciones: [
-      {
-        titulo: "Mediciones",
-        texto: "Las genera el sistema al ocurrir la acción.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/proveedor/captura",
@@ -226,12 +166,8 @@ const proveedor: Herramienta[] = [
     resumen: "Voz en campo con el dispositivo autorizado.",
     texto: "Captura de voz en campo. La hace el dispositivo ESP32 autorizado, conectado al sistema.",
     lugares: ["tecnico"],
-    secciones: [
-      {
-        titulo: "En campo",
-        texto: "Cuando haya un dispositivo autorizado para el servicio, la captura entra por aquí.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
 ];
 
@@ -266,7 +202,8 @@ const administrador: Herramienta[] = [
     resumen: "Mediciones de los perfiles.",
     texto: "Consulta de reportes. Miden acciones de un perfil. No son el historial de servicios.",
     lugares: ["administrador"],
-    secciones: [{ titulo: "Mediciones", texto: "Perfil, acción, métrica, valor y fecha." }],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/admin/ingresos",
@@ -275,12 +212,8 @@ const administrador: Herramienta[] = [
     resumen: "Comisión simulada de servicios cerrados.",
     texto: "Comisión simulada sobre el costo de la cotización de cada servicio cerrado, con la escala de 5 % a 9 %. No hay cobro ni pasarela. El inicio muestra los últimos 30 días.",
     lugares: ["administrador"],
-    secciones: [
-      {
-        titulo: "Servicios cerrados",
-        texto: "Solo un servicio cerrado suma comisión. Uno cancelado o todavía abierto no entra.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/admin/dispositivos",
@@ -289,12 +222,8 @@ const administrador: Herramienta[] = [
     resumen: "Dispositivos de campo autorizados.",
     texto: "Dispositivos ESP32 autorizados para la captura en campo. Qué más entra además de la voz sigue abierto.",
     lugares: ["administrador"],
-    secciones: [
-      {
-        titulo: "Autorizados",
-        texto: "Registrar, recibir datos, enviar comandos y consultar estado.",
-      },
-    ],
+    secciones: [],
+    existente: true,
   },
   {
     to: "/admin/auditoria",
@@ -303,10 +232,8 @@ const administrador: Herramienta[] = [
     resumen: "Log de acciones administrativas.",
     texto: "Registro de altas, ediciones, marcas, desbloqueo, baja procesada, tramos, dispositivos y consultas de historial acotadas. No es historial de servicios, reporte ni SIEM.",
     lugares: ["administrador"],
-    secciones: [
-      { titulo: "Eventos", texto: "Quién hizo qué, cuándo y sobre qué entidad." },
-      { titulo: "Historial acotado", texto: "Consultas de historial autorizadas al atender marcas o reclamaciones." },
-    ],
+    secciones: [],
+    existente: true,
   },
 ];
 

@@ -22,7 +22,7 @@
   color: var(--texto);
   background: var(--fondo);
   color-scheme: light;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: var(--fuente-cuerpo, "Manrope", system-ui, sans-serif);
   line-height: 1.45;
 }
 

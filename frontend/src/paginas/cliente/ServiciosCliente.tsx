@@ -1,0 +1,124 @@
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { historialPropio, type HistorialItem, servicioEstaActivo } from "../../api";
+import { fechaCorta, dineroMxn } from "../../utilidades/formato";
+import { ServicioDetalle } from "../flujo/ServicioDetalle";
+
+export function ServiciosCliente() {
+  const { servicioId } = useParams();
+  const [items, setItems] = useState<HistorialItem[]>([]);
+  const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    historialPropio()
+      .then((lista) => setItems(lista.filter((i) => servicioEstaActivo(i.estado))))
+      .catch((causa) => setError(causa instanceof Error ? causa.message : "No se pudo cargar"))
+      .finally(() => setCargando(false));
+  }, []);
+
+  const detalle = servicioId ? items.find((i) => i.servicio_id === servicioId) : null;
+
+  if (servicioId && detalle) {
+    return <ServicioDetalle item={detalle} volverA="/cliente/servicios" />;
+  }
+
+  return (
+    <section className="vista-operacion">
+      <header className="encabezado-vista">
+        <div>
+          <p className="kicker">Cliente</p>
+          <h1>Servicios en seguimiento</h1>
+        </div>
+      </header>
+      {error ? <p className="error">{error}</p> : null}
+      {cargando ? <p className="ayuda">Cargando…</p> : null}
+      <ul className="lista-casos">
+        {items.map((i) => (
+          <li key={i.servicio_id}>
+            <Link to={`/cliente/servicios/${i.servicio_id}`} className="enlace-caso">
+              <strong>{i.titulo}</strong>
+              <span className="meta-fila">
+                <span className="estado-chip">{i.estado}</span>
+                <span>{dineroMxn(i.costo_mxn)}</span>
+                <span>{fechaCorta(i.creado_en)}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {!cargando && items.length === 0 ? <p className="ayuda">No hay servicios activos.</p> : null}
+    </section>
+  );
+}
+
+export function HistorialCliente() {
+  const [items, setItems] = useState<HistorialItem[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    historialPropio()
+      .then((lista) => setItems(lista.filter((i) => !servicioEstaActivo(i.estado))))
+      .catch((causa) => setError(causa instanceof Error ? causa.message : "No se pudo cargar"));
+  }, []);
+
+  return (
+    <section className="vista-operacion">
+      <header className="encabezado-vista">
+        <div>
+          <p className="kicker">Cliente</p>
+          <h1>Historial</h1>
+          <p className="lede">Servicios ya cerrados o cancelados.</p>
+        </div>
+      </header>
+      {error ? <p className="error">{error}</p> : null}
+      <ul className="lista-casos">
+        {items.map((i) => (
+          <li key={i.servicio_id} className="caso-fila">
+            <strong>{i.titulo}</strong>
+            <span className="meta-fila">
+              <span className="estado-chip">{i.estado}</span>
+              {dineroMxn(i.costo_mxn)}
+            </span>
+            {i.informe ? <p className="ayuda">{i.informe.descripcion}</p> : null}
+          </li>
+        ))}
+      </ul>
+      {items.length === 0 ? <p className="ayuda">Sin servicios cerrados todavía.</p> : null}
+    </section>
+  );
+}
+
+export function EquiposCliente() {
+  return (
+    <section className="vista-operacion">
+      <header className="encabezado-vista">
+        <div>
+          <p className="kicker">Cliente</p>
+          <h1>Equipos</h1>
+        </div>
+      </header>
+      <p className="aviso">
+        El registro de equipos de cómputo del perfil se activará cuando la API de equipos esté disponible en esta
+        rama. Mientras tanto, describe el equipo en la solicitud.
+      </p>
+    </section>
+  );
+}
+
+export function ReportesCliente() {
+  return (
+    <section className="vista-operacion">
+      <header className="encabezado-vista">
+        <div>
+          <p className="kicker">Cliente</p>
+          <h1>Reportes</h1>
+        </div>
+      </header>
+      <p className="aviso">
+        Los reportes del perfil se generan en el sistema y hoy se consultan desde el panel de administración. Gap: falta
+        endpoint de reportes filtrado por perfil para cuentas cliente.
+      </p>
+    </section>
+  );
+}

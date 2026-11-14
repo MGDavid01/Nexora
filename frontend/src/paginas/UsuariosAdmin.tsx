@@ -14,7 +14,11 @@ import {
   listarUsuariosAdmin,
   obtenerUsuarioAdmin,
   registrarAdministrador,
+  registrarEmpresaAdmin,
   registrarMarca,
+  registrarNegocioAdmin,
+  desbloquearUsuarioAdmin,
+  procesarBajaPerfilAdmin,
   type FuncionProveedor,
   type Marca,
   type TipoCuenta,
@@ -23,11 +27,12 @@ import {
 } from "../api";
 import { digitos, texto, validarAlta, validarContrasenaOpcional } from "../validarAlta";
 import { CamposCuenta, CamposUbicacion, ubicacionDe } from "./FormularioRegistro";
+import { ConversionesAdmin } from "./admin/AdminExtension";
 import "../usuarios-admin.css";
 import "../usuarios-v2.css";
 
 type TipoPerfil = "cliente" | "proveedor" | "plataforma";
-type ModoAlta = "cliente" | "proveedor" | "administrador";
+type ModoAlta = "cliente" | "empresa" | "negocio" | "administrador";
 type TabAcceso = "todas" | "operan" | "marca" | "bloqueadas" | "baja";
 type LugarFiltro = "todos" | "cliente" | "proveedor" | "administrador";
 type OrdenLista = "marcas" | "nombre" | "alta";
@@ -257,14 +262,19 @@ export function UsuariosAdmin() {
           <button type="button" className="btn btn-alto" onClick={() => setModoAlta("administrador")}>
             Administrador
           </button>
-          <button type="button" className="btn btn-alto" onClick={() => setModoAlta("proveedor")}>
-            Registrar proveedor
+          <button type="button" className="btn btn-alto" onClick={() => setModoAlta("empresa")}>
+            Empresa
+          </button>
+          <button type="button" className="btn btn-alto" onClick={() => setModoAlta("negocio")}>
+            Negocio
           </button>
           <button type="button" className="btn btn-primario btn-alto" onClick={() => setModoAlta("cliente")}>
             Registrar cliente
           </button>
         </div>
       </div>
+
+      <ConversionesAdmin />
 
       {errorGlobal ? <p className="error-crm">{errorGlobal}</p> : null}
 
@@ -553,16 +563,21 @@ export function UsuariosAdmin() {
       </ModalCapa>
 
       <ModalCapa
-        abierto={modoAlta === "proveedor"}
-        titulo="Alta de proveedor"
-        meta="Crea el perfil proveedor con su primera cuenta administrativa. Después se pueden sumar técnicos o administrativos desde su ficha."
+        abierto={modoAlta === "empresa" || modoAlta === "negocio"}
+        titulo={modoAlta === "negocio" ? "Alta de negocio" : "Alta de empresa"}
+        meta={
+          modoAlta === "negocio"
+            ? "Un solo usuario administrativo de campo. Sin cuentas extra."
+            : "Primera cuenta administrativa; después sumas técnicos o administrativos."
+        }
         onCerrar={() => setModoAlta(null)}
       >
         <AltaProveedorForm
+          tipoCuenta={modoAlta === "negocio" ? "negocio" : "empresa"}
           onCreado={async (id) => {
             await recargar(id);
             setModoAlta(null);
-            setAvisoLista("Proveedor registrado correctamente.");
+            setAvisoLista(modoAlta === "negocio" ? "Negocio registrado." : "Empresa registrada.");
             abrirCuenta(id);
           }}
         />
@@ -680,7 +695,13 @@ function AltaClienteForm({
   );
 }
 
-function AltaProveedorForm({ onCreado }: { onCreado?: (id: string) => Promise<void> }) {
+function AltaProveedorForm({
+  onCreado,
+  tipoCuenta = "empresa",
+}: {
+  onCreado?: (id: string) => Promise<void>;
+  tipoCuenta?: "empresa" | "negocio";
+}) {
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
 
@@ -706,10 +727,11 @@ function AltaProveedorForm({ onCreado }: { onCreado?: (id: string) => Promise<vo
       };
       const fallo = validarAlta(datos, "proveedor");
       if (fallo) throw new Error(fallo);
-      const creado = await api<{ id: string }>("/api/v1/admin/proveedores", {
-        method: "POST",
-        body: JSON.stringify(datos),
-      });
+      const payload = { ...datos, tipo_cuenta: tipoCuenta };
+      const creado =
+        tipoCuenta === "negocio"
+          ? await registrarNegocioAdmin(payload)
+          : await registrarEmpresaAdmin(payload);
       await onCreado?.(creado.id);
     } catch (causa) {
       setError(causa instanceof Error ? causa.message : "No se pudo registrar");
@@ -841,7 +863,7 @@ function FichaCuenta({
         correo: texto(formulario.get("correo")).toLowerCase(),
         telefono: digitos(formulario.get("telefono")),
       };
-      if (detalle.tipo_cuenta === "proveedor") {
+      if (detalle.tipo_cuenta === "proveedor" || detalle.tipo_cuenta === "empresa") {
         payload.funcion = funcion as FuncionProveedor;
       }
       if (contrasena) payload.contrasena = contrasena;
@@ -889,6 +911,39 @@ function FichaCuenta({
         <dd>{detalle.tipo_cuenta === "administrador" ? "—" : `${detalle.conteo_marcas}/3`}</dd>
       </dl>
       <BloqueMarcas detalle={detalle} onActualizado={onActualizado} />
+      {perfil.bloqueado ? (
+        <p className="padron-acciones-form">
+          <button
+            type="button"
+            className="btn-crm"
+            onClick={() =>
+              void desbloquearUsuarioAdmin(detalle.id)
+                .then(onActualizado)
+                .then(() => setAviso("Perfil desbloqueado."))
+                .catch((causa) => setError(causa instanceof Error ? causa.message : "No se pudo desbloquear"))
+            }
+          >
+            Desbloquear perfil
+          </button>
+        </p>
+      ) : null}
+      {perfil.baja ? (
+        <p className="padron-acciones-form">
+          <button
+            type="button"
+            className="btn-crm btn-crm-principal"
+            onClick={() => {
+              if (!window.confirm("¿Procesar la baja de perfil?")) return;
+              void procesarBajaPerfilAdmin(detalle.id)
+                .then(onActualizado)
+                .then(() => setAviso("Baja procesada."))
+                .catch((causa) => setError(causa instanceof Error ? causa.message : "No se pudo procesar"));
+            }}
+          >
+            Procesar baja de perfil
+          </button>
+        </p>
+      ) : null}
       <form onSubmit={(e) => void guardar(e)}>
         <label className="campo-crm">
           Nombre
@@ -916,7 +971,7 @@ function FichaCuenta({
             key={`${detalle.id}-t`}
           />
         </label>
-        {detalle.tipo_cuenta === "proveedor" ? (
+        {detalle.tipo_cuenta === "proveedor" || detalle.tipo_cuenta === "empresa" ? (
           <label className="campo-crm">
             Función
             <select name="funcion" defaultValue={detalle.funcion ?? "administrativo"} key={`${detalle.id}-f`}>
@@ -1383,6 +1438,8 @@ function calcularKpis(cuentas: UsuarioLista[], perfiles: PerfilGrupo[]) {
 function lugarCuenta(cuenta: UsuarioLista) {
   if (cuenta.tipo_cuenta === "administrador") return "Plataforma";
   if (cuenta.tipo_cuenta === "cliente") return "Cliente";
+  if (cuenta.tipo_cuenta === "empresa") return cuenta.funcion === "tecnico" ? "Técnico" : "Administrativo";
+  if (cuenta.tipo_cuenta === "negocio") return "Administrativo de campo";
   return cuenta.funcion === "tecnico" ? "Técnico" : "Administrativo";
 }
 
@@ -1425,7 +1482,12 @@ function agruparPerfiles(cuentas: UsuarioLista[]): PerfilGrupo[] {
     const id = (cuenta.perfil_cliente_id ?? cuenta.perfil_proveedor_id)!;
     let grupo = map.get(id);
     if (!grupo) {
-      const tipo: TipoPerfil = cuenta.tipo_cuenta === "cliente" ? "cliente" : "proveedor";
+      const tipo: TipoPerfil =
+        cuenta.tipo_cuenta === "cliente"
+          ? "cliente"
+          : cuenta.tipo_cuenta === "empresa" || cuenta.tipo_cuenta === "negocio" || cuenta.tipo_cuenta === "proveedor"
+            ? "proveedor"
+            : "proveedor";
       grupo = {
         id,
         nombre: cuenta.perfil_nombre,

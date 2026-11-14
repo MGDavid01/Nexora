@@ -1,98 +1,17 @@
-import { Navigate } from "react-router-dom";
-import { type Usuario } from "../api";
+import { useEffect, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import {
+  cotizacionesSolicitud,
+  historialPropio,
+  listarSolicitudes,
+  mercadoProveedor,
+  servicioEstaActivo,
+  type HistorialItem,
+  type Solicitud,
+} from "../api";
 import { lugarDe, type Lugar } from "../herramientas";
 import { useSesion } from "../sesion";
 import { TableroAdmin } from "./TableroAdmin";
-
-type Metrica = {
-  etiqueta: string;
-  detalle: string;
-};
-
-type Panel = {
-  titulo: string;
-  columnas: string[];
-  vacio: string;
-};
-
-const tablerosRol: Record<Exclude<Lugar, "administrador">, { metricas: Metrica[]; paneles: Panel[] }> = {
-  cliente: {
-    metricas: [
-      { etiqueta: "Solicitudes abiertas", detalle: "Publicadas y sin cotización elegida" },
-      { etiqueta: "Cotizaciones por elegir", detalle: "Enviadas y todavía abiertas" },
-      { etiqueta: "Servicios en seguimiento", detalle: "Pendiente, en curso o por historial" },
-      { etiqueta: "Servicios cerrados", detalle: "Quedan en el historial" },
-    ],
-    paneles: [
-      {
-        titulo: "Solicitudes abiertas",
-        columnas: ["Título", "Categoría", "Estado"],
-        vacio: "No tienes solicitudes abiertas.",
-      },
-      {
-        titulo: "Cotizaciones por elegir",
-        columnas: ["Proveedor", "Estado"],
-        vacio: "No hay cotizaciones enviadas.",
-      },
-      {
-        titulo: "Servicios en seguimiento",
-        columnas: ["Servicio", "Estado"],
-        vacio: "No hay un servicio activo.",
-      },
-    ],
-  },
-  administrativo: {
-    metricas: [
-      { etiqueta: "Por decidir", detalle: "Solicitudes que tu perfil aún no responde" },
-      { etiqueta: "Plazo de cotización", detalle: "Aceptadas, dentro de las 24 horas" },
-      { etiqueta: "Servicios del perfil", detalle: "Asignados a tu organización" },
-      { etiqueta: "Por cerrar", detalle: "Pendientes de historial" },
-    ],
-    paneles: [
-      {
-        titulo: "Por decidir",
-        columnas: ["Solicitud", "Categoría"],
-        vacio: "No hay solicitudes pendientes de tu perfil.",
-      },
-      {
-        titulo: "Dentro de las 24 horas",
-        columnas: ["Solicitud", "Plazo"],
-        vacio: "Ninguna aceptación está dentro del plazo.",
-      },
-      {
-        titulo: "Servicios del perfil",
-        columnas: ["Servicio", "Estado", "Técnico"],
-        vacio: "No hay servicios asignados.",
-      },
-    ],
-  },
-  tecnico: {
-    metricas: [
-      { etiqueta: "Asignados", detalle: "Servicios en los que realizas el trabajo" },
-      { etiqueta: "En curso", detalle: "El trabajo ya empezó" },
-      { etiqueta: "Por historial", detalle: "Falta el registro para cerrar" },
-      { etiqueta: "Captura", detalle: "Voz en campo con dispositivo autorizado" },
-    ],
-    paneles: [
-      {
-        titulo: "Servicios asignados",
-        columnas: ["Servicio", "Estado"],
-        vacio: "No tienes un servicio asignado.",
-      },
-      {
-        titulo: "Pendiente de historial",
-        columnas: ["Servicio", "Fecha"],
-        vacio: "Nada esperando el registro de cierre.",
-      },
-      {
-        titulo: "Captura en campo",
-        columnas: ["Dispositivo", "Estado"],
-        vacio: "Sin captura de un dispositivo autorizado.",
-      },
-    ],
-  },
-};
-
 export function Inicio() {
   const { usuario, listo } = useSesion();
   if (!listo) return <p className="ayuda">Cargando…</p>;
@@ -105,69 +24,95 @@ export function Inicio() {
     return <TableroAdmin />;
   }
 
-  const tablero = tablerosRol[lugar];
-  const [principal, ...lateral] = tablero.paneles;
+  return (
+    <TableroRol
+      lugar={lugar}
+      nombre={usuario.nombre}
+      fecha={ahora}
+    />
+  );
+}
+
+function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administrador">; nombre: string; fecha: Date }) {
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
+  const [mercado, setMercado] = useState<Solicitud[]>([]);
+  const [servicios, setServicios] = useState<HistorialItem[]>([]);
+  const [cotizaciones, setCotizaciones] = useState(0);
+
+  useEffect(() => {
+    async function cargar() {
+      if (lugar === "cliente") {
+        const sol = await listarSolicitudes();
+        setSolicitudes(sol.filter((s) => s.estado === "abierta"));
+        let total = 0;
+        for (const s of sol.filter((x) => x.estado === "abierta")) {
+          const cots = await cotizacionesSolicitud(s.id);
+          total += cots.filter((c) => c.estado === "enviada").length;
+        }
+        setCotizaciones(total);
+        const hist = await historialPropio();
+        setServicios(hist.filter((h) => servicioEstaActivo(h.estado)));
+      } else {
+        setMercado(await mercadoProveedor());
+        const hist = await historialPropio();
+        setServicios(hist.filter((h) => servicioEstaActivo(h.estado)));
+      }
+    }
+    cargar().catch(() => undefined);
+  }, [lugar]);
+
+  const abiertas = solicitudes.length;
+  const mercadoCount = mercado.length;
+  const activos = servicios.length;
+  const cerrados = 0;
+
+  const metricas =
+    lugar === "cliente"
+      ? [
+          { etiqueta: "Solicitudes abiertas", valor: abiertas },
+          { etiqueta: "Cotizaciones por elegir", valor: cotizaciones },
+          { etiqueta: "Servicios activos", valor: activos },
+          { etiqueta: "Historial", valor: cerrados },
+        ]
+      : [
+          { etiqueta: "Mercado visible", valor: mercadoCount },
+          { etiqueta: "Servicios activos", valor: activos },
+          { etiqueta: "En curso", valor: servicios.filter((s) => s.estado === "en_curso").length },
+          { etiqueta: "Por informe", valor: servicios.filter((s) => s.estado === "pendiente_informe").length },
+        ];
+
+  const enlaceRapido =
+    lugar === "cliente" ? "/cliente/solicitudes" : lugar === "tecnico" ? "/proveedor/servicios" : "/proveedor/solicitudes";
 
   return (
     <section className="tablero">
       <header className="tablero-encabezado">
         <div>
-          <p className="kicker">{etiqueta(usuario)}</p>
+          <p className="kicker">{etiquetaLugar(lugar)}</p>
           <h1>
-            {saludo(ahora)}, {usuario.nombre}
+            {saludo(fecha)}, {nombre}
           </h1>
         </div>
-        <p className="tablero-fecha">{fechaLegible(ahora)}</p>
+        <p className="tablero-fecha">{fechaLegible(fecha)}</p>
       </header>
       <div className="metricas">
-        {tablero.metricas.map((metrica) => (
-          <article key={metrica.etiqueta} className="metrica">
-            <span>{metrica.etiqueta}</span>
-            <strong>—</strong>
-            <p>{metrica.detalle}</p>
+        {metricas.map((m) => (
+          <article key={m.etiqueta} className="metrica">
+            <span>{m.etiqueta}</span>
+            <strong>{m.valor}</strong>
           </article>
         ))}
       </div>
-      <div className="tablero-cuerpo">
-        <PanelOperacion panel={principal} />
-        <div className="tablero-lateral">
-          {lateral.map((panel) => (
-            <PanelOperacion key={panel.titulo} panel={panel} />
-          ))}
-        </div>
-      </div>
+      <p>
+        <Link to={enlaceRapido}>Ir al módulo principal →</Link>
+      </p>
     </section>
   );
 }
 
-function PanelOperacion({ panel }: { panel: Panel }) {
-  return (
-    <section className="panel-dash">
-      <h2>{panel.titulo}</h2>
-      <table>
-        <thead>
-          <tr>
-            {panel.columnas.map((columna) => (
-              <th key={columna} scope="col">
-                {columna}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td colSpan={panel.columnas.length}>{panel.vacio}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-function etiqueta(usuario: Usuario): string {
-  if (usuario.tipo_cuenta === "cliente") return "Cliente";
-  if (usuario.tipo_cuenta === "administrador") return "Administrador de plataforma";
-  if (usuario.funcion === "tecnico") return "Técnico";
+function etiquetaLugar(lugar: Exclude<Lugar, "administrador">): string {
+  if (lugar === "cliente") return "Cliente";
+  if (lugar === "tecnico") return "Técnico en campo";
   return "Administrativo del proveedor";
 }
 
