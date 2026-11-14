@@ -13,6 +13,7 @@ from app.schemas.dispositivos import (
     DispositivoEstatusOut,
     DispositivoOut,
 )
+from app.services.aparato import esta_online, generar_clave_aparato, hash_clave_aparato
 from app.services.auditoria import registrar_evento
 from app.services.tarifas import tarifa_alquiler
 
@@ -41,11 +42,13 @@ async def alta_dispositivo(
     if existente is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ese identificador ya existe")
     await _validar_perfiles(session, datos.perfil_cliente_id, datos.perfil_proveedor_id)
+    clave = generar_clave_aparato()
     dispositivo = DispositivoEsp32(
         identificador=datos.identificador,
         nombre=datos.nombre,
         perfil_cliente_id=datos.perfil_cliente_id,
         perfil_proveedor_id=datos.perfil_proveedor_id,
+        clave_api_hash=hash_clave_aparato(clave),
     )
     session.add(dispositivo)
     await session.flush()
@@ -59,7 +62,9 @@ async def alta_dispositivo(
         entidad_id=dispositivo.id,
         detalle=f"alta {dispositivo.identificador}",
     )
-    return (await estatus_dispositivo(session, dispositivo.id))
+    out = await estatus_dispositivo(session, dispositivo.id)
+    out.clave_api = clave
+    return out
 
 
 async def asignar_dispositivo(
@@ -131,6 +136,7 @@ async def estatus_dispositivo(session: AsyncSession, dispositivo_id: UUID) -> Di
         **base.model_dump(),
         asignado=base.estatus != "pool",
         consultado_en=datetime.now(UTC),
+        ultimo_dato=dispositivo.ultimo_dato,
     )
 
 
@@ -213,4 +219,6 @@ def _out(
         alquiler_id=alquiler.id if alquiler else None,
         porcentaje_n=float(alquiler.porcentaje_n) if alquiler else None,
         tokens_consumidos=alquiler.tokens_consumidos if alquiler else 0,
+        online=esta_online(dispositivo),
+        visto_en=dispositivo.visto_en,
     )

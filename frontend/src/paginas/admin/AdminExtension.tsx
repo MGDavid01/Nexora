@@ -125,10 +125,13 @@ export function DispositivosAdmin() {
         onSubmit={async (e: FormEvent<HTMLFormElement>) => {
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
-          await altaDispositivoAdmin({
+          const creado = await altaDispositivoAdmin({
             identificador: String(fd.get("id") ?? "").trim(),
             nombre: String(fd.get("nombre") ?? "").trim(),
           });
+          if (creado.clave_api) {
+            window.alert(`Clave del aparato (guárdala, no se vuelve a mostrar):\n${creado.clave_api}`);
+          }
           e.currentTarget.reset();
           await recargar();
         }}
@@ -142,6 +145,7 @@ export function DispositivosAdmin() {
           <li key={d.id} className="caso-fila">
             <strong>{d.nombre}</strong>
             <span className="estado-chip">{d.estatus}</span>
+            <span className="estado-chip">{d.online ? "online" : "offline"}</span>
             <span className="ayuda">{d.perfil_nombre ?? "Sin asignar"}</span>
             <div className="fila-botones">
               <button
@@ -163,7 +167,15 @@ export function DispositivosAdmin() {
               <button type="button" className="secundario" onClick={() => desasignarDispositivoAdmin(d.id).then(recargar)}>
                 Desasignar
               </button>
-              <button type="button" className="secundario" onClick={() => estatusDispositivoAdmin(d.id).then((s) => alert(s.consultado_en))}>
+              <button
+                type="button"
+                className="secundario"
+                onClick={() =>
+                  estatusDispositivoAdmin(d.id).then((s) =>
+                    alert(`${s.online ? "online" : "offline"} · ${s.consultado_en}`),
+                  )
+                }
+              >
                 Estatus
               </button>
             </div>

@@ -107,7 +107,8 @@ def test_cadena_alembic_n7_n5() -> None:
     config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "alembic"))
     script = ScriptDirectory.from_config(config)
     heads = script.get_heads()
-    assert heads == ["h5e470g4h5k4"]
+    assert heads == ["i6f581h5i6l5"]
     revisiones = {rev.revision: rev.down_revision for rev in script.walk_revisions()}
+    assert revisiones["i6f581h5i6l5"] == "h5e470g4h5k4"
     assert revisiones["h5e470g4h5k4"] == "g4d369f3g4j3"
     assert revisiones["g4d369f3g4j3"] == "f3c258e2f3i2"

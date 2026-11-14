@@ -849,11 +849,15 @@ export type Dispositivo = {
   perfil_nombre: string | null;
   estatus: "pool" | "asignado_cliente" | "asignado_proveedor";
   tokens_consumidos: number;
+  online: boolean;
+  visto_en: string | null;
+  clave_api?: string | null;
 };
 
 export type DispositivoEstatus = Dispositivo & {
   asignado: boolean;
   consultado_en: string;
+  ultimo_dato: string | null;
 };
 
 export type AuditoriaLista = {

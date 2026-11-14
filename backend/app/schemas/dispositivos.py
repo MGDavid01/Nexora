@@ -42,8 +42,12 @@ class DispositivoOut(BaseModel):
     alquiler_id: UUID | None = None
     porcentaje_n: float | None = None
     tokens_consumidos: int = 0
+    online: bool = False
+    visto_en: datetime | None = None
+    clave_api: str | None = None
 
 
 class DispositivoEstatusOut(DispositivoOut):
     asignado: bool
     consultado_en: datetime
+    ultimo_dato: str | None = None

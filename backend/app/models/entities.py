@@ -352,6 +352,27 @@ class DispositivoEsp32(SQLModel, table=True):
     nombre: str
     perfil_cliente_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_cliente.id", index=True)
     perfil_proveedor_id: uuid.UUID | None = Field(default=None, foreign_key="perfil_proveedor.id", index=True)
+    clave_api_hash: str | None = None
+    visto_en: datetime | None = Field(default=None, sa_column=Column(DateTime(timezone=True), nullable=True))
+    ultimo_dato: str | None = None
+    ultimo_dato_en: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+
+
+class ComandoEsp32(SQLModel, table=True):
+    __tablename__ = "comando_esp32"
+
+    id: uuid.UUID = Field(default_factory=_uuid, primary_key=True)
+    dispositivo_id: uuid.UUID = Field(foreign_key="dispositivo_esp32.id", index=True)
+    tipo: str
+    payload: str = ""
+    estado: str = "pendiente"
+    creado_en: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )
+    acked_en: datetime | None = Field(default=None, sa_column=Column(DateTime(timezone=True), nullable=True))
 
 
 class AlquilerEsp32(SQLModel, table=True):

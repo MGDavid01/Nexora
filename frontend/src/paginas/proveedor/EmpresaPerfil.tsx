@@ -227,8 +227,8 @@ export function CapturaCampo() {
     <section className="vista-operacion">
       <h1>Captura en campo</h1>
       <p className="aviso">
-        El canal de voz usa el ESP32 autorizado (API del aparato, N3/N4). La web enlaza aquí cuando el dispositivo esté
-        asociado al servicio activo.
+        El canal de voz RN-019 usa el ESP32 autorizado (API del aparato). STT, agente y TTS son mocks si no hay
+        credenciales; DeepSeek no está cableado. La web sigue funcionando sin el aparato.
       </p>
     </section>
   );
