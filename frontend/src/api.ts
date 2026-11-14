@@ -896,6 +896,10 @@ export function registrarNegocioAdmin(datos: Record<string, unknown>) {
   return api<Usuario>("/api/v1/admin/negocios", { method: "POST", body: JSON.stringify(datos) });
 }
 
+export function listarReportesPerfil() {
+  return api<Reporte[]>("/api/v1/reportes");
+}
+
 export function listarReportesAdmin(filtros?: { perfil_cliente_id?: string; perfil_proveedor_id?: string }) {
   const params = new URLSearchParams();
   if (filtros?.perfil_cliente_id) params.set("perfil_cliente_id", filtros.perfil_cliente_id);

@@ -4,7 +4,9 @@ from uuid import UUID
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models.entities import Reporte
+from fastapi import HTTPException, status
+
+from app.models.entities import Reporte, Usuario
 from app.schemas.reportes import ReporteOut
 
 
@@ -57,3 +59,14 @@ async def listar_reportes(
         )
         for fila in recorte
     ]
+
+
+async def listar_reportes_perfil(session: AsyncSession, usuario: Usuario) -> list[ReporteOut]:
+    if usuario.perfil_cliente_id is not None:
+        return await listar_reportes(session, perfil_cliente_id=usuario.perfil_cliente_id)
+    if usuario.perfil_proveedor_id is not None:
+        return await listar_reportes(session, perfil_proveedor_id=usuario.perfil_proveedor_id)
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Solo un perfil cliente o proveedor consulta sus reportes",
+    )

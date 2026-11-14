@@ -9,6 +9,7 @@ from app.models.entities import Cotizacion, Participacion, Servicio, Solicitud, 
 from app.models.enums import EstadoCotizacion, EstadoParticipacion, EstadoServicio, EstadoSolicitud, TipoCuenta
 from app.schemas.flujo import CotizacionCrearIn, CotizacionOut, ServicioOut
 from app.services.perfiles import exigir_cliente, exigir_proveedor
+from app.services.reportes import registrar_reporte
 from app.services.vencimientos import PLAZO_COTIZAR, vencer_aceptadas
 from app.models.enums import estado_servicio_publico
 
@@ -85,6 +86,13 @@ async def cotizar(
     session.add(cotizacion)
     participacion.estado = EstadoParticipacion.cotizada
     await session.flush()
+    await registrar_reporte(
+        session,
+        accion=f"cotizacion:{cotizacion.id}",
+        metrica="enviar",
+        valor=str(cotizacion.costo_mxn),
+        perfil_proveedor_id=perfil_id,
+    )
     return _out(cotizacion)
 
 

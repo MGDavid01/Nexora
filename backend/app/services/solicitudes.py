@@ -27,6 +27,7 @@ from app.services.avisos_negocio import avisar_denegar
 from app.services.osm_ubicacion import intentar_geocodificar
 from app.services.perfiles import exigir_cliente as _exigir_cliente
 from app.services.perfiles import exigir_proveedor as _exigir_proveedor
+from app.services.reportes import registrar_reporte
 from app.services.vencimientos import vencer_aceptadas
 
 
@@ -96,6 +97,13 @@ async def publicar(session: AsyncSession, usuario: Usuario, datos: SolicitudCrea
     session.add(ubicacion)
     await intentar_geocodificar(ubicacion)
     await session.flush()
+    await registrar_reporte(
+        session,
+        accion=f"solicitud:{solicitud.id}",
+        metrica="publicar",
+        valor="1",
+        perfil_cliente_id=perfil_cliente_id,
+    )
     return _salida(solicitud, categoria, ubicacion)
 
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { historialPropio, type HistorialItem, servicioEstaActivo } from "../../api";
+import { historialPropio, listarReportesPerfil, type HistorialItem, type Reporte, servicioEstaActivo } from "../../api";
 import { fechaCorta, dineroMxn } from "../../utilidades/formato";
 import { ServicioDetalle } from "../flujo/ServicioDetalle";
 
@@ -107,18 +107,46 @@ export function EquiposCliente() {
 }
 
 export function ReportesCliente() {
+  const [items, setItems] = useState<Reporte[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    listarReportesPerfil()
+      .then(setItems)
+      .catch((causa) => setError(causa instanceof Error ? causa.message : "No se pudo cargar"));
+  }, []);
+
   return (
     <section className="vista-operacion">
       <header className="encabezado-vista">
         <div>
           <p className="kicker">Cliente</p>
           <h1>Reportes</h1>
+          <p className="lede">Mediciones que genera el sistema sobre tu perfil. No sustituyen al historial.</p>
         </div>
       </header>
-      <p className="aviso">
-        Los reportes del perfil se generan en el sistema y hoy se consultan desde el panel de administración. Gap: falta
-        endpoint de reportes filtrado por perfil para cuentas cliente.
-      </p>
+      {error ? <p className="error">{error}</p> : null}
+      <table className="tabla-nexora">
+        <thead>
+          <tr>
+            <th>Acción</th>
+            <th>Métrica</th>
+            <th>Valor</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((r) => (
+            <tr key={r.id}>
+              <td>{r.accion}</td>
+              <td>{r.metrica}</td>
+              <td>{r.valor}</td>
+              <td>{fechaCorta(r.fecha)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {items.length === 0 ? <p className="ayuda">Aún no hay mediciones en este perfil.</p> : null}
     </section>
   );
 }

@@ -2,11 +2,14 @@ import { type FormEvent, useEffect, useState } from "react";
 import {
   altaUsuarioEmpresa,
   bajaUsuarioEmpresa,
+  listarReportesPerfil,
   listarUsuariosEmpresa,
   pedirConversion,
   type EmpresaUsuario,
+  type Reporte,
   type Usuario,
 } from "../../api";
+import { fechaCorta } from "../../utilidades/formato";
 import { useSesion } from "../../sesion";
 import { digitos, texto } from "../../validarAlta";
 
@@ -214,10 +217,46 @@ export function MapaProveedor() {
 }
 
 export function ReportesProveedor() {
+  const [items, setItems] = useState<Reporte[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    listarReportesPerfil()
+      .then(setItems)
+      .catch((causa) => setError(causa instanceof Error ? causa.message : "No se pudo cargar"));
+  }, []);
+
   return (
     <section className="vista-operacion">
-      <h1>Reportes</h1>
-      <p className="aviso">Gap: consulta de reportes por perfil proveedor pendiente de endpoint dedicado.</p>
+      <header className="encabezado-vista">
+        <div>
+          <p className="kicker">Proveedor</p>
+          <h1>Reportes</h1>
+          <p className="lede">Mediciones del perfil empresa o negocio. Las genera el sistema.</p>
+        </div>
+      </header>
+      {error ? <p className="error">{error}</p> : null}
+      <table className="tabla-nexora">
+        <thead>
+          <tr>
+            <th>Acción</th>
+            <th>Métrica</th>
+            <th>Valor</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((r) => (
+            <tr key={r.id}>
+              <td>{r.accion}</td>
+              <td>{r.metrica}</td>
+              <td>{r.valor}</td>
+              <td>{fechaCorta(r.fecha)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {items.length === 0 ? <p className="ayuda">Aún no hay mediciones en este perfil.</p> : null}
     </section>
   );
 }
