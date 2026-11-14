@@ -5,8 +5,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.adaptadores.avisos import aviso_marca
 from app.models.entities import PerfilCliente, PerfilProveedor, Sancion, Usuario
-from app.models.enums import TipoCuenta, codigo_marca_aplica
+from app.models.enums import TipoCuenta, codigo_marca_aplica, etiqueta_codigo_marca
 from app.schemas.usuarios import MarcaIn
 
 
@@ -55,7 +56,42 @@ async def aplicar_marca(
             status_code=status.HTTP_409_CONFLICT,
             detail="Ese código ya tiene una marca en este perfil",
         ) from exc
+    await _avisar_marca(session, usuario, datos, perfil)
     return marca
+
+
+async def _avisar_marca(
+    session: AsyncSession,
+    usuario: Usuario,
+    datos: MarcaIn,
+    perfil: PerfilCliente | PerfilProveedor,
+) -> None:
+    """El acto de marca ya valió; un fallo de correo no lo revierte."""
+    cuentas = list((await session.exec(select(Usuario))).all())
+    if usuario.perfil_cliente_id is not None:
+        destinos = [
+            cuenta.correo
+            for cuenta in cuentas
+            if cuenta.perfil_cliente_id == usuario.perfil_cliente_id and cuenta.baja_procesada_en is None
+        ]
+        nombre = usuario.nombre
+    else:
+        destinos = [
+            cuenta.correo
+            for cuenta in cuentas
+            if cuenta.perfil_proveedor_id == usuario.perfil_proveedor_id and cuenta.baja_procesada_en is None
+        ]
+        nombre = getattr(perfil, "nombre_comercial", None) or usuario.nombre
+    try:
+        await aviso_marca(
+            correos=destinos,
+            nombre_perfil=nombre,
+            codigo=etiqueta_codigo_marca(datos.codigo),
+            descripcion=datos.descripcion,
+            bloqueado=perfil.bloqueado,
+        )
+    except Exception:  # noqa: BLE001
+        return
 
 
 async def marcas_del_usuario(session: AsyncSession, usuario: Usuario) -> list[Sancion]:

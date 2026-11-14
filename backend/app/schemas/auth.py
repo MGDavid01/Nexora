@@ -128,6 +128,28 @@ class Login(BaseModel):
         return value.lower()
 
 
+class RecuperarContrasenaIn(BaseModel):
+    correo: EmailStr
+
+    @field_validator("correo")
+    @classmethod
+    def _correo(cls, value: EmailStr) -> str:
+        return value.lower()
+
+
+class ConfirmarRecuperacionIn(BaseModel):
+    token: str = Field(min_length=1)
+    contrasena: str = Field(min_length=8)
+
+    @field_validator("token")
+    @classmethod
+    def _token(cls, value: str) -> str:
+        limpio = value.strip()
+        if not limpio:
+            raise ValueError("El token es obligatorio")
+        return limpio
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
 
+from app.adaptadores.recuperacion import confirmar_recuperacion, solicitar_recuperacion
 from app.api.deps import SessionDep, UsuarioActual, buscar_por_correo, perfil_esta_bloqueado
 from app.core.security import create_access_token, verify_password
-from app.schemas.auth import Login, TokenResponse, UsuarioOut
+from app.schemas.auth import ConfirmarRecuperacionIn, Login, RecuperarContrasenaIn, TokenResponse, UsuarioOut
 from app.services.registro import marcar_baja
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -21,6 +22,17 @@ async def login(datos: Login, session: SessionDep) -> TokenResponse:
             detail="El perfil está bloqueado. Contacta a Nexora",
         )
     return TokenResponse(access_token=create_access_token(usuario.id))
+
+
+@router.post("/recuperar", status_code=status.HTTP_204_NO_CONTENT)
+async def recuperar(datos: RecuperarContrasenaIn, session: SessionDep) -> None:
+    """Pide recuperación. Siempre 204 para no filtrar si el correo existe (D6)."""
+    await solicitar_recuperacion(session, datos.correo)
+
+
+@router.post("/recuperar/confirmar", status_code=status.HTTP_204_NO_CONTENT)
+async def recuperar_confirmar(datos: ConfirmarRecuperacionIn, session: SessionDep) -> None:
+    await confirmar_recuperacion(session, token=datos.token, contrasena_nueva=datos.contrasena)
 
 
 @router.get("/yo", response_model=UsuarioOut)
