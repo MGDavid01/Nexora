@@ -7,7 +7,7 @@ from app.schemas.flujo import CotizacionCrearIn, CotizacionOut
 from app.schemas.solicitudes import ParticipacionOut, SolicitudCrearIn, SolicitudOut
 from app.services.cotizaciones import cotizar, listar_cotizaciones
 from app.services.solicitudes import cancelar, decidir, listar_propias, publicar
-from app.services.vencimientos import vencer_aceptadas
+from app.services.vencimientos import ejecutar_ciclo_24h
 
 router = APIRouter(prefix="/solicitudes", tags=["solicitudes"])
 
@@ -25,7 +25,7 @@ async def listar_solicitudes(session: SessionDep, usuario: UsuarioActual) -> lis
 @router.post("/vencer")
 async def vencer_plazos(session: SessionDep, usuario: UsuarioActual) -> dict[str, int]:
     _ = usuario
-    return {"vencidas": await vencer_aceptadas(session)}
+    return await ejecutar_ciclo_24h(session)
 
 
 @router.post("/{solicitud_id}/cancelar", response_model=SolicitudOut)

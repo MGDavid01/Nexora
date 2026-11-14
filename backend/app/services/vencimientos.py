@@ -3,8 +3,8 @@ from datetime import UTC, datetime, timedelta
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models.entities import Participacion, Solicitud
-from app.models.enums import EstadoParticipacion, EstadoSolicitud
+from app.models.entities import Cotizacion, Participacion, Solicitud
+from app.models.enums import EstadoCotizacion, EstadoParticipacion, EstadoSolicitud
 from app.services.avisos_negocio import avisar_vencimiento
 
 PLAZO_COTIZAR = timedelta(hours=24)
@@ -37,3 +37,30 @@ async def vencer_aceptadas(session: AsyncSession, *, ahora: datetime | None = No
     if vencidas:
         await session.flush()
     return vencidas
+
+
+async def descartar_cotizaciones_huerfanas(session: AsyncSession) -> int:
+    """Cotizaciones enviadas cuya solicitud ya no está abierta (RN-006)."""
+    solicitudes = {item.id: item for item in (await session.exec(select(Solicitud))).all()}
+    n = 0
+    for cotizacion in (await session.exec(select(Cotizacion))).all():
+        if cotizacion.estado != EstadoCotizacion.enviada:
+            continue
+        solicitud = solicitudes.get(cotizacion.solicitud_id)
+        if solicitud is None or solicitud.estado == EstadoSolicitud.abierta:
+            continue
+        cotizacion.estado = EstadoCotizacion.descartada
+        n += 1
+    if n:
+        await session.flush()
+    return n
+
+
+async def ejecutar_ciclo_24h(session: AsyncSession, *, ahora: datetime | None = None) -> dict[str, int]:
+    """Job programable: vence participaciones a las 24 h y limpia cotizaciones. Sin despliegue."""
+    vencidas = await vencer_aceptadas(session, ahora=ahora)
+    descartadas = await descartar_cotizaciones_huerfanas(session)
+    return {
+        "vencidas": vencidas,
+        "cotizaciones_descartadas": descartadas,
+    }
