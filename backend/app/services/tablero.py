@@ -356,14 +356,14 @@ async def obtener_tablero_admin(session: AsyncSession) -> TableroAdminOut:
     usuarios_administrativos = sum(
         1
         for u in usuarios
-        if u.tipo_cuenta == TipoCuenta.proveedor
-        and u.funcion == FuncionProveedor.administrativo
+        if u.tipo_cuenta in {TipoCuenta.proveedor, TipoCuenta.empresa, TipoCuenta.negocio}
+        and u.funcion in {FuncionProveedor.administrativo, FuncionProveedor.administrativo_campo}
         and u.baja_procesada_en is None
     )
     usuarios_tecnicos = sum(
         1
         for u in usuarios
-        if u.tipo_cuenta == TipoCuenta.proveedor
+        if u.tipo_cuenta in {TipoCuenta.proveedor, TipoCuenta.empresa}
         and u.funcion == FuncionProveedor.tecnico
         and u.baja_procesada_en is None
     )

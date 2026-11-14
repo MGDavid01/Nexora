@@ -131,9 +131,9 @@ async def cerrar_reclamacion(
 def _puede_abrir(actor: Usuario, servicio: Servicio, solicitud: Solicitud) -> bool:
     if actor.tipo_cuenta == TipoCuenta.cliente:
         return actor.perfil_cliente_id == solicitud.perfil_cliente_id
-    if actor.tipo_cuenta == TipoCuenta.proveedor:
-        if actor.funcion != FuncionProveedor.administrativo:
-            return False
+    from app.services.perfiles import es_lado_administrativo, es_proveedor
+
+    if es_proveedor(actor) and es_lado_administrativo(actor):
         return actor.perfil_proveedor_id == servicio.perfil_proveedor_id
     return False
 

@@ -17,7 +17,9 @@ def _usuario(tipo: TipoCuenta) -> Usuario:
         contrasena_hash="hash",
         telefono="6640000000",
         tipo_cuenta=tipo,
-        funcion=FuncionProveedor.administrativo if not es_cliente else None,
+        funcion=FuncionProveedor.administrativo if tipo in {TipoCuenta.proveedor, TipoCuenta.empresa} else (
+            FuncionProveedor.administrativo_campo if tipo == TipoCuenta.negocio else None
+        ),
         perfil_cliente_id=uuid4() if es_cliente else None,
         perfil_proveedor_id=None if es_cliente else uuid4(),
     )
@@ -54,6 +56,11 @@ def test_mercado_exige_proveedor() -> None:
         _exigir_proveedor(cliente)
 
     assert error.value.status_code == 403
+
+
+def test_empresa_y_negocio_son_proveedor() -> None:
+    _exigir_proveedor(_usuario(TipoCuenta.empresa))
+    _exigir_proveedor(_usuario(TipoCuenta.negocio))
 
 
 def test_solicitud_acepta_categoria_por_nombre_y_ubicacion() -> None:

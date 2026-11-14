@@ -26,10 +26,13 @@ from app.models.enums import (
     EstadoReclamacion,
     EstadoServicio,
     EstadoSolicitud,
+    FuncionProveedor,
     TipoCuenta,
     TipoHistorial,
     etiqueta_codigo_marca,
 )
+from app.services.dispositivos import desasignar_perfil
+from app.services.empresa_usuarios import primera_cuenta
 from app.services.reclamaciones import cerrar_reclamacion
 from app.schemas.usuarios import (
     EditarCuenta,
@@ -70,10 +73,20 @@ async def editar_cuenta(session: AsyncSession, usuario_id: UUID, datos: EditarCu
         if ya is not None:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El correo ya está registrado")
     if datos.funcion is not None:
-        if usuario.tipo_cuenta != TipoCuenta.proveedor:
+        if usuario.tipo_cuenta == TipoCuenta.negocio:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Solo un usuario de proveedor tiene función",
+                detail="La función de un negocio es administrativo de campo",
+            )
+        if usuario.tipo_cuenta not in {TipoCuenta.proveedor, TipoCuenta.empresa}:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Solo un usuario de empresa tiene función",
+            )
+        if datos.funcion == FuncionProveedor.administrativo_campo:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="administrativo_campo solo aplica a negocio",
             )
         usuario.funcion = datos.funcion
     usuario.nombre = datos.nombre
@@ -117,7 +130,8 @@ async def procesar_baja_perfil(session: AsyncSession, usuario_id: UUID) -> Usuar
             detail="La baja de perfil aplica a un perfil cliente o proveedor",
         )
     cuentas = await _cuentas_del_perfil(session, usuario)
-    if any(cuenta.baja_procesada_en is not None for cuenta in cuentas):
+    ancla = primera_cuenta(cuentas)
+    if ancla.baja_procesada_en is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="La baja de perfil ya fue procesada",
@@ -128,6 +142,10 @@ async def procesar_baja_perfil(session: AsyncSession, usuario_id: UUID) -> Usuar
             detail="No hay un pedido de baja de perfil",
         )
     await _aplicar_efectos_al_procesar_baja(session, usuario)
+    if usuario.perfil_cliente_id is not None:
+        await desasignar_perfil(session, perfil_cliente_id=usuario.perfil_cliente_id)
+    if usuario.perfil_proveedor_id is not None:
+        await desasignar_perfil(session, perfil_proveedor_id=usuario.perfil_proveedor_id)
     ahora = datetime.now(UTC)
     ids = {cuenta.id for cuenta in cuentas}
     for cuenta in cuentas:

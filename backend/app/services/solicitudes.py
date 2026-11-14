@@ -9,11 +9,12 @@ from app.models.entities import (
     CategoriaServicio,
     Cotizacion,
     Participacion,
+    Servicio,
     Solicitud,
     Ubicacion,
     Usuario,
 )
-from app.models.enums import EstadoCotizacion, EstadoParticipacion, EstadoSolicitud, TipoCuenta
+from app.models.enums import EstadoCotizacion, EstadoParticipacion, EstadoServicio, EstadoSolicitud, TipoCuenta
 from app.schemas.auth import UbicacionIn
 from app.schemas.solicitudes import (
     MercadoSolicitudOut,
@@ -22,24 +23,11 @@ from app.schemas.solicitudes import (
     SolicitudOut,
     UbicacionSolicitudOut,
 )
-
-_TIPOS_PROVEEDOR = frozenset({
-    TipoCuenta.proveedor,
-    TipoCuenta.empresa,
-    TipoCuenta.negocio,
-})
-
-
-def _exigir_cliente(usuario: Usuario) -> UUID:
-    if usuario.tipo_cuenta != TipoCuenta.cliente or usuario.perfil_cliente_id is None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo un cliente puede realizar esta operación")
-    return usuario.perfil_cliente_id
-
-
-def _exigir_proveedor(usuario: Usuario) -> UUID:
-    if usuario.tipo_cuenta not in _TIPOS_PROVEEDOR or usuario.perfil_proveedor_id is None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo un proveedor puede realizar esta operación")
-    return usuario.perfil_proveedor_id
+from app.services.avisos_negocio import avisar_denegar
+from app.services.osm_ubicacion import intentar_geocodificar
+from app.services.perfiles import exigir_cliente as _exigir_cliente
+from app.services.perfiles import exigir_proveedor as _exigir_proveedor
+from app.services.vencimientos import vencer_aceptadas
 
 
 async def _categoria(
@@ -71,9 +59,32 @@ def _ubicacion(datos: UbicacionIn, solicitud_id: UUID) -> Ubicacion:
 async def publicar(session: AsyncSession, usuario: Usuario, datos: SolicitudCrearIn) -> SolicitudOut:
     perfil_cliente_id = _exigir_cliente(usuario)
     categoria = await _categoria(session, datos)
+    dirigida = datos.dirigida_a_perfil_proveedor_id
+    if dirigida is not None:
+        cerrado = next(
+            (
+                servicio
+                for servicio in (await session.exec(select(Servicio))).all()
+                if servicio.perfil_proveedor_id == dirigida
+                and servicio.estado == EstadoServicio.cerrado
+            ),
+            None,
+        )
+        if cerrado is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Solo se dirige a un proveedor con un servicio cerrado previo",
+            )
+        solicitud_cerrada = await session.get(Solicitud, cerrado.solicitud_id)
+        if solicitud_cerrada is None or solicitud_cerrada.perfil_cliente_id != perfil_cliente_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Ese proveedor no está en el historial de este cliente",
+            )
     solicitud = Solicitud(
         perfil_cliente_id=perfil_cliente_id,
         categoria_id=categoria.id,
+        dirigida_a_perfil_proveedor_id=dirigida,
         titulo=datos.titulo,
         descripcion=datos.descripcion,
         estado=EstadoSolicitud.abierta,
@@ -83,6 +94,7 @@ async def publicar(session: AsyncSession, usuario: Usuario, datos: SolicitudCrea
     await session.flush()
     ubicacion = _ubicacion(datos.ubicacion, solicitud.id)
     session.add(ubicacion)
+    await intentar_geocodificar(ubicacion)
     await session.flush()
     return _salida(solicitud, categoria, ubicacion)
 
@@ -136,6 +148,7 @@ async def cancelar(session: AsyncSession, usuario: Usuario, solicitud_id: UUID) 
 
 
 async def mercado(session: AsyncSession, usuario: Usuario) -> list[MercadoSolicitudOut]:
+    await vencer_aceptadas(session)
     perfil_proveedor_id = _exigir_proveedor(usuario)
     solicitudes = list((await session.exec(select(Solicitud))).all())
     categorias = {item.id: item for item in (await session.exec(select(CategoriaServicio))).all()}
@@ -218,6 +231,8 @@ async def decidir(
         participacion.aceptada_en = datetime.now(UTC) if aceptar else None
     if aceptar:
         solicitud.datos_cerrados = True
+    else:
+        await avisar_denegar(session, solicitud, perfil_proveedor_id)
     await session.flush()
     return ParticipacionOut.model_validate(participacion, from_attributes=True)
 

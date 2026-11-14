@@ -14,6 +14,7 @@ class SolicitudCrearIn(BaseModel):
     # publicar usando el nombre que ya utiliza el alta de proveedores.
     categoria_id: UUID | None = None
     categoria: str | None = None
+    dirigida_a_perfil_proveedor_id: UUID | None = None
     ubicacion: UbicacionIn
 
     @model_validator(mode="after")

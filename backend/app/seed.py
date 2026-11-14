@@ -132,11 +132,11 @@ async def _asegurar_proveedor(session: AsyncSession, admin: Usuario) -> Usuario:
             nombre_comercial="Soporte Norte",
             descripcion="Soporte técnico y redes para empresas y hogares",
             categorias=["Soporte técnico", "Redes"],
+            tipo_cuenta="empresa",
             ubicacion=_UBICACION,
         ),
         admin,
     )
-    await _como_empresa(usuario)
     print(f"  · empresa creada ({PROVEEDOR_CORREO} / {DEMO_CONTRASENA})")
     return usuario
 
@@ -158,11 +158,11 @@ async def _asegurar_proveedor_b(session: AsyncSession, admin: Usuario) -> Usuari
             nombre_comercial="Redes del Valle",
             descripcion="Cableado y soporte de red",
             categorias=["Soporte técnico", "Redes"],
+            tipo_cuenta="empresa",
             ubicacion=_UBICACION,
         ),
         admin,
     )
-    await _como_empresa(usuario)
     print(f"  · empresa 2 creada ({PROVEEDOR2_CORREO} / {DEMO_CONTRASENA})")
     return usuario
 
