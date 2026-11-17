@@ -1,0 +1,169 @@
+/* Encabezado unificado del área de administración (banda Onyx + acentos). */
+
+.admin-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin: 0 0 1.1rem;
+  padding: 1.6rem 1.7rem;
+  border-radius: 20px;
+  background: #0a0a0a;
+  color: #fbfbfb;
+  box-shadow: 0 18px 44px rgb(10 10 10 / 24%);
+  overflow: hidden;
+}
+
+.admin-hero-cuerpo {
+  min-width: 0;
+}
+
+.admin-hero-kicker {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffd342;
+}
+
+.admin-hero-titulo {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fbfbfb;
+  overflow-wrap: anywhere;
+}
+
+.admin-hero-sub {
+  margin: 0.45rem 0 0;
+  max-width: 52rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgb(251 251 251 / 70%);
+}
+
+.admin-hero-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Botones y enlaces dentro de la banda oscura */
+.admin-hero .btn {
+  border: 1px solid rgb(251 251 251 / 38%);
+  background: transparent;
+  color: #fbfbfb;
+}
+
+.admin-hero .btn:hover {
+  background: rgb(251 251 251 / 10%);
+  border-color: rgb(251 251 251 / 60%);
+}
+
+.admin-hero .btn-primario {
+  border-color: transparent;
+  background: #3573a4;
+  color: #fbfbfb;
+}
+
+.admin-hero .btn-primario:hover {
+  background: #2c5e86;
+}
+
+.admin-hero .btn:disabled {
+  opacity: 0.55;
+}
+
+.admin-hero-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgb(251 251 251 / 38%);
+  border-radius: 999px;
+  background: transparent;
+  color: #fbfbfb;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-hero-volver:hover {
+  background: rgb(251 251 251 / 10%);
+  border-color: rgb(251 251 251 / 60%);
+  color: #ffd342;
+}
+
+/* Variante compacta (tablero de altura fija) */
+.admin-hero--compacta {
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding: 0.8rem 1.15rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgb(10 10 10 / 20%);
+}
+
+.admin-hero--compacta .admin-hero-titulo {
+  font-size: 1.3rem;
+}
+
+.admin-hero--compacta .admin-hero-kicker {
+  margin-bottom: 0.15rem;
+  font-size: 0.62rem;
+}
+
+.admin-hero--compacta .admin-hero-sub {
+  display: none;
+}
+
+/* Acciones de estado de cuenta (desbloqueo / baja) en la ficha */
+.acciones-estado-cuenta {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--borde, #e3e8ee);
+}
+
+@media (max-width: 640px) {
+  .admin-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 1.25rem 1.1rem;
+    border-radius: 16px;
+  }
+
+  .admin-hero-acciones {
+    width: 100%;
+  }
+
+  .admin-hero-acciones .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* Fondo de recuadros en los apartados de administración sin vista propia
+   (Reportes, Ingresos, Dispositivos, Auditoría). */
+.marco-sesion main:has(.vista-admin) {
+  background-color: #e8eef3;
+  background-image:
+    linear-gradient(rgb(53 115 164 / 10%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(53 115 164 / 10%) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+[data-tema="oscuro"] .marco-sesion main:has(.vista-admin) {
+  background-color: #0a0a0a;
+  background-image:
+    linear-gradient(rgb(255 211 66 / 6%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 211 66 / 6%) 1px, transparent 1px);
+  background-size: 28px 28px;
+}

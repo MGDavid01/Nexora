@@ -9,10 +9,12 @@ import {
 import {
   api,
   codigosMarcaPara,
+  desbloquearPerfil,
   editarUsuarioAdmin,
   ETIQUETAS_MARCA,
   listarUsuariosAdmin,
   obtenerUsuarioAdmin,
+  procesarBajaPerfil,
   registrarAdministrador,
   registrarMarca,
   type FuncionProveedor,
@@ -21,10 +23,12 @@ import {
   type UsuarioDetalle,
   type UsuarioLista,
 } from "../api";
+import { EncabezadoAdmin } from "../EncabezadoAdmin";
 import { digitos, texto, validarAlta, validarContrasenaOpcional } from "../validarAlta";
 import { CamposCuenta, CamposUbicacion, ubicacionDe } from "./FormularioRegistro";
 import "../usuarios-admin.css";
 import "../usuarios-v2.css";
+import "../admin.css";
 
 type TipoPerfil = "cliente" | "proveedor" | "plataforma";
 type ModoAlta = "cliente" | "proveedor" | "administrador";
@@ -248,23 +252,25 @@ export function UsuariosAdmin() {
 
   return (
     <section className="vista-usuarios-v2" aria-labelledby="titulo-usuarios">
-      <div className="titulo-fila">
-        <div>
-          <h1 id="titulo-usuarios">Usuarios</h1>
-          <p className="subtitulo-pagina">{kpis.subtitulo}</p>
-        </div>
-        <div className="acciones-titulo">
-          <button type="button" className="btn btn-alto" onClick={() => setModoAlta("administrador")}>
-            Administrador
-          </button>
-          <button type="button" className="btn btn-alto" onClick={() => setModoAlta("proveedor")}>
-            Registrar proveedor
-          </button>
-          <button type="button" className="btn btn-primario btn-alto" onClick={() => setModoAlta("cliente")}>
-            Registrar cliente
-          </button>
-        </div>
-      </div>
+      <EncabezadoAdmin
+        kicker="Panel de administración"
+        titulo="Usuarios"
+        tituloId="titulo-usuarios"
+        subtitulo={kpis.subtitulo}
+        acciones={
+          <>
+            <button type="button" className="btn btn-alto" onClick={() => setModoAlta("administrador")}>
+              Administrador
+            </button>
+            <button type="button" className="btn btn-alto" onClick={() => setModoAlta("proveedor")}>
+              Registrar proveedor
+            </button>
+            <button type="button" className="btn btn-primario btn-alto" onClick={() => setModoAlta("cliente")}>
+              Registrar cliente
+            </button>
+          </>
+        }
+      />
 
       {errorGlobal ? <p className="error-crm">{errorGlobal}</p> : null}
 
@@ -939,9 +945,95 @@ function FichaCuenta({
           {enviando ? "Guardando…" : "Guardar cuenta"}
         </button>
       </form>
+      <AccionesEstadoCuenta detalle={detalle} onActualizado={onActualizado} />
       {error ? <p className="error-crm">{error}</p> : null}
       {aviso ? <p className="aviso-crm">{aviso}</p> : null}
     </>
+  );
+}
+
+function AccionesEstadoCuenta({
+  detalle,
+  onActualizado,
+}: {
+  detalle: UsuarioDetalle;
+  onActualizado: (d: UsuarioDetalle) => Promise<void>;
+}) {
+  const [error, setError] = useState("");
+  const [aviso, setAviso] = useState("");
+  const [enviando, setEnviando] = useState<string | null>(null);
+
+  if (!detalle.bloqueado && !detalle.baja_solicitada) return null;
+
+  async function desbloquear() {
+    if (
+      !window.confirm(
+        "El perfil podrá operar de nuevo. Las marcas acumuladas no vuelven a cero. ¿Desbloquear?",
+      )
+    ) {
+      return;
+    }
+    setError("");
+    setAviso("");
+    setEnviando("desbloqueo");
+    try {
+      const siguiente = await desbloquearPerfil(detalle.id);
+      setAviso("Perfil desbloqueado. Sigue con sus marcas acumuladas.");
+      await onActualizado(siguiente);
+    } catch (causa) {
+      setError(causa instanceof Error ? causa.message : "No se pudo desbloquear");
+    } finally {
+      setEnviando(null);
+    }
+  }
+
+  async function procesarBaja() {
+    if (
+      !window.confirm(
+        "Se corta el acceso de todas las cuentas del perfil y corre el reloj de 12 meses. ¿Procesar la baja?",
+      )
+    ) {
+      return;
+    }
+    setError("");
+    setAviso("");
+    setEnviando("baja");
+    try {
+      const siguiente = await procesarBajaPerfil(detalle.id);
+      setAviso("Baja procesada. Las cuentas de ese perfil dejaron de entrar.");
+      await onActualizado(siguiente);
+    } catch (causa) {
+      setError(causa instanceof Error ? causa.message : "No se pudo procesar la baja");
+    } finally {
+      setEnviando(null);
+    }
+  }
+
+  return (
+    <div className="acciones-estado-cuenta">
+      {detalle.bloqueado ? (
+        <button
+          type="button"
+          className="btn-crm btn-crm-principal"
+          onClick={() => void desbloquear()}
+          disabled={enviando !== null}
+        >
+          {enviando === "desbloqueo" ? "Desbloqueando…" : "Desbloquear perfil"}
+        </button>
+      ) : null}
+      {detalle.baja_solicitada ? (
+        <button
+          type="button"
+          className="btn-crm"
+          onClick={() => void procesarBaja()}
+          disabled={enviando !== null}
+        >
+          {enviando === "baja" ? "Procesando…" : "Procesar baja de perfil"}
+        </button>
+      ) : null}
+      {error ? <p className="error-crm">{error}</p> : null}
+      {aviso ? <p className="aviso-crm">{aviso}</p> : null}
+    </div>
   );
 }
 

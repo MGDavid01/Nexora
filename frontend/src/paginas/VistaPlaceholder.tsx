@@ -1,8 +1,9 @@
 import type { Herramienta } from "../herramientas";
 
 export function VistaPlaceholder({ herramienta }: { herramienta: Herramienta }) {
+  const esAdmin = herramienta.lugares.includes("administrador");
   return (
-    <section className="panel vista">
+    <section className={esAdmin ? "panel vista vista-admin" : "panel vista"}>
       <p className="kicker">En preparación</p>
       <h1>{herramienta.etiqueta}</h1>
       <p className="ayuda">{herramienta.texto}</p>

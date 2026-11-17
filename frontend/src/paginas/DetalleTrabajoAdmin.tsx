@@ -1,11 +1,13 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { obtenerTrabajoAdmin, type ExpedienteTrabajo } from "../api";
+import { EncabezadoAdmin } from "../EncabezadoAdmin";
 import { FormCerrarReclamacion, FormMarcaCaso } from "../trabajos-expediente-formularios";
 import "../tablero-admin.css";
 import "../detalle-trabajo-admin.css";
 import "../usuarios-admin.css";
 import "../trabajos-admin.css";
+import "../admin.css";
 
 type Escena = "caso" | "atencion";
 type Nivel = "info" | "ok" | "medio" | "alto" | "critico";
@@ -189,12 +191,17 @@ export function DetalleTrabajoAdmin() {
 
   return (
     <section className="vista-inicio vista-detalle-caso vista-padron-crm" aria-labelledby="titulo-caso">
-      <header className="cabecera-caso">
-        <h1 id="titulo-caso">{titulo}</h1>
-        <Link to="/admin/trabajos" className="volver-trabajos">
-          ← Volver a Trabajos
-        </Link>
-      </header>
+      <EncabezadoAdmin
+        kicker="Panel de administración · Caso"
+        titulo={titulo}
+        tituloId="titulo-caso"
+        subtitulo={expediente ? `${expediente.solicitud.cliente} · ${expediente.solicitud.categoria}` : "Expediente del caso"}
+        acciones={
+          <Link to="/admin/trabajos" className="admin-hero-volver">
+            ← Volver a Trabajos
+          </Link>
+        }
+      />
 
       {error ? <p className="error">{error}</p> : null}
 

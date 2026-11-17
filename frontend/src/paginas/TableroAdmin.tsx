@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { obtenerTableroAdmin, type InicioAdmin, type SerieAltas, type SerieComision } from "../api";
+import { EncabezadoAdmin } from "../EncabezadoAdmin";
 import "../tablero-admin.css";
+import "../admin.css";
 
 type Nivel = "info" | "ok" | "medio" | "alto" | "critico";
 type Escena = "solicitudes" | "usuarios";
@@ -181,9 +183,7 @@ export function TableroAdmin() {
 
   return (
     <section className="vista-inicio">
-      <header className="cabecera-dash">
-        <h1 className="marca">Nexora</h1>
-      </header>
+      <EncabezadoAdmin kicker="Panel de control" titulo="Nexora" compacta />
       {error ? <p className="error">{error}</p> : null}
 
       <div className="escenas-viewport" ref={viewport}>

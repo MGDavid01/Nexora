@@ -1,8 +1,10 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { listarTrabajosAdmin, type TrabajoLista } from "../api";
+import { EncabezadoAdmin } from "../EncabezadoAdmin";
 import "../usuarios-admin.css";
 import "../trabajos-admin.css";
+import "../admin.css";
 
 type FiltroEtapa = "" | "solicitud" | "cotizacion" | "servicio";
 type FiltroReclamacion = "" | "abierta" | "cerrada";
@@ -135,12 +137,12 @@ export function TrabajosAdmin() {
 
   return (
     <section className="vista-padron-crm vista-trabajos-crm" aria-labelledby="titulo-trabajos">
-      <header className="crm-top">
-        <div className="crm-titulo">
-          <h1 id="titulo-trabajos">Trabajos</h1>
-          <p className="crm-subtitulo">Solicitudes, cotizaciones, servicios y reclamaciones por caso.</p>
-        </div>
-      </header>
+      <EncabezadoAdmin
+        kicker="Panel de administración"
+        titulo="Trabajos"
+        tituloId="titulo-trabajos"
+        subtitulo="Solicitudes, cotizaciones, servicios y reclamaciones por caso."
+      />
 
       {errorGlobal ? (
         <p className="error-crm" role="alert">

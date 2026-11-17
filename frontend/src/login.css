@@ -1,0 +1,273 @@
+/* Pantalla de acceso: layout partido marca / formulario. */
+
+.login {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  background: var(--fondo);
+  overflow-y: auto;
+}
+
+/* ---- Lado de marca (siempre Onyx) ---- */
+
+.login-marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(2rem, 5vw, 4rem);
+  background: #0a0a0a;
+  color: #fbfbfb;
+}
+
+.login-marca-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.login-marca-nombre {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+}
+
+.login-marca-cuerpo {
+  display: grid;
+  gap: 1.4rem;
+  max-width: 32rem;
+}
+
+.login-kicker {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.login-marca .login-kicker {
+  color: #ffd342;
+}
+
+.login-titulo {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+.login-resaltado {
+  color: #ffd342;
+}
+
+.login-subtitulo {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.login-marca .login-subtitulo {
+  color: rgb(251 251 251 / 72%);
+}
+
+.login-ventajas {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.login-ventajas li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.login-ventajas svg {
+  flex-shrink: 0;
+  color: #ffd342;
+}
+
+.login-marca-pie {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgb(251 251 251 / 55%);
+  letter-spacing: 0.02em;
+}
+
+/* ---- Lado de acceso (respeta el tema) ---- */
+
+.login-acceso {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+.login-tema {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.login-tarjeta {
+  width: min(26rem, 100%);
+  display: grid;
+  gap: 1.5rem;
+}
+
+.login-acceso .login-kicker {
+  margin: 0 0 0.45rem;
+  color: var(--cerulean);
+}
+
+.login-titulo-acceso {
+  margin: 0 0 0.5rem;
+  font-size: 1.9rem;
+  letter-spacing: -0.01em;
+}
+
+.login-acceso .login-subtitulo {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.login-form {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 0.4rem;
+}
+
+.login-campo {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.login-etiqueta {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.login-entrada {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--powder);
+  border-radius: 12px;
+  padding: 0 0.85rem;
+  background: var(--superficie-suave);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.login-entrada > svg {
+  flex-shrink: 0;
+  color: var(--blue-grey);
+}
+
+.login-entrada:focus-within {
+  border-color: var(--cerulean);
+  box-shadow: 0 0 0 3px rgb(53 115 164 / 16%);
+}
+
+.login-entrada input {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  padding: 0.85rem 0;
+  background: transparent;
+  color: var(--texto);
+}
+
+.login-entrada input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.login-ojo {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--texto-suave);
+}
+
+.login-ojo:hover {
+  color: var(--cerulean);
+  background: rgb(53 115 164 / 10%);
+}
+
+.login-error {
+  margin: 0;
+}
+
+.login-boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.85rem 1rem;
+  border: 0;
+  border-radius: 12px;
+  background: #3573a4;
+  color: #fbfbfb;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.login-boton:hover:not(:disabled) {
+  background: #2c5e86;
+}
+
+.login-boton svg {
+  transition: transform 0.15s ease;
+}
+
+.login-boton:hover:not(:disabled) svg {
+  transform: translateX(2px);
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 860px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+
+  .login-marca {
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .login-marca-cuerpo {
+    gap: 1rem;
+  }
+
+  .login-ventajas,
+  .login-marca-pie {
+    display: none;
+  }
+
+  .login-acceso {
+    align-content: start;
+    padding-top: 3.5rem;
+  }
+}

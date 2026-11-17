@@ -350,6 +350,14 @@ export function registrarMarca(
   });
 }
 
+export function desbloquearPerfil(id: string) {
+  return api<UsuarioDetalle>(`/api/v1/admin/usuarios/${id}/desbloqueo`, { method: "POST" });
+}
+
+export function procesarBajaPerfil(id: string) {
+  return api<UsuarioDetalle>(`/api/v1/admin/usuarios/${id}/baja`, { method: "POST" });
+}
+
 export type EtapaTrabajo = "solicitud" | "cotizacion" | "servicio";
 export type PerfilAfectadoMarca = "cliente" | "proveedor";
 

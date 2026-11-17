@@ -3,11 +3,19 @@
   min-height: 0;
   overflow: hidden;
   padding: 0.85rem 1.5rem 0.75rem 5.5rem;
-  background: #e8eef4;
+  background-color: #e8eef3;
+  background-image:
+    linear-gradient(rgb(53 115 164 / 10%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(53 115 164 / 10%) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 [data-tema="oscuro"] .marco-sesion main:has(.vista-detalle-caso) {
-  background: #0d1116;
+  background-color: #0a0a0a;
+  background-image:
+    linear-gradient(rgb(255 211 66 / 6%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 211 66 / 6%) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 .vista-detalle-caso {
