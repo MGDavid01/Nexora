@@ -9,11 +9,12 @@ from app.models.entities import (
     CategoriaServicio,
     Cotizacion,
     Participacion,
+    Servicio,
     Solicitud,
     Ubicacion,
     Usuario,
 )
-from app.models.enums import EstadoCotizacion, EstadoParticipacion, EstadoSolicitud, TipoCuenta
+from app.models.enums import EstadoCotizacion, EstadoParticipacion, EstadoServicio, EstadoSolicitud, TipoCuenta
 from app.schemas.auth import UbicacionIn
 from app.schemas.solicitudes import (
     MercadoSolicitudOut,
@@ -22,24 +23,12 @@ from app.schemas.solicitudes import (
     SolicitudOut,
     UbicacionSolicitudOut,
 )
-
-_TIPOS_PROVEEDOR = frozenset({
-    TipoCuenta.proveedor,
-    TipoCuenta.empresa,
-    TipoCuenta.negocio,
-})
-
-
-def _exigir_cliente(usuario: Usuario) -> UUID:
-    if usuario.tipo_cuenta != TipoCuenta.cliente or usuario.perfil_cliente_id is None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo un cliente puede realizar esta operación")
-    return usuario.perfil_cliente_id
-
-
-def _exigir_proveedor(usuario: Usuario) -> UUID:
-    if usuario.tipo_cuenta not in _TIPOS_PROVEEDOR or usuario.perfil_proveedor_id is None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo un proveedor puede realizar esta operación")
-    return usuario.perfil_proveedor_id
+from app.services.avisos_negocio import avisar_denegar
+from app.services.osm_ubicacion import intentar_geocodificar
+from app.services.perfiles import exigir_cliente as _exigir_cliente
+from app.services.perfiles import exigir_proveedor as _exigir_proveedor
+from app.services.reportes import registrar_reporte
+from app.services.vencimientos import vencer_aceptadas
 
 
 async def _categoria(
@@ -71,9 +60,32 @@ def _ubicacion(datos: UbicacionIn, solicitud_id: UUID) -> Ubicacion:
 async def publicar(session: AsyncSession, usuario: Usuario, datos: SolicitudCrearIn) -> SolicitudOut:
     perfil_cliente_id = _exigir_cliente(usuario)
     categoria = await _categoria(session, datos)
+    dirigida = datos.dirigida_a_perfil_proveedor_id
+    if dirigida is not None:
+        cerrado = next(
+            (
+                servicio
+                for servicio in (await session.exec(select(Servicio))).all()
+                if servicio.perfil_proveedor_id == dirigida
+                and servicio.estado == EstadoServicio.cerrado
+            ),
+            None,
+        )
+        if cerrado is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Solo se dirige a un proveedor con un servicio cerrado previo",
+            )
+        solicitud_cerrada = await session.get(Solicitud, cerrado.solicitud_id)
+        if solicitud_cerrada is None or solicitud_cerrada.perfil_cliente_id != perfil_cliente_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Ese proveedor no está en el historial de este cliente",
+            )
     solicitud = Solicitud(
         perfil_cliente_id=perfil_cliente_id,
         categoria_id=categoria.id,
+        dirigida_a_perfil_proveedor_id=dirigida,
         titulo=datos.titulo,
         descripcion=datos.descripcion,
         estado=EstadoSolicitud.abierta,
@@ -83,7 +95,15 @@ async def publicar(session: AsyncSession, usuario: Usuario, datos: SolicitudCrea
     await session.flush()
     ubicacion = _ubicacion(datos.ubicacion, solicitud.id)
     session.add(ubicacion)
+    await intentar_geocodificar(ubicacion)
     await session.flush()
+    await registrar_reporte(
+        session,
+        accion=f"solicitud:{solicitud.id}",
+        metrica="publicar",
+        valor="1",
+        perfil_cliente_id=perfil_cliente_id,
+    )
     return _salida(solicitud, categoria, ubicacion)
 
 
@@ -136,6 +156,7 @@ async def cancelar(session: AsyncSession, usuario: Usuario, solicitud_id: UUID) 
 
 
 async def mercado(session: AsyncSession, usuario: Usuario) -> list[MercadoSolicitudOut]:
+    await vencer_aceptadas(session)
     perfil_proveedor_id = _exigir_proveedor(usuario)
     solicitudes = list((await session.exec(select(Solicitud))).all())
     categorias = {item.id: item for item in (await session.exec(select(CategoriaServicio))).all()}
@@ -157,11 +178,8 @@ async def mercado(session: AsyncSession, usuario: Usuario) -> list[MercadoSolici
             continue
         if solicitud.dirigida_a_perfil_proveedor_id is not None:
             if solicitud.dirigida_a_perfil_proveedor_id == perfil_proveedor_id:
-                # La comprobación de `propias` arriba evita volver a decidir.
                 pass
             else:
-                # Una solicitud dirigida solo se abre al mercado después de que
-                # el destinatario la rechace, venza o se retire.
                 participacion_destino = next(
                     (
                         item
@@ -182,6 +200,62 @@ async def mercado(session: AsyncSession, usuario: Usuario) -> list[MercadoSolici
         if categoria is not None and ubicacion is not None:
             resultado.append(MercadoSolicitudOut(**_salida(solicitud, categoria, ubicacion).model_dump()))
     resultado.sort(key=lambda item: (item.creado_en is not None, str(item.creado_en or ""), str(item.id)), reverse=True)
+    return resultado
+
+
+async def por_cotizar(session: AsyncSession, usuario: Usuario) -> list[MercadoSolicitudOut]:
+    """Aceptadas sin cotizar (plazo 24 h) y cotizadas en espera de que el cliente elija."""
+    await vencer_aceptadas(session)
+    perfil_proveedor_id = _exigir_proveedor(usuario)
+    solicitudes = {item.id: item for item in (await session.exec(select(Solicitud))).all()}
+    categorias = {item.id: item for item in (await session.exec(select(CategoriaServicio))).all()}
+    ubicaciones = {
+        item.solicitud_id: item
+        for item in (await session.exec(select(Ubicacion))).all()
+        if item.solicitud_id is not None
+    }
+    enviadas = {
+        item.solicitud_id: item
+        for item in (await session.exec(select(Cotizacion))).all()
+        if item.perfil_proveedor_id == perfil_proveedor_id and item.estado == EstadoCotizacion.enviada
+    }
+    resultado: list[MercadoSolicitudOut] = []
+    for participacion in (await session.exec(select(Participacion))).all():
+        if participacion.perfil_proveedor_id != perfil_proveedor_id:
+            continue
+        solicitud = solicitudes.get(participacion.solicitud_id)
+        if solicitud is None or solicitud.estado != EstadoSolicitud.abierta:
+            continue
+        costo = None
+        if participacion.estado == EstadoParticipacion.aceptada:
+            pass
+        elif participacion.estado == EstadoParticipacion.cotizada:
+            cotizacion = enviadas.get(solicitud.id)
+            if cotizacion is None:
+                continue
+            costo = cotizacion.costo_mxn
+        else:
+            continue
+        categoria = categorias.get(solicitud.categoria_id)
+        ubicacion = ubicaciones.get(solicitud.id)
+        if categoria is None or ubicacion is None:
+            continue
+        resultado.append(
+            MercadoSolicitudOut(
+                **_salida(solicitud, categoria, ubicacion).model_dump(),
+                participacion_estado=participacion.estado,
+                aceptada_en=participacion.aceptada_en,
+                costo_mxn=costo,
+            )
+        )
+    resultado.sort(
+        key=lambda item: (
+            item.participacion_estado == EstadoParticipacion.aceptada,
+            item.aceptada_en is not None,
+            str(item.aceptada_en or ""),
+        ),
+        reverse=True,
+    )
     return resultado
 
 
@@ -218,6 +292,8 @@ async def decidir(
         participacion.aceptada_en = datetime.now(UTC) if aceptar else None
     if aceptar:
         solicitud.datos_cerrados = True
+    else:
+        await avisar_denegar(session, solicitud, perfil_proveedor_id)
     await session.flush()
     return ParticipacionOut.model_validate(participacion, from_attributes=True)
 

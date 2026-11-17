@@ -1,15 +1,29 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { listarTrabajosAdmin, type TrabajoLista } from "../api";
-import { EncabezadoAdmin } from "../EncabezadoAdmin";
-import "../usuarios-admin.css";
-import "../trabajos-admin.css";
-import "../admin.css";
+import {
+  Ausente,
+  AvisoLista,
+  BarraLista,
+  CeldaPrincipal,
+  EstadoLista,
+  FiltroLista,
+  FilaLista,
+  ListaScroll,
+  Pastilla,
+  PieLista,
+  TablaLista,
+  VistaLista,
+  type ColumnaLista,
+  type TonoPastilla,
+} from "../vista-lista/VistaLista";
+import { marcaTiempo, ordenarPor, useOrden } from "../vista-lista/orden";
 
-type FiltroEtapa = "" | "solicitud" | "cotizacion" | "servicio";
-type FiltroReclamacion = "" | "abierta" | "cerrada";
-type FiltroCierre = "" | "abierto" | "cerrado";
-type FiltroMarca = "" | "con" | "sin";
+type FiltroEtapa = "todas" | "solicitud" | "cotizacion" | "servicio";
+type FiltroReclamacion = "todas" | "abierta" | "cerrada";
+type FiltroCierre = "todos" | "abierto" | "cerrado";
+type FiltroMarca = "todas" | "con" | "sin";
+type ColTrabajo = "caso" | "etapa" | "cliente" | "categoria" | "creado" | "reclamacion";
 
 const fechaCorta = new Intl.DateTimeFormat("es-MX", {
   day: "2-digit",
@@ -17,40 +31,39 @@ const fechaCorta = new Intl.DateTimeFormat("es-MX", {
   year: "numeric",
 });
 
-function FiltroDesplegable({
-  clave,
-  texto: etiqueta,
-  abierto,
-  activo,
-  onToggle,
-  children,
-}: {
-  clave: string;
-  texto: string;
-  abierto: boolean;
-  activo: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <div className={abierto ? "dd-filtro abierto" : "dd-filtro"} data-filtro={clave}>
-      <button
-        type="button"
-        className={activo ? "filtro-dd activo" : "filtro-dd"}
-        aria-expanded={abierto}
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle();
-        }}
-      >
-        {etiqueta}
-      </button>
-      <div className="dd-panel" role="listbox">
-        {children}
-      </div>
-    </div>
-  );
-}
+const COLUMNAS: ColumnaLista<ColTrabajo>[] = [
+  { id: "caso", etiqueta: "Caso", ancho: "28%" },
+  { id: "etapa", etiqueta: "Etapa", ancho: "12%" },
+  { id: "cliente", etiqueta: "Cliente", ancho: "16%" },
+  { id: "categoria", etiqueta: "Categoría", ancho: "16%" },
+  { id: "creado", etiqueta: "Creado", ancho: "14%", alinear: "derecha" },
+  { id: "reclamacion", etiqueta: "Reclamación", ancho: "14%" },
+];
+
+const OPCIONES_ETAPA: { valor: FiltroEtapa; etiqueta: string }[] = [
+  { valor: "todas", etiqueta: "Todas" },
+  { valor: "solicitud", etiqueta: "Solicitud" },
+  { valor: "cotizacion", etiqueta: "Cotización" },
+  { valor: "servicio", etiqueta: "Servicio" },
+];
+
+const OPCIONES_RECLAMACION: { valor: FiltroReclamacion; etiqueta: string }[] = [
+  { valor: "todas", etiqueta: "Todas" },
+  { valor: "abierta", etiqueta: "Abierta" },
+  { valor: "cerrada", etiqueta: "Cerrada" },
+];
+
+const OPCIONES_CIERRE: { valor: FiltroCierre; etiqueta: string }[] = [
+  { valor: "todos", etiqueta: "Todos" },
+  { valor: "abierto", etiqueta: "Abierto" },
+  { valor: "cerrado", etiqueta: "Cerrado" },
+];
+
+const OPCIONES_MARCA: { valor: FiltroMarca; etiqueta: string }[] = [
+  { valor: "todas", etiqueta: "Todas" },
+  { valor: "con", etiqueta: "Con marca" },
+  { valor: "sin", etiqueta: "Sin marca" },
+];
 
 function etiquetaEtapa(etapa: TrabajoLista["etapa"]): string {
   if (etapa === "solicitud") return "Solicitud";
@@ -58,26 +71,37 @@ function etiquetaEtapa(etapa: TrabajoLista["etapa"]): string {
   return "Servicio";
 }
 
+function tonoEtapa(etapa: TrabajoLista["etapa"]): TonoPastilla {
+  if (etapa === "servicio") return "positiva";
+  if (etapa === "cotizacion") return "acento";
+  return "neutra";
+}
+
+function etiquetaReclamacion(reclamacion: TrabajoLista["reclamacion"]): string {
+  if (reclamacion === "abierta") return "Abierta";
+  if (reclamacion === "cerrada") return "Cerrada";
+  return "";
+}
+
 function formatearFecha(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "";
   return fechaCorta.format(d);
 }
 
 export function TrabajosAdmin() {
   const navigate = useNavigate();
-  const [ddAbierto, setDdAbierto] = useState<string | null>(null);
-  const [filtroEtapa, setFiltroEtapa] = useState<FiltroEtapa>("");
-  const [filtroReclamacion, setFiltroReclamacion] = useState<FiltroReclamacion>("");
-  const [filtroCierre, setFiltroCierre] = useState<FiltroCierre>("");
-  const [filtroMarca, setFiltroMarca] = useState<FiltroMarca>("");
+  const [filtroEtapa, setFiltroEtapa] = useState<FiltroEtapa>("todas");
+  const [filtroReclamacion, setFiltroReclamacion] = useState<FiltroReclamacion>("todas");
+  const [filtroCierre, setFiltroCierre] = useState<FiltroCierre>("todos");
+  const [filtroMarca, setFiltroMarca] = useState<FiltroMarca>("todas");
   const [busqueda, setBusqueda] = useState("");
   const [busquedaApi, setBusquedaApi] = useState("");
-
   const [casos, setCasos] = useState<TrabajoLista[]>([]);
   const [cargando, setCargando] = useState(true);
   const [errorGlobal, setErrorGlobal] = useState("");
+  const orden = useOrden<ColTrabajo>("creado", "desc", ["creado"]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setBusquedaApi(busqueda.trim()), 320);
@@ -86,19 +110,22 @@ export function TrabajosAdmin() {
 
   const filtrosApi = useMemo(
     () => ({
-      etapa: filtroEtapa || undefined,
-      reclamacion: filtroReclamacion || undefined,
-      cierre: filtroCierre || undefined,
-      marca: filtroMarca || undefined,
+      etapa: filtroEtapa === "todas" ? undefined : filtroEtapa,
+      reclamacion: filtroReclamacion === "todas" ? undefined : filtroReclamacion,
+      cierre: filtroCierre === "todos" ? undefined : filtroCierre,
+      marca: filtroMarca === "todas" ? undefined : filtroMarca,
       q: busquedaApi || undefined,
     }),
     [filtroEtapa, filtroReclamacion, filtroCierre, filtroMarca, busquedaApi],
   );
 
-  useEffect(() => {
-    let vivo = true;
+  useLayoutEffect(() => {
     setCargando(true);
     setErrorGlobal("");
+  }, [filtrosApi]);
+
+  useEffect(() => {
+    let vivo = true;
     listarTrabajosAdmin(filtrosApi)
       .then((lista) => {
         if (vivo) setCasos(lista);
@@ -117,244 +144,124 @@ export function TrabajosAdmin() {
     };
   }, [filtrosApi]);
 
-  useEffect(() => {
-    function cerrarMenus(evento: MouseEvent) {
-      if (!(evento.target as HTMLElement).closest?.(".dd-filtro")) {
-        setDdAbierto(null);
-      }
+  const recargar = useCallback(async () => {
+    try {
+      const lista = await listarTrabajosAdmin(filtrosApi);
+      setCasos(lista);
+      setErrorGlobal("");
+    } catch (causa) {
+      setErrorGlobal(causa instanceof Error ? causa.message : "No se pudieron cargar los casos");
+      throw causa;
     }
-    document.addEventListener("pointerdown", cerrarMenus);
-    return () => document.removeEventListener("pointerdown", cerrarMenus);
-  }, []);
+  }, [filtrosApi]);
 
-  const hayFiltros = Boolean(
-    filtroEtapa || filtroReclamacion || filtroCierre || filtroMarca || busquedaApi,
+  const visibles = useMemo(
+    () =>
+      ordenarPor(casos, orden, {
+        caso: (c) => c.titulo,
+        etapa: (c) => etiquetaEtapa(c.etapa),
+        cliente: (c) => c.cliente,
+        categoria: (c) => c.categoria,
+        creado: (c) => marcaTiempo(c.creado_en),
+        reclamacion: (c) => etiquetaReclamacion(c.reclamacion),
+      }),
+    [casos, orden],
   );
 
-  function abrirCaso(id: string) {
-    navigate(`/admin/trabajos/${id}`);
+  const hayFiltros = Boolean(
+    filtroEtapa !== "todas" ||
+      filtroReclamacion !== "todas" ||
+      filtroCierre !== "todos" ||
+      filtroMarca !== "todas" ||
+      busquedaApi,
+  );
+
+  function restablecer() {
+    setFiltroEtapa("todas");
+    setFiltroReclamacion("todas");
+    setFiltroCierre("todos");
+    setFiltroMarca("todas");
+    setBusqueda("");
+    setBusquedaApi("");
   }
 
   return (
-    <section className="vista-padron-crm vista-trabajos-crm" aria-labelledby="titulo-trabajos">
-      <EncabezadoAdmin
-        kicker="Panel de administración"
-        titulo="Trabajos"
-        tituloId="titulo-trabajos"
-        subtitulo="Solicitudes, cotizaciones, servicios y reclamaciones por caso."
-      />
-
-      {errorGlobal ? (
-        <p className="error-crm" role="alert">
-          {errorGlobal}
-        </p>
-      ) : null}
-
-      <div className="crm-filtros" aria-label="Filtros de trabajos">
-        <FiltroDesplegable
-          clave="etapa"
-          texto={
-            filtroEtapa
-              ? `Etapa: ${filtroEtapa === "solicitud" ? "Solicitud" : filtroEtapa === "cotizacion" ? "Cotización" : "Servicio"}`
-              : "Etapa"
-          }
-          abierto={ddAbierto === "etapa"}
-          activo={Boolean(filtroEtapa)}
-          onToggle={() => setDdAbierto((d) => (d === "etapa" ? null : "etapa"))}
-        >
-          {[
-            ["", "Todas"],
-            ["solicitud", "Solicitud"],
-            ["cotizacion", "Cotización"],
-            ["servicio", "Servicio"],
-          ].map(([valor, etiqueta]) => (
-            <label key={valor || "todas"}>
-              <input
-                type="radio"
-                name="filtro-etapa"
-                checked={filtroEtapa === valor}
-                onChange={() => setFiltroEtapa(valor as FiltroEtapa)}
-              />
-              {etiqueta}
-            </label>
-          ))}
-        </FiltroDesplegable>
-
-        <FiltroDesplegable
-          clave="reclamacion"
-          texto={
-            filtroReclamacion
-              ? `Reclamación: ${filtroReclamacion === "abierta" ? "Abierta" : "Cerrada"}`
-              : "Reclamación"
-          }
-          abierto={ddAbierto === "reclamacion"}
-          activo={Boolean(filtroReclamacion)}
-          onToggle={() => setDdAbierto((d) => (d === "reclamacion" ? null : "reclamacion"))}
-        >
-          {[
-            ["", "Todas"],
-            ["abierta", "Abierta"],
-            ["cerrada", "Cerrada"],
-          ].map(([valor, etiqueta]) => (
-            <label key={valor || "todas"}>
-              <input
-                type="radio"
-                name="filtro-reclamacion"
-                checked={filtroReclamacion === valor}
-                onChange={() => setFiltroReclamacion(valor as FiltroReclamacion)}
-              />
-              {etiqueta}
-            </label>
-          ))}
-        </FiltroDesplegable>
-
-        <FiltroDesplegable
-          clave="cierre"
-          texto={
-            filtroCierre
-              ? `Estado: ${filtroCierre === "abierto" ? "Abierto" : "Cerrado"}`
-              : "Estado del caso"
-          }
-          abierto={ddAbierto === "cierre"}
-          activo={Boolean(filtroCierre)}
-          onToggle={() => setDdAbierto((d) => (d === "cierre" ? null : "cierre"))}
-        >
-          {[
-            ["", "Todos"],
-            ["abierto", "Abierto"],
-            ["cerrado", "Cerrado"],
-          ].map(([valor, etiqueta]) => (
-            <label key={valor || "todos"}>
-              <input
-                type="radio"
-                name="filtro-cierre"
-                checked={filtroCierre === valor}
-                onChange={() => setFiltroCierre(valor as FiltroCierre)}
-              />
-              {etiqueta}
-            </label>
-          ))}
-        </FiltroDesplegable>
-
-        <FiltroDesplegable
-          clave="marca"
-          texto={
-            filtroMarca
-              ? `Marca del caso: ${filtroMarca === "con" ? "Con marca" : "Sin marca"}`
-              : "Marca del caso"
-          }
-          abierto={ddAbierto === "marca"}
-          activo={Boolean(filtroMarca)}
-          onToggle={() => setDdAbierto((d) => (d === "marca" ? null : "marca"))}
-        >
-          {[
-            ["", "Todas"],
-            ["con", "Con marca"],
-            ["sin", "Sin marca"],
-          ].map(([valor, etiqueta]) => (
-            <label key={valor || "todas"}>
-              <input
-                type="radio"
-                name="filtro-marca"
-                checked={filtroMarca === valor}
-                onChange={() => setFiltroMarca(valor as FiltroMarca)}
-              />
-              {etiqueta}
-            </label>
-          ))}
-        </FiltroDesplegable>
-
-        <label className="crm-buscar">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3-3" />
-          </svg>
-          <input
-            type="search"
-            placeholder="Buscar caso, cliente o categoría"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            autoComplete="off"
-          />
-        </label>
-      </div>
-
-      <div className="tablero-crm tablero-trabajos tablero-trabajos-solo">
-        <section className="crm-panel tabla-completa" aria-label="Lista de casos">
-          <div className="tabla-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Caso</th>
-                  <th scope="col">Etapa</th>
-                  <th scope="col">Cliente</th>
-                  <th scope="col">Categoría</th>
-                  <th scope="col">Creado</th>
-                  <th scope="col">Reclamación</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cargando ? (
-                  <tr className="fila-vacia">
-                    <td colSpan={6}>
-                      <p className="crm-cargando">Cargando casos…</p>
-                    </td>
-                  </tr>
-                ) : casos.length === 0 ? (
-                  <tr className="fila-vacia">
-                    <td colSpan={6}>
-                      <p className="crm-cargando">
-                        {hayFiltros ? "Sin casos con estos filtros." : "Aún no hay casos que mostrar."}
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  casos.map((c) => (
-                    <tr
-                      key={c.solicitud_id}
-                      className="fila-caso-clic"
-                      tabIndex={0}
-                      role="link"
-                      onClick={() => abrirCaso(c.solicitud_id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          abrirCaso(c.solicitud_id);
-                        }
-                      }}
-                    >
-                      <td>
-                        <span className="btn-caso-trabajo">{c.titulo}</span>
-                      </td>
-                      <td>
-                        <span className="chip-trabajo">{etiquetaEtapa(c.etapa)}</span>
-                      </td>
-                      <td>{c.cliente}</td>
-                      <td>{c.categoria}</td>
-                      <td>{formatearFecha(c.creado_en)}</td>
-                      <td>
-                        {c.reclamacion === "abierta" ? (
-                          <span className="chip-trabajo alerta">Abierta</span>
-                        ) : c.reclamacion === "cerrada" ? (
-                          <span className="chip-trabajo ok">Cerrada</span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="crm-pie">
-            <span>
-              {casos.length} en esta vista
-              {cargando ? " · actualizando…" : ""}
-            </span>
-          </div>
-        </section>
-      </div>
-    </section>
+    <VistaLista titulo="Trabajos" descripcion="Solicitudes, cotizaciones, servicios y reclamaciones por caso.">
+      <BarraLista
+        busqueda={busqueda}
+        onBusqueda={setBusqueda}
+        placeholder="Buscar caso, cliente o categoría"
+        onActualizar={recargar}
+      >
+        <FiltroLista
+          id="filtro-etapa-trabajos"
+          etiqueta="Etapa"
+          valor={filtroEtapa}
+          opciones={OPCIONES_ETAPA}
+          onCambio={setFiltroEtapa}
+        />
+        <FiltroLista
+          id="filtro-reclamacion-trabajos"
+          etiqueta="Reclamación"
+          valor={filtroReclamacion}
+          opciones={OPCIONES_RECLAMACION}
+          onCambio={setFiltroReclamacion}
+        />
+        <FiltroLista
+          id="filtro-cierre-trabajos"
+          etiqueta="Estado"
+          valor={filtroCierre}
+          opciones={OPCIONES_CIERRE}
+          onCambio={setFiltroCierre}
+        />
+        <FiltroLista
+          id="filtro-marca-trabajos"
+          etiqueta="Marca"
+          valor={filtroMarca}
+          opciones={OPCIONES_MARCA}
+          onCambio={setFiltroMarca}
+        />
+      </BarraLista>
+      {errorGlobal ? <AvisoLista tono="error">{errorGlobal}</AvisoLista> : null}
+      <ListaScroll>
+        {cargando ? (
+          <EstadoLista>Cargando casos…</EstadoLista>
+        ) : visibles.length === 0 ? (
+          hayFiltros ? (
+            <EstadoLista onRestablecer={restablecer}>Sin casos con estos filtros.</EstadoLista>
+          ) : (
+            <EstadoLista>Aún no hay casos que mostrar.</EstadoLista>
+          )
+        ) : (
+          <TablaLista columnas={COLUMNAS} orden={orden}>
+            {visibles.map((c) => (
+              <FilaLista key={c.solicitud_id} onAbrir={() => navigate(`/admin/trabajos/${c.solicitud_id}`)}>
+                <td>
+                  <CeldaPrincipal titulo={c.titulo} meta={c.categoria} />
+                </td>
+                <td>
+                  <Pastilla tono={tonoEtapa(c.etapa)}>{etiquetaEtapa(c.etapa)}</Pastilla>
+                </td>
+                <td>{c.cliente}</td>
+                <td>{c.categoria}</td>
+                <td className="vl-derecha">
+                  {formatearFecha(c.creado_en) || <Ausente />}
+                </td>
+                <td>
+                  {c.reclamacion === "abierta" ? (
+                    <Pastilla tono="alerta">Abierta</Pastilla>
+                  ) : c.reclamacion === "cerrada" ? (
+                    <Pastilla tono="positiva">Cerrada</Pastilla>
+                  ) : (
+                    <Ausente />
+                  )}
+                </td>
+              </FilaLista>
+            ))}
+          </TablaLista>
+        )}
+      </ListaScroll>
+      {!cargando && visibles.length > 0 ? <PieLista>{visibles.length} en esta vista</PieLista> : null}
+    </VistaLista>
   );
 }

@@ -529,7 +529,7 @@
 }
 
 .vista-padron-crm .tabla-wrap td.dato {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--fuente-mono);
   font-size: 0.8rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -570,7 +570,7 @@
   border-radius: 0.4rem;
   display: grid;
   place-items: center;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--fuente-mono);
   font-size: 0.64rem;
   font-weight: 600;
   color: #0a0a0a;
@@ -649,7 +649,7 @@
   padding: 0.55rem 0.85rem;
   color: var(--texto-suave);
   font-size: 0.78rem;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--fuente-mono);
   flex-shrink: 0;
   border-top: 1px solid var(--borde);
   background: var(--crm-fila-par);
@@ -746,7 +746,7 @@
 
 .vista-padron-crm .props-crm dd {
   margin: 0;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: var(--fuente-mono);
   font-size: 0.8rem;
   font-weight: 500;
 }

@@ -142,7 +142,7 @@
 .vista-trabajos-crm .btn-caso-trabajo {
   border: 0;
   background: transparent;
-  color: var(--link, #3573a4);
+  color: var(--link, #306998);
   font-weight: 700;
   text-align: left;
   padding: 0;
@@ -192,7 +192,7 @@
   display: none;
   border: 0;
   background: transparent;
-  color: var(--link, #3573a4);
+  color: var(--link, #306998);
   font-weight: 600;
   font-size: 0.82rem;
   padding: 0;
@@ -277,5 +277,5 @@
 }
 
 .historial-acotado {
-  border-color: var(--cerulean, #3573a4);
+  border-color: var(--cerulean, #306998);
 }

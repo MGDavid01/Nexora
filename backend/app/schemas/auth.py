@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
+from typing import Literal
+
 from app.models.enums import FuncionProveedor, TipoCuenta, TipoPerfilCliente, TipoPerfilProveedor
 
 _DIGITOS = re.compile(r"\D+")
@@ -78,6 +80,7 @@ class RegistroProveedor(BaseModel):
     nombre_comercial: str = Field(min_length=1)
     descripcion: str = Field(min_length=1)
     categorias: list[str] = Field(min_length=1)
+    tipo_cuenta: Literal["empresa", "negocio"] = "empresa"
     ubicacion: UbicacionIn
 
     @field_validator("nombre", "nombre_comercial", "descripcion")

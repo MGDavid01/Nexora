@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>WF — Patrones · Estados</title>
+  <link rel="stylesheet" href="wireframe.css" />
+</head>
+<body style="padding: 24px; background: #f0f0f0;">
+  <h1 style="margin-bottom: 20px; font-size: 18px;">Patrones transversales — empty / loading / error</h1>
+  <div class="wf-grid" style="grid-template-columns: repeat(3, 1fr); max-width: 1200px;">
+    <section class="wf-panel">
+      <h2 class="wf-panel-title">Empty</h2>
+      <div style="text-align:center;padding: 32px 16px;">
+        <div class="wf-placeholder" style="height: 64px; width: 64px; margin: 0 auto 12px;"></div>
+        <strong>Sin solicitudes abiertas</strong>
+        <p class="wf-meta">Publica tu primera necesidad de soporte</p>
+        <button type="button" class="wf-cta" style="margin-top:12px;">Publicar solicitud</button>
+      </div>
+    </section>
+    <section class="wf-panel">
+      <h2 class="wf-panel-title">Loading (skeleton)</h2>
+      <div class="wf-row"><span class="wf-cell"></span></div>
+      <div class="wf-row"><span class="wf-cell"></span></div>
+      <div class="wf-row"><span class="wf-cell"></span></div>
+      <p class="wf-meta">Cuadrícula de placeholders · sin spinner bloqueante</p>
+    </section>
+    <section class="wf-panel">
+      <h2 class="wf-panel-title">Error</h2>
+      <div style="border: 2px solid #888; padding: 16px; background: #e8e8e8;">
+        <strong>No se pudo cargar el mercado</strong>
+        <p class="wf-meta">Reintenta o contacta soporte si persiste</p>
+        <button type="button" class="wf-cta" style="margin-top:8px;background:#888;">Reintentar</button>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

@@ -252,22 +252,31 @@ def _fila_lista(solicitud: Solicitud, grafo: _Grafo) -> TrabajoListaOut:
     )
     categoria = grafo.categorias.get(solicitud.categoria_id)
     proveedor_nombre = None
+    perfil_proveedor_id = None
     if servicio is not None:
+        perfil_proveedor_id = servicio.perfil_proveedor_id
         proveedor = grafo.proveedores.get(servicio.perfil_proveedor_id)
         proveedor_nombre = proveedor.nombre_comercial if proveedor else None
     elif cotizaciones:
+        perfil_proveedor_id = cotizaciones[0].perfil_proveedor_id
         proveedor = grafo.proveedores.get(cotizaciones[0].perfil_proveedor_id)
+        proveedor_nombre = proveedor.nombre_comercial if proveedor else None
+    elif solicitud.dirigida_a_perfil_proveedor_id is not None:
+        perfil_proveedor_id = solicitud.dirigida_a_perfil_proveedor_id
+        proveedor = grafo.proveedores.get(solicitud.dirigida_a_perfil_proveedor_id)
         proveedor_nombre = proveedor.nombre_comercial if proveedor else None
     return TrabajoListaOut(
         solicitud_id=solicitud.id,
         titulo=solicitud.titulo,
         cliente=nombre_cliente,
+        perfil_cliente_id=solicitud.perfil_cliente_id,
         categoria=categoria.nombre if categoria else "",
         etapa=etapa,
         estado_solicitud=solicitud.estado,
         cierre="cerrado" if solicitud.estado == EstadoSolicitud.cerrada else "abierto",
         estado_servicio=estado_servicio_publico(servicio.estado) if servicio else None,
         proveedor=proveedor_nombre,
+        perfil_proveedor_id=perfil_proveedor_id,
         reclamacion=estado_rec,
         hay_marca=bool(servicio and grafo.marcas_por_servicio.get(servicio.id)),
         creado_en=solicitud.creado_en,

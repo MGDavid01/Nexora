@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>WF — Proveedor · Mercado</title>
+  <link rel="stylesheet" href="wireframe.css" />
+</head>
+<body>
+  <div class="wf-page">
+    <aside class="wf-sidebar">
+      <div class="wf-logo">Nexora</div>
+      <div class="wf-nav-item">Inicio</div>
+      <div class="wf-nav-item active">Solicitudes / Mercado</div>
+      <div class="wf-nav-item">Servicios</div>
+      <div class="wf-nav-item">Historial</div>
+      <div class="wf-nav-item">Equipo</div>
+      <div class="wf-nav-item">Mapa</div>
+      <div class="wf-nav-item">Reportes</div>
+    </aside>
+    <div class="wf-main">
+      <header class="wf-header">
+        <div class="wf-title">Mercado de solicitudes</div>
+        <div class="wf-header-actions">
+          <div class="wf-filter">Tab: Mercado | Mis participaciones</div>
+          <div class="wf-filter">Radio / zona</div>
+          <div class="wf-filter">Categoría</div>
+        </div>
+      </header>
+      <div class="wf-content">
+        <div class="wf-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+          <section class="wf-panel">
+            <h2 class="wf-panel-title">Listado (tabla densa)</h2>
+            <div class="wf-table-head">
+              <span style="flex:2">Necesidad</span>
+              <span style="flex:1">Distancia</span>
+              <span style="flex:0 0 100px">Plazo cotizar</span>
+            </div>
+            <div class="wf-row"><span class="wf-cell" style="flex:2"></span><span class="wf-cell sm">4.2 km</span><span class="wf-badge">Nueva</span></div>
+            <div class="wf-row"><span class="wf-cell" style="flex:2"></span><span class="wf-cell sm">12 km</span><span class="wf-badge">Aceptada · 18h</span></div>
+            <div class="wf-row"><span class="wf-cell" style="flex:2"></span><span class="wf-cell sm">—</span><span class="wf-badge">Cotizada</span></div>
+          </section>
+          <aside class="wf-panel">
+            <h2 class="wf-panel-title">Vista mapa (secundaria)</h2>
+            <div class="wf-map"></div>
+            <p class="wf-meta">Pins anonimizados · OSM</p>
+            <div style="margin-top:12px;display:flex;gap:8px;">
+              <button type="button" class="wf-cta" style="background:#888;">Denegar</button>
+              <button type="button" class="wf-cta">Aceptar → cotizar</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="wf-annot">Etapa 1 — mercado proveedor</p>
+</body>
+</html>

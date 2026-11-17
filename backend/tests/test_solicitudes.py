@@ -17,7 +17,9 @@ def _usuario(tipo: TipoCuenta) -> Usuario:
         contrasena_hash="hash",
         telefono="6640000000",
         tipo_cuenta=tipo,
-        funcion=FuncionProveedor.administrativo if not es_cliente else None,
+        funcion=FuncionProveedor.administrativo if tipo in {TipoCuenta.proveedor, TipoCuenta.empresa} else (
+            FuncionProveedor.administrativo_campo if tipo == TipoCuenta.negocio else None
+        ),
         perfil_cliente_id=uuid4() if es_cliente else None,
         perfil_proveedor_id=None if es_cliente else uuid4(),
     )
@@ -56,6 +58,11 @@ def test_mercado_exige_proveedor() -> None:
     assert error.value.status_code == 403
 
 
+def test_empresa_y_negocio_son_proveedor() -> None:
+    _exigir_proveedor(_usuario(TipoCuenta.empresa))
+    _exigir_proveedor(_usuario(TipoCuenta.negocio))
+
+
 def test_solicitud_acepta_categoria_por_nombre_y_ubicacion() -> None:
     datos = _datos()
 
@@ -70,3 +77,22 @@ def test_solicitud_rechaza_publicacion_sin_categoria() -> None:
             descripcion="El equipo no logra conectarse.",
             ubicacion=_datos().ubicacion,
         )
+
+
+def test_ubicacion_solicitud_expone_coords() -> None:
+    from decimal import Decimal
+
+    from app.schemas.solicitudes import UbicacionSolicitudOut
+
+    datos = UbicacionSolicitudOut(
+        id=uuid4(),
+        calle_numero="Calle 1",
+        colonia="Centro",
+        ciudad="Tijuana",
+        estado="Baja California",
+        codigo_postal="22000",
+        latitud=Decimal("32.514900"),
+        longitud=Decimal("-117.038200"),
+    )
+    assert datos.latitud == pytest.approx(32.5149)
+    assert datos.longitud == pytest.approx(-117.0382)

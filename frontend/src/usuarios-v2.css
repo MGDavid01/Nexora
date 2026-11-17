@@ -8,12 +8,12 @@
   --rule: #e9eef3;
   --control: #cbd5e1;
   --text: #111827;
-  --muted: #525b66;
-  --faint: #646d78;
-  --accent: #3573a4;
-  --accent-soft: #eaf2f8;
-  --accent-track: #cfe0ee;
-  --accent-ink: #163a59;
+  --muted: #646464;
+  --faint: #7a7a7a;
+  --accent: #306998;
+  --accent-soft: #e4eef6;
+  --accent-track: #c5d7e8;
+  --accent-ink: #4584b6;
   --primary: #111827;
   --primary-ink: #ffffff;
   --negative: #c4242a;
@@ -25,7 +25,7 @@
   --pill-warning-ink: #92400e;
   --pill-neutral-bg: #eef2f6;
   --pill-neutral-ink: #374151;
-  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: var(--fuente-cuerpo);
   --fs-title: 32px;
   --fs-section: 18px;
   --fs-kpi: 24px;
@@ -192,7 +192,7 @@
 /* ---------- Mesa de trabajo: 1fr + riel fijo de 384px ---------- */
 .vista-usuarios-v2 .mesa {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 384px;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--gap);
   align-items: start;
   margin-top: var(--gap);
@@ -205,9 +205,31 @@
 /* ---------- Pestañas con subrayado de 2px ---------- */
 .vista-usuarios-v2 .pestanias {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 20px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px 16px;
   border-bottom: 1px solid var(--border);
+}
+.vista-usuarios-v2 .pestanias-filtro {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+.vista-usuarios-v2 .pestanias-filtro-buscar {
+  flex: 1 1 12rem;
+  width: auto;
+  min-width: 10rem;
+  max-width: 20rem;
+}
+.vista-usuarios-v2 .pestanias-filtro-etiq {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
 }
 .vista-usuarios-v2 .pestania {
   position: relative;
@@ -307,6 +329,14 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+.vista-usuarios-v2 .herramientas-iconos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.vista-usuarios-v2 .pestanias-filtro .herramientas-iconos {
+  margin-left: auto;
+}
 .vista-usuarios-v2 .conteo {
   color: var(--muted);
   font-size: 13px;
@@ -376,6 +406,34 @@
 .vista-usuarios-v2 th:first-child, td:first-child { padding-left: 8px; }
 .vista-usuarios-v2 th:last-child, td:last-child { padding-right: 8px; }
 .vista-usuarios-v2 th.num, td.num, th.marcas-col, td.marcas-col { text-align: right; }
+.vista-usuarios-v2 th.num .th-orden {
+  justify-content: flex-end;
+  width: 100%;
+}
+.vista-usuarios-v2 th.marcas-col .th-orden {
+  justify-content: flex-end;
+  width: 100%;
+}
+.vista-usuarios-v2 .th-orden {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.vista-usuarios-v2 .th-orden:hover {
+  color: var(--accent);
+}
+.vista-usuarios-v2 .th-orden-indicador {
+  font-size: 11px;
+  color: var(--accent);
+  line-height: 1;
+}
 .vista-usuarios-v2 tbody tr {
   cursor: pointer;
 }
@@ -430,13 +488,22 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.vista-usuarios-v2 .perfil-celda-nombre {
+.vista-usuarios-v2 .perfil-celda-doble {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.vista-usuarios-v2 .perfil-celda-nombre,
+.vista-usuarios-v2 .perfil-empresa-nombre {
   display: block;
   color: var(--text);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.vista-usuarios-v2 .perfil-tipo,
 .vista-usuarios-v2 .perfil-meta {
   display: block;
   margin-top: 2px;
@@ -528,6 +595,76 @@
   line-height: 1.25;
   font-weight: 600;
   color: var(--text);
+}
+.vista-usuarios-v2 .riel-titulo-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+}
+.vista-usuarios-v2 .riel-titulo-fila .riel-titulo {
+  margin: 0;
+}
+.vista-usuarios-v2 .btn-editar-cuenta {
+  flex: none;
+}
+.vista-usuarios-v2 .cuenta-datos-lectura {
+  margin: 0;
+}
+.vista-usuarios-v2 .cuenta-form-edicion,
+.vista-usuarios-v2 .cuenta-form-marca {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+.vista-usuarios-v2 .cuenta-form-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+.vista-usuarios-v2 .cuenta-marcas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.vista-usuarios-v2 .cuenta-marcas-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.vista-usuarios-v2 .cuenta-marcas-titulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.vista-usuarios-v2 .btn-crm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-height);
+  padding: 0 12px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.vista-usuarios-v2 .btn-crm:hover {
+  background: var(--raised);
+}
+.vista-usuarios-v2 .btn-crm:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
 }
 
 .vista-usuarios-v2 .panel {

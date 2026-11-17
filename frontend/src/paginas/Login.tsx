@@ -45,7 +45,7 @@ export function Login() {
 
   return (
     <div className="login">
-      <aside className="login-marca" aria-label="Acerca de Nexora">
+      <aside className="login-brand" aria-label="Acerca de Nexora">
         <div className="login-marca-cabecera">
           <Logo size={40} />
           <span className="login-marca-nombre">NEXORA</span>
