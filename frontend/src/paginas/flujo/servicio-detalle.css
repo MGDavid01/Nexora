@@ -1,0 +1,361 @@
+.ficha-servicio {
+  --ficha-surface: var(--hub-surface, var(--superficie));
+  --ficha-canvas: var(--hub-canvas, var(--fondo));
+  --ficha-line: var(--hub-line, var(--borde));
+  --ficha-ink: var(--hub-ink, var(--texto));
+  --ficha-muted: var(--hub-muted, var(--texto-suave));
+  --ficha-accent: var(--hub-accent, var(--cerulean));
+  --ficha-ok: var(--hub-ok, #04844b);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ficha-surface);
+  color: var(--ficha-ink);
+}
+
+.marco-admin .ficha-servicio {
+  overflow: hidden;
+  padding: 0;
+}
+
+.ficha-cuerpo {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  width: 100%;
+}
+
+.ficha-cuerpo-sin-herramientas {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ficha-caso,
+.ficha-avance {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.ficha-avance {
+  border-left: 1px solid var(--ficha-line);
+}
+
+.ficha-avisos {
+  border-bottom: 1px solid var(--ficha-line);
+}
+
+.ficha-avisos [data-slot="alert"] {
+  border: 0;
+  border-radius: 0;
+}
+
+.ficha-etapas {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0;
+  padding: 20px 12px 16px;
+  list-style: none;
+  border-bottom: 1px solid var(--ficha-line);
+}
+
+.ficha-etapas li {
+  position: relative;
+  flex: 1 1 0;
+  max-width: 7.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.ficha-etapas li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: calc(50% + 11px);
+  right: calc(-50% + 11px);
+  height: 2px;
+  background: var(--ficha-line);
+}
+
+.ficha-etapas li[data-estado="hecho"]:not(:last-child)::after {
+  background: var(--ficha-ok);
+}
+
+.ficha-etapas .ficha-marca {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ficha-line);
+  box-shadow: 0 0 0 3px var(--ficha-surface);
+  z-index: 1;
+}
+
+.ficha-etapas li[data-estado="hecho"] .ficha-marca {
+  background: var(--ficha-ok);
+}
+
+.ficha-etapas li[data-estado="actual"] .ficha-marca {
+  background: var(--ficha-accent);
+  box-shadow: 0 0 0 3px var(--ficha-surface), 0 0 0 6px color-mix(in srgb, var(--ficha-accent) 22%, transparent);
+}
+
+.ficha-etapas strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ficha-etapas li[data-estado="pendiente"] strong {
+  color: var(--ficha-muted);
+  font-weight: 500;
+}
+
+.ficha-etapas-leyenda {
+  margin: 0;
+  padding: 8px 20px 12px;
+  border-bottom: 1px solid var(--ficha-line);
+  color: var(--ficha-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.ficha-kicker {
+  margin: 0;
+  font-family: var(--fuente-cuerpo);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ficha-muted);
+}
+
+.ficha-problema {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.ficha-caso-intro,
+.ficha-bloque,
+.ficha-partes {
+  padding: 16px 20px;
+}
+
+.ficha-hechos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--ficha-line);
+  border-bottom: 1px solid var(--ficha-line);
+}
+
+.ficha-hecho {
+  min-width: 0;
+  padding: 12px 16px;
+}
+
+.ficha-hecho + .ficha-hecho {
+  border-left: 1px solid var(--ficha-line);
+}
+
+.ficha-hecho span,
+.ficha-parte-rol {
+  display: block;
+  color: var(--ficha-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ficha-hecho strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ficha-hecho em {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--ficha-muted);
+}
+
+.ficha-partes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ficha-parte {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ficha-parte-hueco {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ficha-muted) 16%, var(--ficha-surface));
+  color: var(--ficha-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ficha-parte-textos {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ficha-parte-textos strong {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ficha-bloque {
+  border-top: 1px solid var(--ficha-line);
+}
+
+.ficha-bloque h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ficha-muted);
+}
+
+.ficha-bloque p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ficha-bloque-meta {
+  margin: 0 0 8px;
+  color: var(--ficha-muted);
+  font-size: 12px;
+}
+
+.ficha-califs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ficha-calif {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ficha-calif span {
+  color: var(--ficha-muted);
+  font-size: 12px;
+}
+
+.ficha-estrellas {
+  letter-spacing: 0.08em;
+  color: var(--ficha-accent);
+}
+
+.ficha-herramienta {
+  border-bottom: 1px solid var(--ficha-line);
+}
+
+.ficha-herramienta-cab {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ficha-herramienta-cab:hover {
+  background: color-mix(in srgb, var(--ficha-muted) 8%, var(--ficha-surface));
+}
+
+.ficha-herramienta-cab h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ficha-herramienta-chevron {
+  flex: none;
+  color: var(--ficha-muted);
+  transition: transform 0.15s ease;
+}
+
+.ficha-herramienta[data-state="open"] .ficha-herramienta-chevron {
+  transform: rotate(180deg);
+}
+
+.ficha-herramienta-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.ficha-herramienta-cuerpo p {
+  margin: 0;
+  color: var(--ficha-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 860px) {
+  .ficha-cuerpo {
+    grid-template-columns: 1fr;
+  }
+
+  .ficha-avance {
+    border-left: 0;
+    border-top: 1px solid var(--ficha-line);
+  }
+}
+
+@media (max-width: 640px) {
+  .ficha-hechos {
+    grid-template-columns: 1fr;
+  }
+
+  .ficha-hecho + .ficha-hecho {
+    border-left: 0;
+    border-top: 1px solid var(--ficha-line);
+  }
+
+  .ficha-etapas {
+    padding: 16px 8px 12px;
+  }
+
+  .ficha-etapas li {
+    max-width: none;
+  }
+}

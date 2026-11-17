@@ -5,6 +5,7 @@ import { App } from "./App";
 import { SesionProvider } from "./sesion";
 import { TemaProvider } from "./tema";
 import "./index.css";
+import "./nexora-diseno.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

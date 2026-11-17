@@ -1,0 +1,41 @@
+.cl-cotizaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cl-cotizacion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--superficie);
+}
+
+.cl-cotizacion-cabeza {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cl-cotizacion p {
+  margin: 0;
+}
+
+.cl-cotizacion-condiciones {
+  color: var(--texto-suave);
+  font-size: 13px;
+}
+
+.cl-cotizacion-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}

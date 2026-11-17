@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>WF — Admin · Inicio</title>
+  <link rel="stylesheet" href="wireframe.css" />
+</head>
+<body>
+  <div class="wf-page">
+    <aside class="wf-sidebar">
+      <div class="wf-logo">Nexora</div>
+      <div class="wf-nav-item active">Inicio</div>
+      <div class="wf-nav-item">Usuarios</div>
+      <div class="wf-nav-item">Trabajos</div>
+      <div class="wf-nav-item">Reportes</div>
+      <div class="wf-nav-item">Ingresos</div>
+      <div class="wf-nav-item">Dispositivos</div>
+      <div class="wf-nav-item">Auditoría</div>
+    </aside>
+    <div class="wf-main">
+      <header class="wf-header">
+        <div>
+          <div class="wf-title">Centro de operaciones</div>
+          <p class="wf-meta">Administrador de plataforma</p>
+        </div>
+        <div class="wf-header-actions">
+          <div class="wf-filter">Escena: Solicitudes</div>
+          <div class="wf-filter">Categoría</div>
+          <button type="button" class="wf-cta">Ir a trabajos críticos</button>
+        </div>
+      </header>
+      <div class="wf-content">
+        <div class="wf-grid wf-grid-4" style="margin-bottom: 20px;">
+          <article class="wf-kpi"><span>Nuevas 24h</span><strong>8</strong></article>
+          <article class="wf-kpi"><span>En proceso</span><strong>23</strong></article>
+          <article class="wf-kpi"><span>% con cotización</span><strong>72%</strong></article>
+          <article class="wf-kpi"><span>Rechazadas 7d</span><strong>3</strong></article>
+        </div>
+        <div class="wf-grid wf-grid-2-1">
+          <section class="wf-panel">
+            <h2 class="wf-panel-title">Series · comisiones / altas (30d)</h2>
+            <div class="wf-placeholder" style="height: 140px;"></div>
+          </section>
+          <aside class="wf-panel">
+            <h2 class="wf-panel-title">Riesgo y calidad</h2>
+            <div class="wf-kpi" style="height: 56px; margin-bottom: 8px;"><span>Bloqueados</span><strong>1</strong></div>
+            <div class="wf-kpi" style="height: 56px; margin-bottom: 8px;"><span>En riesgo</span><strong>4</strong></div>
+            <div class="wf-kpi" style="height: 56px;"><span>Sin calificar</span><strong>6</strong></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="wf-annot">Etapa 1 — shell + dashboard admin</p>
+</body>
+</html>

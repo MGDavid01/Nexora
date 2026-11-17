@@ -1,6 +1,9 @@
 from app.models.entities import (
+    AlquilerEsp32,
+    Auditoria,
     Calificacion,
     CategoriaServicio,
+    ComandoEsp32,
     Cotizacion,
     DispositivoEsp32,
     EquipoComputo,
@@ -14,14 +17,19 @@ from app.models.entities import (
     Sancion,
     Servicio,
     Solicitud,
+    TarifaAlquiler,
+    TarifaTramo,
     TokenRecuperacion,
     Ubicacion,
     Usuario,
 )
 
 __all__ = [
+    "AlquilerEsp32",
+    "Auditoria",
     "Calificacion",
     "CategoriaServicio",
+    "ComandoEsp32",
     "Cotizacion",
     "DispositivoEsp32",
     "EquipoComputo",
@@ -35,6 +43,8 @@ __all__ = [
     "Sancion",
     "Servicio",
     "Solicitud",
+    "TarifaAlquiler",
+    "TarifaTramo",
     "TokenRecuperacion",
     "Ubicacion",
     "Usuario",

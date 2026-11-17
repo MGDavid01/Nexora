@@ -106,7 +106,7 @@ def test_geocodificar_mock_y_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     assert p2.etiqueta == "Tijuana"
 
 
-def test_persistir_sin_columnas_andres() -> None:
+def test_persistir_en_ubicacion_con_lat_lon() -> None:
     ubicacion = Ubicacion(
         calle_numero="Calle 1",
         colonia="Centro",
@@ -122,6 +122,21 @@ def test_persistir_sin_columnas_andres() -> None:
         geocodificacion=ResultadoExterno(EstadoEnvio.enviado, "ok"),
     )
     r = persistir_coordenadas(ubicacion, punto)
+    assert r.estado == EstadoEnvio.enviado
+    assert ubicacion.latitud == 32.5
+    assert ubicacion.longitud == -117.0
+
+
+def test_persistir_sin_atributos_omite() -> None:
+    destino = SimpleNamespace(calle="x")
+    punto = PuntoMapa(
+        latitud=32.5,
+        longitud=-117.0,
+        etiqueta="x",
+        mapa_url="https://www.openstreetmap.org/",
+        geocodificacion=ResultadoExterno(EstadoEnvio.enviado, "ok"),
+    )
+    r = persistir_coordenadas(destino, punto)
     assert r.estado == EstadoEnvio.omitido
     assert "columnas" in r.detalle
 

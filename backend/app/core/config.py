@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     osm_tile_url: str = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     osm_attribution: str = "© OpenStreetMap contributors"
 
+    # N3/N4 — aparato ESP32. URLs y clave maestra vacías = mocks locales (sin hardware ni DeepSeek).
+    aparato_stt_url: str = ""
+    aparato_tts_url: str = ""
+    aparato_clave_maestra: str = ""
+    esp32_online_segundos: int = 90
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

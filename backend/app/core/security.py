@@ -26,3 +26,16 @@ def create_access_token(usuario_id: UUID) -> str:
 def decode_access_token(token: str) -> UUID:
     payload = jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
     return UUID(payload["sub"])
+
+
+def create_aparato_token(dispositivo_id: UUID) -> str:
+    expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
+    payload = {"sub": str(dispositivo_id), "typ": "aparato", "exp": expire}
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
+
+
+def decode_aparato_token(token: str) -> UUID:
+    payload = jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
+    if payload.get("typ") != "aparato":
+        raise jwt.InvalidTokenError("No es un token de aparato")
+    return UUID(payload["sub"])

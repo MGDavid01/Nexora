@@ -1,0 +1,1544 @@
+/* Nexora Admin · CRM (estructura tipo HubSpot, identidad Nexora)
+   Lienzo a viewport. El documento no hace scroll: lo hacen .hub-scroll, .hub-rail y las escenas. */
+
+.marco-admin {
+  --hub-ink: #2d3e50;
+  --hub-muted: #646464;
+  --hub-faint: #7b8b9c;
+  --hub-line: #dfe3eb;
+  --hub-canvas: #f5f8fa;
+  --hub-surface: #ffffff;
+  --hub-raised: #eef3f7;
+  --hub-accent: #306998;
+  --hub-accent-soft: #e4eef6;
+  --hub-accent-ink: #4584b6;
+  --hub-signal: #ffd43b;
+  --hub-ok: #04844b;
+  --hub-ok-bg: #e4f7ed;
+  --hub-warn: #b45309;
+  --hub-warn-bg: #fff6db;
+  --hub-crit: #c23934;
+  --hub-crit-bg: #fde8e7;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--hub-canvas);
+  color: var(--hub-ink);
+  font-family: var(--fuente-cuerpo);
+}
+
+[data-tema="oscuro"] .marco-admin {
+  --hub-ink: #e8eef3;
+  --hub-muted: #9aa8b5;
+  --hub-faint: #7d8b98;
+  --hub-line: #2a3846;
+  --hub-canvas: #0d1116;
+  --hub-surface: #161d25;
+  --hub-raised: #1c2630;
+  --hub-accent: #4b8bbe;
+  --hub-accent-soft: #152231;
+  --hub-accent-ink: #ffe873;
+  --hub-signal: #ffd43b;
+  --hub-ok: #86efac;
+  --hub-ok-bg: #14532d;
+  --hub-warn: #ffd43b;
+  --hub-warn-bg: #3a320f;
+  --hub-crit: #fb7185;
+  --hub-crit-bg: #3f1520;
+}
+
+.marco-admin [data-slot="sidebar-wrapper"] {
+  height: 100%;
+  min-height: 0 !important;
+  overflow: hidden;
+}
+
+.marco-admin [data-slot="sidebar-inset"] {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--hub-canvas);
+}
+
+.admin-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 52px;
+  padding: 0 16px 0 8px;
+  border-bottom: 1px solid var(--hub-line);
+  background: var(--hub-surface);
+}
+
+.admin-topbar-izq,
+.admin-topbar-der {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-topbar-der {
+  margin-left: auto;
+}
+
+.admin-topbar-volver {
+  display: flex;
+  align-items: center;
+}
+
+.admin-topbar-volver + .admin-topbar-lugar::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--hub-faint);
+  font-weight: 400;
+}
+
+.marco-admin .admin-sidebar-pie {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.marco-admin [data-collapsible="icon"] .admin-sidebar-pie {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.marco-admin .admin-tema-sidebar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  align-self: center;
+  padding: 0;
+}
+
+.marco-admin .admin-tema-sidebar svg {
+  display: block;
+  margin: auto;
+}
+
+.marco-admin .admin-cuenta-sidebar {
+  height: auto;
+  min-height: 2.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.marco-admin [data-collapsible="icon"] .admin-cuenta-sidebar {
+  flex: none;
+  width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  justify-content: center;
+}
+
+.marco-admin .admin-cuenta-marca {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.marco-admin .admin-cuenta-texto {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  line-height: 1.25;
+  font-size: 0.875rem;
+}
+
+.admin-topbar-lugar {
+  margin: 0;
+  color: var(--hub-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--fuente-cuerpo);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-topbar .dash-top-lado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-topbar .dash-fecha,
+.admin-topbar .tablero-fecha {
+  margin: 0;
+  color: var(--hub-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-topbar .segmentado {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--hub-line);
+  border-radius: 999px;
+  background: var(--hub-raised);
+}
+
+.admin-topbar .segmentado button:not([data-slot]) {
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hub-muted);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.admin-topbar .segmentado button.activo:not([data-slot]) {
+  background: var(--hub-surface);
+  color: var(--hub-ink);
+  box-shadow: 0 1px 3px rgb(45 62 80 / 10%);
+}
+
+[data-tema="oscuro"] .admin-topbar .segmentado button.activo:not([data-slot]) {
+  background: var(--hub-canvas);
+}
+
+.admin-canvas {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-mark {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--hub-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.admin-wordmark {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-size: 15px;
+}
+
+/* ── Página ─────────────────────────────────────────── */
+
+.hub-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--hub-canvas);
+  color: var(--hub-ink);
+}
+
+.hub-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--hub-line);
+  background: var(--hub-surface);
+}
+
+.hub-titulos {
+  min-width: 0;
+}
+
+.hub-head h1,
+.hub-page h1 {
+  margin: 0;
+  font-family: var(--fuente-cuerpo);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: var(--hub-ink);
+}
+
+.hub-desc {
+  margin: 4px 0 0;
+  max-width: 62ch;
+  color: var(--hub-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.hub-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: none;
+}
+
+.hub-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 24px;
+  background: var(--hub-surface);
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.hub-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.hub-body.hub-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+}
+
+.hub-scroll {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 24px 24px;
+}
+
+.hub-scroll.hub-tabla {
+  padding: 0;
+}
+
+.hub-rail {
+  min-height: 0;
+  overflow: auto;
+  border-left: 1px solid var(--hub-line);
+  background: var(--hub-surface);
+  padding: 16px 18px 24px;
+}
+
+.hub-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--hub-surface);
+  border-bottom: 1px solid var(--hub-line);
+  flex-shrink: 0;
+}
+
+.hub-kpi {
+  padding: 14px 24px;
+  min-width: 0;
+}
+
+.hub-kpis-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.hub-kpi + .hub-kpi {
+  border-left: 1px solid var(--hub-line);
+}
+
+.hub-kpi span {
+  display: block;
+  color: var(--hub-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.hub-kpi strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.hub-kpi small {
+  display: block;
+  margin-top: 2px;
+  color: var(--hub-faint);
+  font-size: 12px;
+}
+
+/* Tablas CRM */
+
+.hub-tabla table,
+.marco-admin .tabla-nexora {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.hub-tabla thead th,
+.marco-admin .tabla-nexora thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 36px;
+  padding: 0 16px;
+  background: var(--hub-canvas);
+  color: var(--hub-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.hub-tabla tbody td,
+.marco-admin .tabla-nexora tbody td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--hub-line);
+  background: var(--hub-surface);
+  vertical-align: middle;
+}
+
+.hub-tabla tbody tr:hover td,
+.marco-admin .tabla-nexora tbody tr:hover td {
+  background: var(--hub-accent-soft);
+}
+
+.hub-pie {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-top: 1px solid var(--hub-line);
+  background: var(--hub-surface);
+  color: var(--hub-muted);
+  font-size: 12px;
+}
+
+.hub-vacio {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  color: var(--hub-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.hub-buscar {
+  position: relative;
+  min-width: 16rem;
+  flex: 1;
+  max-width: 22rem;
+}
+
+.hub-buscar svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%);
+  color: var(--hub-muted);
+  pointer-events: none;
+}
+
+.hub-buscar input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px 0 32px;
+  border: 1px solid var(--hub-line);
+  border-radius: 6px;
+  background: var(--hub-surface);
+  color: var(--hub-ink);
+  font-size: 13px;
+}
+
+.hub-buscar input:focus {
+  outline: 2px solid var(--hub-accent);
+  border-color: var(--hub-accent);
+}
+
+/* Botones nativos dentro del admin (formularios viejos) */
+.marco-admin button:not([data-slot]) {
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.marco-admin .hub-toolbar form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0;
+}
+
+.marco-admin .hub-toolbar [data-slot="field-group"] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: flex-end !important;
+  width: auto !important;
+  gap: 8px !important;
+}
+
+.marco-admin .hub-toolbar [data-slot="field"] {
+  width: 11.5rem !important;
+  flex: none !important;
+}
+
+.marco-admin a.hub-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--hub-accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.marco-admin a.hub-volver:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Tablero ────────────────────────────────────────── */
+
+.marco-admin .vista-inicio {
+  gap: 0;
+}
+
+.marco-admin .vista-inicio .cinta {
+  flex-shrink: 0;
+  padding: 8px 24px 10px;
+  background: var(--hub-surface);
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.marco-admin .vista-inicio .escenas {
+  padding: 12px 24px 16px;
+}
+
+.marco-admin .vista-inicio .card {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.marco-admin .vista-inicio .stat {
+  border-radius: 8px;
+}
+
+.marco-admin .tablero {
+  padding: 16px 24px 24px;
+  overflow: auto;
+  gap: 16px;
+}
+
+.marco-admin .tablero .metrica {
+  border: 1px solid var(--hub-line);
+  border-radius: 8px;
+  background: var(--hub-surface);
+}
+
+.marco-admin .ficha-servicio {
+  overflow: hidden;
+  padding: 0;
+}
+
+.marco-admin .segmentado button:not([data-slot]) {
+  background: transparent;
+  color: var(--hub-muted);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.marco-admin .segmentado button.activo:not([data-slot]) {
+  background: var(--hub-surface);
+  color: var(--hub-ink);
+  box-shadow: 0 1px 4px rgb(45 62 80 / 12%);
+}
+
+[data-tema="oscuro"] .marco-admin .segmentado button.activo:not([data-slot]) {
+  background: var(--hub-raised);
+  color: var(--hub-ink);
+}
+
+/* ── Usuarios ───────────────────────────────────────── */
+
+.marco-admin .vista-usuarios-v2 {
+  --ground: var(--hub-canvas);
+  --surface: var(--hub-surface);
+  --raised: var(--hub-raised);
+  --border: var(--hub-line);
+  --rule: var(--hub-line);
+  --control: var(--hub-line);
+  --text: var(--hub-ink);
+  --muted: var(--hub-muted);
+  --faint: var(--hub-faint);
+  --accent: var(--hub-accent);
+  --accent-soft: var(--hub-accent-soft);
+  --accent-track: color-mix(in srgb, var(--hub-accent) 35%, var(--hub-raised));
+  --accent-ink: var(--hub-accent-ink);
+  --primary: var(--hub-accent);
+  --primary-ink: #ffffff;
+  --pill-neutral-bg: var(--hub-raised);
+  --pill-neutral-ink: var(--hub-muted);
+  --font: var(--fuente-cuerpo);
+  max-width: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--hub-canvas);
+  font-family: var(--fuente-cuerpo);
+}
+
+.marco-admin .vista-usuarios-v2 h1 {
+  font-size: 1.35rem;
+}
+
+.marco-admin .vista-usuarios-v2 .kpis {
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.marco-admin .vista-usuarios-v2 .mesa {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  gap: 0;
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.marco-admin .vista-usuarios-v2 .columna-lista {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--hub-surface);
+  padding: 0;
+}
+
+.marco-admin .vista-usuarios-v2 .pestanias {
+  flex-shrink: 0;
+  padding: 12px 24px 14px;
+  background: var(--hub-surface);
+}
+
+/* Mismo borde que .btn-toolbar-icon en hover (hub-accent) */
+.marco-admin .vista-usuarios-v2 #controles-usuarios [data-slot="select-trigger"] {
+  border-color: var(--hub-accent) !important;
+  background: var(--hub-surface) !important;
+}
+
+.marco-admin .vista-usuarios-v2 #controles-usuarios [data-slot="select-trigger"]:hover,
+.marco-admin .vista-usuarios-v2 #controles-usuarios [data-slot="select-trigger"][data-state="open"] {
+  border-color: var(--hub-accent) !important;
+  background: var(--hub-surface) !important;
+}
+
+/* TooltipTrigger usa data-slot="tooltip-trigger"; estilos vía .btn-toolbar-icon */
+.marco-admin .vista-usuarios-v2 .pestanias-filtro .herramientas-iconos .btn-toolbar-icon {
+  border-color: var(--hub-accent) !important;
+  background: var(--hub-surface) !important;
+  color: var(--hub-muted) !important;
+}
+
+.marco-admin .vista-usuarios-v2 .pestanias-filtro .herramientas-iconos .btn-toolbar-icon:hover:not(:disabled) {
+  background: var(--hub-surface) !important;
+  border-color: var(--hub-accent) !important;
+  color: var(--hub-accent) !important;
+}
+
+.marco-admin .vista-usuarios-v2 .pestanias-filtro .herramientas-iconos .btn-toolbar-icon.btn-refresh-listo {
+  border-color: color-mix(in srgb, var(--hub-accent) 45%, var(--hub-line)) !important;
+  color: var(--hub-accent) !important;
+}
+
+.marco-admin .vista-usuarios-v2 .pestanias-filtro .herramientas-iconos .btn-toolbar-icon.btn-refresh-listo:hover:not(:disabled) {
+  background: var(--hub-surface) !important;
+  border-color: var(--hub-accent) !important;
+  color: var(--hub-accent) !important;
+}
+
+.marco-admin .vista-usuarios-v2 .pestanias-filtro .filtro select {
+  background: var(--hub-canvas);
+  border-color: var(--hub-line);
+}
+
+.marco-admin .vista-usuarios-v2 #controles-usuarios .pestanias-filtro-buscar input {
+  border-color: var(--hub-accent) !important;
+  background: var(--hub-surface) !important;
+}
+
+.marco-admin .vista-usuarios-v2 #controles-usuarios .pestanias-filtro-buscar input:hover,
+.marco-admin .vista-usuarios-v2 #controles-usuarios .pestanias-filtro-buscar input:focus-visible {
+  border-color: var(--hub-accent) !important;
+  background: var(--hub-surface) !important;
+}
+
+.marco-admin .vista-usuarios-v2 .lista-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 0 16px;
+}
+
+.marco-admin .vista-usuarios-v2 table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--hub-canvas);
+}
+
+.marco-admin .vista-usuarios-v2 .th-orden:hover {
+  color: var(--hub-accent);
+}
+
+.marco-admin .vista-usuarios-v2 .th-orden-indicador {
+  color: var(--hub-accent);
+}
+
+[data-tema="oscuro"] .marco-admin .vista-usuarios-v2 .avatar {
+  background: hsl(var(--h) 34% 30%);
+  color: var(--hub-ink);
+}
+
+.marco-admin .vista-usuario-detalle {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 280px;
+  overflow: hidden;
+  background: var(--hub-canvas);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm.ficha-crm-sin-der {
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-izq,
+.marco-admin .vista-usuario-detalle .ficha-crm-der {
+  min-height: 0;
+  overflow: auto;
+  overflow-x: hidden;
+  background: var(--hub-surface);
+  padding: 20px 16px 28px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-izq {
+  border-right: 1px solid var(--hub-line);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-der {
+  border-left: 1px solid var(--hub-line);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-centro {
+  align-self: start;
+  width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-identidad {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-identidad-fila {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-identidad-acciones {
+  flex: none;
+  margin-left: auto;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+  margin-bottom: 0;
+  flex: none;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-identidad h2 {
+  margin: 0;
+  font-family: var(--fuente-cuerpo);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  color: var(--hub-ink);
+  word-break: break-word;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-identidad-sub,
+.marco-admin .vista-usuario-detalle .ficha-crm-identidad-meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--hub-muted);
+  word-break: break-word;
+}
+
+.marco-admin .vista-usuario-detalle .btn-editar-cuenta.btn-editar-activo {
+  background: var(--hub-accent-soft);
+  color: var(--hub-accent-ink);
+  border-color: var(--hub-accent) !important;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-seccion {
+  border-top: 1px solid var(--hub-line);
+  padding: 10px 0 4px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-der > .ficha-crm-seccion:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-seccion-cab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--hub-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-seccion-cab span:first-child {
+  color: var(--hub-faint);
+  width: 12px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-seccion-cuerpo {
+  padding: 8px 0 12px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-seccion-nota {
+  display: block;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--hub-faint);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuentas-asociadas {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-asociada {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-asociada:hover {
+  background: var(--hub-raised);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-asociada.es-activa {
+  background: var(--hub-accent-soft);
+  border-color: color-mix(in srgb, var(--hub-accent) 35%, var(--hub-line));
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-asociada .avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-asociada-texto {
+  min-width: 0;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-asociada-nombre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-asociada-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--hub-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-seleccionada {
+  padding-top: 8px;
+  border-top: 1px dashed var(--hub-line);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-seleccionada-cab {
+  margin-bottom: 8px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-cuenta-seleccionada-cab h3 {
+  margin: 0;
+  font-family: var(--fuente-cuerpo);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-pestanias {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  gap: 0 2px;
+  flex-shrink: 0;
+  padding: 10px 16px 0;
+  background: var(--hub-surface);
+  border-bottom: 1px solid var(--hub-line);
+  overflow-x: auto;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-pestania {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 0 10px 10px;
+  border: 0;
+  background: none;
+  color: var(--hub-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-pestania:hover {
+  color: var(--hub-ink);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-pestania.es-activa {
+  color: var(--hub-ink);
+  font-weight: 600;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-pestania.es-activa::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 2px;
+  background: var(--hub-accent);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-pestania-n {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.15rem;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--hub-raised);
+  color: var(--hub-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-centro-cuerpo {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: min(42vh, 22rem);
+  overflow: auto;
+  padding: 10px 12px 14px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla-wrap {
+  background: var(--hub-surface);
+  border: 1px solid var(--hub-line);
+  border-radius: 8px;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla .vacio {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla th,
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--hub-line);
+  font-size: 13px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla th {
+  color: var(--hub-muted);
+  font-weight: 600;
+  background: var(--hub-surface);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla tbody tr {
+  cursor: pointer;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla-estatica tbody tr {
+  cursor: default;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla tbody tr:hover td {
+  background: var(--hub-raised);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla .fila-vacia,
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla .fila-vacia:hover td {
+  cursor: default;
+  background: transparent;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-caso {
+  display: block;
+  font-weight: 600;
+  color: var(--hub-ink);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-caso-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--hub-muted);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-tabla td:last-child {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-der .cuenta-marcas-cab-compacta {
+  margin-bottom: 10px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-der .crm-meta {
+  line-height: 1.4;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-alcance {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 13px;
+  color: var(--hub-ink);
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-alcance li + li {
+  margin-top: 6px;
+}
+
+.marco-admin .vista-usuario-detalle .ficha-crm-der .btn-crm {
+  width: 100%;
+}
+
+.marco-admin .vista-usuario-detalle .props-crm {
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 2px 10px;
+  align-items: center;
+}
+
+.marco-admin .vista-usuario-detalle .props-crm dt,
+.marco-admin .vista-usuario-detalle .props-crm dd {
+  margin: 0;
+  padding: 0;
+  line-height: 1.35;
+  min-height: 0;
+}
+
+.marco-admin .vista-usuario-detalle .props-crm dt {
+  align-self: center;
+  font-weight: 500;
+}
+
+.marco-admin .vista-usuario-detalle .props-crm dd {
+  overflow-wrap: anywhere;
+  align-self: center;
+  font-weight: 500;
+  color: var(--hub-ink);
+}
+
+@media (max-width: 1100px) {
+  .marco-admin .vista-usuario-detalle .ficha-crm {
+    grid-template-columns: 260px minmax(0, 1fr) 260px;
+  }
+
+  .marco-admin .vista-usuario-detalle .ficha-crm.ficha-crm-sin-der {
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .marco-admin .vista-usuario-detalle .ficha-crm {
+    grid-template-columns: minmax(0, 1fr);
+    overflow: auto;
+  }
+
+  .marco-admin .vista-usuario-detalle .ficha-crm-izq,
+  .marco-admin .vista-usuario-detalle .ficha-crm-der {
+    border: 0;
+    border-bottom: 1px solid var(--hub-line);
+    overflow: visible;
+  }
+
+  .marco-admin .vista-usuario-detalle .ficha-crm-centro-cuerpo {
+    max-height: none;
+  }
+}
+
+.marco-admin .vista-usuarios-v2 .panel {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.marco-admin .vista-usuarios-v2 .btn {
+  background: var(--hub-surface);
+  color: var(--hub-ink);
+  border-color: var(--hub-line);
+}
+
+.marco-admin .vista-usuarios-v2 .btn:hover {
+  background: var(--hub-raised);
+}
+
+.marco-admin .vista-usuarios-v2 .btn-primario {
+  background: var(--hub-accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.marco-admin .vista-usuarios-v2 .btn-primario:hover {
+  background: var(--hub-accent-ink);
+}
+
+.marco-admin .vista-usuarios-v2 .capa {
+  background: rgb(45 62 80 / 42%);
+}
+
+.marco-admin .vista-usuarios-v2 .dialogo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--hub-surface);
+  border-color: var(--hub-line);
+  color: var(--hub-ink);
+}
+
+.marco-admin .vista-usuarios-v2 .dialogo h2,
+.marco-admin .vista-usuarios-v2 .dialogo > p {
+  flex-shrink: 0;
+}
+
+.marco-admin .vista-usuarios-v2 .dialogo .formulario {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin-top: 16px;
+  padding-right: 4px;
+}
+
+.marco-admin .vista-usuarios-v2 .dialogo-acciones {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: 8px;
+  padding: 12px 0 2px;
+  background: var(--hub-surface);
+  border-top: 1px solid var(--hub-line);
+}
+
+/* ── Trabajos ───────────────────────────────────────── */
+
+.marco-admin .vista-trabajos-crm {
+  max-width: none;
+  height: 100%;
+  background: var(--hub-canvas);
+}
+
+.marco-admin .vista-trabajos-crm .crm-top {
+  margin: 0;
+  padding: 18px 24px 12px;
+  background: var(--hub-surface);
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.marco-admin .vista-trabajos-crm .crm-filtros {
+  flex-shrink: 0;
+  padding: 10px 24px;
+  margin: 0;
+  background: var(--hub-surface);
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.marco-admin .vista-trabajos-crm .tablero-crm {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.marco-admin .vista-trabajos-crm .crm-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--hub-surface);
+}
+
+.marco-admin .vista-trabajos-crm .tabla-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.marco-admin .vista-trabajos-crm thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--hub-canvas);
+}
+
+.marco-admin .vista-trabajos-crm .crm-pie {
+  flex-shrink: 0;
+  background: var(--hub-surface);
+  color: var(--hub-muted);
+  font-family: var(--fuente-cuerpo);
+}
+
+.marco-admin .vista-trabajos-crm .tabla-completa,
+.marco-admin .vista-trabajos-crm .tabla-wrap {
+  background: var(--hub-surface);
+}
+
+.marco-admin .vista-trabajos-crm .tabla-wrap th {
+  color: var(--hub-muted);
+  background: var(--hub-canvas);
+  border-bottom: 1px solid var(--hub-line);
+  letter-spacing: 0.04em;
+}
+
+.marco-admin .vista-trabajos-crm .tabla-wrap tbody tr:nth-child(odd) td,
+.marco-admin .vista-trabajos-crm .tabla-wrap tbody tr:nth-child(even) td {
+  background: var(--hub-surface);
+}
+
+.marco-admin .vista-trabajos-crm .tabla-wrap tbody tr:hover td {
+  background: var(--hub-accent-soft);
+}
+
+/* ── Detalle de caso ────────────────────────────────── */
+
+.marco-admin .vista-detalle-caso {
+  max-width: none;
+  height: 100%;
+  background: var(--hub-canvas);
+}
+
+.marco-admin .vista-detalle-caso .cabecera-caso {
+  padding: 14px 24px;
+  margin: 0;
+  background: var(--hub-surface);
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.marco-admin .vista-detalle-caso .cabecera-caso h1 {
+  font-family: var(--fuente-cuerpo);
+  font-size: 1.2rem;
+}
+
+.marco-admin .hub-tabs-caso {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.marco-admin .hub-tabs-caso [data-slot="tabs-list"] {
+  flex-shrink: 0;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--hub-line);
+  background: var(--hub-surface);
+  border-radius: 0;
+}
+
+.marco-admin .hub-tabs-caso [data-slot="tabs-trigger"] {
+  flex: none;
+  min-width: 7rem;
+}
+
+.marco-admin .hub-tabs-caso [data-slot="tabs-content"] {
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 24px 24px;
+}
+
+.marco-admin .vista-detalle-caso .escena {
+  position: static;
+  opacity: 1;
+  transform: none;
+  filter: none;
+  pointer-events: auto;
+  overflow: visible;
+}
+
+.marco-admin .vista-detalle-caso .pista-scroll {
+  display: none;
+}
+
+.marco-admin .vista-detalle-caso .escena {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.marco-admin .vista-detalle-caso .fila-arriba,
+.marco-admin .vista-detalle-caso .fila-abajo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.marco-admin .vista-detalle-caso .card {
+  background: var(--hub-surface);
+  border: 1px solid var(--hub-line);
+  border-radius: 8px;
+  padding: 16px 18px;
+  box-shadow: none;
+}
+
+.marco-admin .vista-detalle-caso .card-cab h2 {
+  margin: 0 0 10px;
+  font-family: var(--fuente-cuerpo);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.marco-admin .btn-crm-principal,
+.marco-admin .vista-padron-crm .btn-crm-principal,
+.marco-admin .vista-usuarios-v2 .btn-crm-principal,
+.marco-admin .vista-detalle-caso .btn-crm-principal {
+  display: inline-flex;
+  width: auto;
+  min-width: 11rem;
+  background: var(--hub-accent) !important;
+  color: #fff !important;
+  border-color: transparent;
+}
+
+.marco-admin .btn-crm-principal:hover,
+.marco-admin .vista-padron-crm .btn-crm-principal:hover,
+.marco-admin .vista-usuarios-v2 .btn-crm-principal:hover,
+.marco-admin .vista-detalle-caso .btn-crm-principal:hover {
+  background: var(--hub-accent-ink) !important;
+}
+
+.marco-admin .vista-padron-crm .filtro-dd.activo,
+.marco-admin .vista-padron-crm .filtro-dd[aria-expanded="true"] {
+  background: var(--hub-accent-soft);
+  color: var(--hub-accent-ink);
+  border-color: var(--hub-accent);
+}
+
+.marco-admin .vista-padron-crm,
+.marco-admin .vista-trabajos-crm {
+  --pollen: var(--hub-accent);
+  --crm-link: var(--hub-accent);
+  --crm-fila-par: var(--hub-surface);
+  --crm-fila-hover: var(--hub-accent-soft);
+  --crm-alerta: var(--hub-warn);
+  accent-color: var(--hub-accent);
+}
+
+.marco-admin .vista-trabajos-crm tbody tr.fila-activa td {
+  background: var(--hub-accent-soft);
+}
+
+.marco-admin .vista-detalle-caso .kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.marco-admin .vista-detalle-caso .kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.marco-admin .vista-detalle-caso .kpi-etiqueta,
+.marco-admin .vista-detalle-caso .kpi span {
+  color: var(--hub-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.marco-admin .vista-detalle-caso .kpi strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.marco-admin .vista-detalle-caso .riesgos-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.marco-admin .vista-detalle-caso .riesgos-grid[data-cols="2"] {
+  grid-template-columns: 1fr 1fr;
+}
+
+.marco-admin .vista-detalle-caso .riesgos-grid[data-cols="4"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.marco-admin .vista-detalle-caso .riesgo-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--hub-raised);
+}
+
+.marco-admin .vista-detalle-caso .riesgo-tile span {
+  color: var(--hub-muted);
+  font-size: 12px;
+}
+
+.marco-admin .vista-trabajos-crm .tabla-wrap th,
+.marco-admin .vista-usuarios-v2 table thead th {
+  background: var(--hub-raised) !important;
+  color: var(--hub-muted) !important;
+  border-bottom: 1px solid var(--hub-line) !important;
+}
+
+@media (max-width: 960px) {
+  .marco-admin .vista-detalle-caso .fila-arriba,
+  .marco-admin .vista-detalle-caso .fila-abajo,
+  .marco-admin .vista-detalle-caso .kpis,
+  .marco-admin .vista-detalle-caso .riesgos-grid[data-cols="4"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+.marco-admin .vista-admin-extra {
+  height: 100%;
+}
+
+@media (max-width: 960px) {
+  .hub-body.hub-split {
+    grid-template-columns: 1fr;
+  }
+
+  .hub-rail {
+    border-left: 0;
+    border-top: 1px solid var(--hub-line);
+    max-height: 42vh;
+  }
+
+  .hub-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hub-kpi + .hub-kpi {
+    border-left: 0;
+  }
+
+  .hub-kpi:nth-child(2n) {
+    border-left: 1px solid var(--hub-line);
+  }
+
+  .hub-kpi:nth-child(n + 3) {
+    border-top: 1px solid var(--hub-line);
+  }
+}

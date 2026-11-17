@@ -17,6 +17,7 @@ from app.models.entities import (
 from app.models.enums import FuncionProveedor, TipoCuenta
 from app.schemas.auth import RegistroCliente, RegistroProveedor, UbicacionIn
 from app.schemas.usuarios import RegistroAdministrador
+from app.services.osm_ubicacion import intentar_geocodificar
 
 _SOLO_ADMIN = "Solo el administrador de plataforma puede registrar clientes y proveedores"
 _NO_PIDE_BAJA = (
@@ -36,7 +37,9 @@ async def registrar_cliente(
     perfil = PerfilCliente(tipo=datos.tipo, nombre_comercial=datos.nombre_comercial)
     session.add(perfil)
     await session.flush()
-    session.add(_ubicacion(datos.ubicacion, perfil_cliente_id=perfil.id))
+    ubicacion = _ubicacion(datos.ubicacion, perfil_cliente_id=perfil.id)
+    session.add(ubicacion)
+    await intentar_geocodificar(ubicacion)
     usuario = Usuario(
         nombre=datos.nombre,
         correo=datos.correo,
@@ -44,6 +47,7 @@ async def registrar_cliente(
         telefono=datos.telefono,
         tipo_cuenta=TipoCuenta.cliente,
         perfil_cliente_id=perfil.id,
+        creado_en=datetime.now(UTC),
     )
     session.add(usuario)
     await _flush_unico(session)
@@ -64,20 +68,29 @@ async def registrar_proveedor(
     )
     session.add(perfil)
     await session.flush()
-    session.add(_ubicacion(datos.ubicacion, perfil_proveedor_id=perfil.id))
+    ubicacion = _ubicacion(datos.ubicacion, perfil_proveedor_id=perfil.id)
+    session.add(ubicacion)
+    await intentar_geocodificar(ubicacion)
     for nombre in datos.categorias:
         categoria = await _categoria(session, nombre)
         session.add(
             PerfilProveedorCategoria(perfil_proveedor_id=perfil.id, categoria_id=categoria.id)
         )
+    if datos.tipo_cuenta == "negocio":
+        tipo = TipoCuenta.negocio
+        funcion = FuncionProveedor.administrativo_campo
+    else:
+        tipo = TipoCuenta.empresa
+        funcion = FuncionProveedor.administrativo
     usuario = Usuario(
         nombre=datos.nombre,
         correo=datos.correo,
         contrasena_hash=hash_password(datos.contrasena),
         telefono=datos.telefono,
-        tipo_cuenta=TipoCuenta.proveedor,
-        funcion=FuncionProveedor.administrativo,
+        tipo_cuenta=tipo,
+        funcion=funcion,
         perfil_proveedor_id=perfil.id,
+        creado_en=datetime.now(UTC),
     )
     session.add(usuario)
     await _flush_unico(session)

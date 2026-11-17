@@ -185,12 +185,14 @@ class TrabajoListaOut(BaseModel):
     solicitud_id: UUID
     titulo: str
     cliente: str
+    perfil_cliente_id: UUID
     categoria: str
     etapa: EtapaTrabajo
     estado_solicitud: EstadoSolicitud
     cierre: CierreTrabajo
     estado_servicio: str | None
     proveedor: str | None
+    perfil_proveedor_id: UUID | None
     reclamacion: EstadoReclamacionFiltro | None
     hay_marca: bool
     creado_en: datetime | None

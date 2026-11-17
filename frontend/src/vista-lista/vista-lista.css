@@ -1,0 +1,680 @@
+/* Vista de listado · patrón de Usuarios (admin) reutilizable en admin, cliente y proveedor */
+
+.vista-lista {
+  --vl-canvas: var(--fondo);
+  --vl-surface: var(--superficie);
+  --vl-raised: var(--superficie-suave);
+  --vl-line: var(--borde);
+  --vl-ink: var(--texto);
+  --vl-muted: var(--texto-suave);
+  --vl-faint: color-mix(in srgb, var(--texto-suave) 70%, var(--superficie));
+  --vl-accent: var(--cerulean);
+  --vl-accent-soft: color-mix(in srgb, var(--cerulean) 12%, var(--superficie));
+  --vl-accent-ink: var(--cerulean);
+  --vl-ok: #04844b;
+  --vl-ok-bg: #e4f7ed;
+  --vl-warn: #92400e;
+  --vl-warn-bg: #fff6db;
+  --vl-crit: #c23934;
+  --vl-crit-bg: #fde8e7;
+  --vl-avatar-l: 89%;
+  --vl-avatar-ink: #1f2937;
+  color: var(--vl-ink);
+  font-family: var(--fuente-cuerpo);
+  font-size: 14px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-tema="oscuro"] .vista-lista {
+  --vl-ok: #86efac;
+  --vl-ok-bg: #14532d;
+  --vl-warn: #fcd34d;
+  --vl-warn-bg: #3a320f;
+  --vl-crit: #fb7185;
+  --vl-crit-bg: #3f1520;
+  --vl-avatar-l: 30%;
+  --vl-avatar-ink: #e8eef3;
+}
+
+.marco-admin .vista-lista {
+  --vl-canvas: var(--hub-canvas);
+  --vl-surface: var(--hub-surface);
+  --vl-raised: var(--hub-raised);
+  --vl-line: var(--hub-line);
+  --vl-ink: var(--hub-ink);
+  --vl-muted: var(--hub-muted);
+  --vl-faint: var(--hub-faint);
+  --vl-accent: var(--hub-accent);
+  --vl-accent-soft: var(--hub-accent-soft);
+  --vl-accent-ink: var(--hub-accent);
+  --vl-ok: var(--hub-ok);
+  --vl-ok-bg: var(--hub-ok-bg);
+  --vl-warn: var(--hub-warn);
+  --vl-warn-bg: var(--hub-warn-bg);
+  --vl-crit: var(--hub-crit);
+  --vl-crit-bg: var(--hub-crit-bg);
+}
+
+/* ── Marco: admin a viewport, sesión con scroll de página ── */
+
+.marco-admin .vista-lista-admin {
+  height: 100%;
+  background: var(--vl-canvas);
+}
+
+.vista-lista-sesion {
+  width: 100%;
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.vl-cabecera {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.vl-cabecera-textos {
+  min-width: 0;
+}
+
+.vista-lista .vl-cabecera h1 {
+  margin: 0;
+  font-family: var(--fuente-cuerpo);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--vl-ink);
+}
+
+.vl-descripcion {
+  margin: 6px 0 0;
+  max-width: 68ch;
+  color: var(--vl-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.vl-cabecera-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: none;
+}
+
+/* ── Mesa: barra + scroll ── */
+
+.vl-mesa {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--vl-surface);
+}
+
+.vista-lista-admin .vl-mesa {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.vista-lista-sesion .vl-mesa {
+  border: 1px solid var(--vl-line);
+  border-radius: 8px;
+  overflow: clip;
+}
+
+.vl-barra {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px 8px;
+  min-height: 0;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--vl-line);
+  background: var(--vl-surface);
+  overflow-x: auto;
+}
+
+.vista-lista-sesion .vl-barra {
+  padding: 6px 16px;
+}
+
+.vl-buscar {
+  position: relative;
+  flex: 1 1 8rem;
+  min-width: 8rem;
+  max-width: 18rem;
+}
+
+.vl-buscar svg {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%);
+  color: var(--vl-muted);
+  pointer-events: none;
+}
+
+.vista-lista .vl-buscar input {
+  width: 100%;
+  height: 28px;
+  padding: 0 10px 0 30px;
+  border: 1px solid var(--vl-accent);
+  border-radius: 6px;
+  background: var(--vl-surface);
+  color: var(--vl-ink);
+  font-size: 12px;
+}
+
+.vista-lista .vl-buscar input::placeholder {
+  color: var(--vl-faint);
+}
+
+.vista-lista .vl-buscar input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--vl-accent) 45%, transparent);
+  outline-offset: 1px;
+}
+
+.vl-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.vl-filtro-etiq {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vl-muted);
+  white-space: nowrap;
+}
+
+.vista-lista .vl-barra [data-slot="select-trigger"] {
+  height: 28px;
+  min-height: 28px;
+  width: 100%;
+  max-width: 7.5rem;
+  padding-inline: 8px 22px;
+  font-size: 12px;
+  border-color: var(--vl-accent) !important;
+  background: var(--vl-surface) !important;
+  color: var(--vl-ink);
+}
+
+.vl-iconos {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.vista-lista .vl-btn-icono {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-color: var(--vl-accent) !important;
+  background: var(--vl-surface) !important;
+  color: var(--vl-muted) !important;
+}
+
+.vista-lista .vl-btn-icono:hover:not(:disabled),
+.vista-lista .vl-btn-icono.vl-btn-listo {
+  color: var(--vl-accent) !important;
+}
+
+.vl-aviso {
+  flex-shrink: 0;
+  margin: 12px 24px 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 13px;
+}
+
+.vista-lista-sesion .vl-aviso {
+  margin: 12px 16px 0;
+}
+
+.vl-aviso-info {
+  background: var(--vl-accent-soft);
+  border-color: color-mix(in srgb, var(--vl-accent) 35%, transparent);
+  color: var(--vl-ink);
+}
+
+.vl-aviso-ok {
+  background: var(--vl-ok-bg);
+  color: var(--vl-ok);
+}
+
+.vl-aviso-error {
+  background: var(--vl-crit-bg);
+  color: var(--vl-crit);
+}
+
+.vl-scroll {
+  min-width: 0;
+}
+
+.vista-lista-admin .vl-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 16px;
+}
+
+.vista-lista-sesion .vl-scroll {
+  overflow-x: auto;
+}
+
+.vl-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding: 16px 24px 24px;
+}
+
+.vista-lista-admin .vl-cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.vista-lista-sesion .vl-cuerpo {
+  padding: 16px;
+}
+
+/* ── Tabla ── */
+
+.vista-lista .vl-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+}
+
+.vista-lista .vl-tabla thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 36px;
+  padding: 0 10px;
+  background: var(--vl-raised);
+  border-bottom: 1px solid var(--vl-line);
+  color: var(--vl-muted);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.vista-lista .vl-tabla td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--vl-line);
+  background: transparent;
+  color: var(--vl-ink);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vista-lista .vl-tabla tr.vl-grupo td {
+  padding-top: 10px;
+  padding-bottom: 6px;
+  background: var(--vl-raised);
+  color: var(--vl-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vista-lista .vl-tabla th:first-child,
+.vista-lista .vl-tabla td:first-child {
+  padding-left: 24px;
+}
+
+.vista-lista .vl-tabla th:last-child,
+.vista-lista .vl-tabla td:last-child {
+  padding-right: 24px;
+}
+
+.vista-lista-sesion .vl-tabla th:first-child,
+.vista-lista-sesion .vl-tabla td:first-child {
+  padding-left: 16px;
+}
+
+.vista-lista-sesion .vl-tabla th:last-child,
+.vista-lista-sesion .vl-tabla td:last-child {
+  padding-right: 16px;
+}
+
+.vista-lista .vl-tabla .vl-derecha {
+  text-align: right;
+}
+
+.vista-lista .vl-tabla th.vl-derecha .vl-th-orden {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.vista-lista .vl-tabla .vl-th-orden {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vista-lista .vl-tabla .vl-th-orden:hover {
+  color: var(--vl-accent);
+}
+
+.vista-lista .vl-tabla .vl-th-texto {
+  font-weight: 600;
+}
+
+.vl-th-indicador {
+  font-size: 11px;
+  line-height: 1;
+  color: var(--vl-accent);
+}
+
+.vista-lista .vl-tabla tbody tr.vl-fila-abrible {
+  cursor: pointer;
+}
+
+.vista-lista .vl-tabla tbody tr:hover td {
+  background: var(--vl-raised);
+}
+
+.vista-lista .vl-tabla tbody tr[aria-selected="true"] td {
+  background: var(--vl-accent-soft);
+}
+
+.vista-lista .vl-tabla tbody tr.vl-fila-abrible:focus-visible {
+  outline: 2px solid var(--vl-accent);
+  outline-offset: -2px;
+}
+
+/* ── Celdas ── */
+
+.vl-principal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.vl-principal-texto {
+  min-width: 0;
+}
+
+.vl-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-weight: 500;
+  color: var(--vl-ink);
+}
+
+.vl-titulo-texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vl-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--vl-muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vl-doble {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.vl-doble-arriba {
+  color: var(--vl-ink);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vl-doble-abajo {
+  color: var(--vl-muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vl-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: hsl(var(--h) 34% var(--vl-avatar-l));
+  color: var(--vl-avatar-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.vl-acciones {
+  display: flex;
+  align-items: center;
+  gap: 4px 12px;
+  white-space: nowrap;
+}
+
+.vl-derecha > .vl-acciones {
+  justify-content: flex-end;
+}
+
+.vl-derecha > .vl-doble {
+  align-items: flex-end;
+}
+
+.vista-lista .vl-tabla td.vl-derecha {
+  white-space: nowrap;
+}
+
+.vl-ausente {
+  color: var(--vl-faint);
+}
+
+.vl-pastilla {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.vl-pastilla-neutra {
+  background: var(--vl-raised);
+  color: var(--vl-muted);
+}
+
+.vl-pastilla-acento {
+  background: var(--vl-accent-soft);
+  color: var(--vl-accent-ink);
+}
+
+.vl-pastilla-positiva {
+  background: var(--vl-ok-bg);
+  color: var(--vl-ok);
+}
+
+.vl-pastilla-alerta {
+  background: var(--vl-warn-bg);
+  color: var(--vl-warn);
+}
+
+.vl-pastilla-negativa {
+  background: var(--vl-crit-bg);
+  color: var(--vl-crit);
+}
+
+/* ── Estados, pie y KPIs ── */
+
+.vl-vacio a {
+  color: var(--vl-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vl-vacio a:hover {
+  text-decoration: underline;
+}
+
+.vl-vacio {
+  padding: 32px 24px;
+  border-bottom: 1px solid var(--vl-line);
+  color: var(--vl-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.vl-vacio p {
+  margin: 0;
+}
+
+.vl-vacio .vl-btn-texto {
+  margin-top: 8px;
+}
+
+.vista-lista .vl-btn-texto {
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--vl-accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vista-lista .vl-btn-texto:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.vista-lista .vl-btn-texto:disabled {
+  color: var(--vl-faint);
+  cursor: not-allowed;
+}
+
+.vista-lista .vl-btn-texto.vl-btn-peligro {
+  color: var(--vl-crit);
+}
+
+.vl-pie {
+  flex-shrink: 0;
+  padding: 8px 24px;
+  border-top: 1px solid var(--vl-line);
+  background: var(--vl-surface);
+  color: var(--vl-muted);
+  font-size: 12px;
+}
+
+.vista-lista-sesion .vl-pie {
+  padding: 8px 16px;
+}
+
+.vl-kpis {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--vl-kpis, 4), minmax(0, 1fr));
+  background: var(--vl-surface);
+  border-bottom: 1px solid var(--vl-line);
+}
+
+.vista-lista-sesion .vl-kpis {
+  margin-bottom: 16px;
+  border: 1px solid var(--vl-line);
+  border-radius: 8px;
+}
+
+.vl-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px 24px;
+}
+
+.vl-kpi + .vl-kpi {
+  border-left: 1px solid var(--vl-line);
+}
+
+.vl-kpi-etiqueta {
+  color: var(--vl-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.vl-kpi-valor {
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.vl-kpi-nota {
+  color: var(--vl-faint);
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .vl-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vl-kpi + .vl-kpi {
+    border-left: 0;
+  }
+
+  .vl-kpi:nth-child(2n) {
+    border-left: 1px solid var(--vl-line);
+  }
+
+  .vl-cabecera {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
