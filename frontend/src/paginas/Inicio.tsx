@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {
   cotizacionesSolicitud,
@@ -6,9 +6,11 @@ import {
   listarSolicitudes,
   mercadoProveedor,
   servicioEstaActivo,
+  servicioEstaCerrado,
   type HistorialItem,
   type Solicitud,
 } from "../api";
+import { useAdminTopbarAcciones, useAdminTopbarTitulo } from "../admin/AdminTopbar";
 import { lugarDe, type Lugar } from "../herramientas";
 import { useSesion } from "../sesion";
 import { TableroAdmin } from "./TableroAdmin";
@@ -36,7 +38,7 @@ export function Inicio() {
 function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administrador">; nombre: string; fecha: Date }) {
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [mercado, setMercado] = useState<Solicitud[]>([]);
-  const [servicios, setServicios] = useState<HistorialItem[]>([]);
+  const [historial, setHistorial] = useState<HistorialItem[]>([]);
   const [cotizaciones, setCotizaciones] = useState(0);
 
   useEffect(() => {
@@ -50,21 +52,19 @@ function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administr
           total += cots.filter((c) => c.estado === "enviada").length;
         }
         setCotizaciones(total);
-        const hist = await historialPropio();
-        setServicios(hist.filter((h) => servicioEstaActivo(h.estado)));
       } else {
         setMercado(await mercadoProveedor());
-        const hist = await historialPropio();
-        setServicios(hist.filter((h) => servicioEstaActivo(h.estado)));
       }
+      setHistorial(await historialPropio());
     }
     cargar().catch(() => undefined);
   }, [lugar]);
 
+  const servicios = historial.filter((h) => servicioEstaActivo(h.estado));
   const abiertas = solicitudes.length;
   const mercadoCount = mercado.length;
   const activos = servicios.length;
-  const cerrados = 0;
+  const cerrados = historial.filter((h) => servicioEstaCerrado(h.estado)).length;
 
   const metricas =
     lugar === "cliente"
@@ -84,17 +84,14 @@ function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administr
   const enlaceRapido =
     lugar === "cliente" ? "/cliente/solicitudes" : lugar === "tecnico" ? "/proveedor/servicios" : "/proveedor/solicitudes";
 
+  const tituloTopbar = `${saludo(fecha)}, ${nombre}`;
+  useAdminTopbarTitulo(tituloTopbar);
+
+  const accionesTopbar = useMemo(() => <p className="dash-fecha tablero-fecha">{fechaLegible(fecha)}</p>, [fecha]);
+  useAdminTopbarAcciones(accionesTopbar);
+
   return (
-    <section className="tablero">
-      <header className="tablero-encabezado">
-        <div>
-          <p className="kicker">{etiquetaLugar(lugar)}</p>
-          <h1>
-            {saludo(fecha)}, {nombre}
-          </h1>
-        </div>
-        <p className="tablero-fecha">{fechaLegible(fecha)}</p>
-      </header>
+    <section className="hub-page tablero">
       <div className="metricas">
         {metricas.map((m) => (
           <article key={m.etiqueta} className="metrica">
@@ -108,12 +105,6 @@ function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administr
       </p>
     </section>
   );
-}
-
-function etiquetaLugar(lugar: Exclude<Lugar, "administrador">): string {
-  if (lugar === "cliente") return "Cliente";
-  if (lugar === "tecnico") return "Técnico en campo";
-  return "Administrativo del proveedor";
 }
 
 function saludo(fecha: Date): string {

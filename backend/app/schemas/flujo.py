@@ -85,6 +85,14 @@ class ServicioOut(BaseModel):
     creado_en: datetime | None
 
 
+class ReclamacionResumenOut(BaseModel):
+    id: UUID
+    categoria: str
+    categoria_etiqueta: str
+    motivo: str
+    estado: str
+
+
 class InformeOut(BaseModel):
     id: UUID
     servicio_id: UUID
@@ -104,6 +112,19 @@ class CalificacionOut(BaseModel):
     es_automatica: bool
 
 
+class ServicioDetalleOut(ServicioOut):
+    titulo: str
+    categoria: str
+    descripcion: str
+    costo_mxn: Decimal | None = None
+    cliente: str
+    proveedor: str
+    tecnico: str | None = None
+    informe: InformeOut | None = None
+    calificaciones: list[CalificacionOut] = Field(default_factory=list)
+    reclamacion_abierta: ReclamacionResumenOut | None = None
+
+
 class HistorialItemOut(BaseModel):
     servicio_id: UUID
     solicitud_id: UUID
@@ -113,6 +134,10 @@ class HistorialItemOut(BaseModel):
     costo_mxn: Decimal | None
     creado_en: datetime | None
     informe: InformeOut | None = None
+    cliente: str | None = None
+    proveedor: str | None = None
+    tecnico: str | None = None
+    categoria: str | None = None
 
 
 class ExtraUsuarioIn(BaseModel):

@@ -77,3 +77,22 @@ def test_solicitud_rechaza_publicacion_sin_categoria() -> None:
             descripcion="El equipo no logra conectarse.",
             ubicacion=_datos().ubicacion,
         )
+
+
+def test_ubicacion_solicitud_expone_coords() -> None:
+    from decimal import Decimal
+
+    from app.schemas.solicitudes import UbicacionSolicitudOut
+
+    datos = UbicacionSolicitudOut(
+        id=uuid4(),
+        calle_numero="Calle 1",
+        colonia="Centro",
+        ciudad="Tijuana",
+        estado="Baja California",
+        codigo_postal="22000",
+        latitud=Decimal("32.514900"),
+        longitud=Decimal("-117.038200"),
+    )
+    assert datos.latitud == pytest.approx(32.5149)
+    assert datos.longitud == pytest.approx(-117.0382)

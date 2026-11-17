@@ -1,7 +1,10 @@
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useAdminTopbarContexto } from "../admin/AdminTopbar";
 import { obtenerTrabajoAdmin, type ExpedienteTrabajo } from "../api";
 import { FormCerrarReclamacion, FormMarcaCaso } from "../trabajos-expediente-formularios";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import "../tablero-admin.css";
 import "../detalle-trabajo-admin.css";
 import "../usuarios-admin.css";
@@ -61,13 +64,6 @@ export function DetalleTrabajoAdmin() {
   const [error, setError] = useState("");
   const [escena, setEscena] = useState<Escena>("caso");
 
-  const viewport = useRef<HTMLDivElement>(null);
-  const escenaCaso = useRef<HTMLElement>(null);
-  const escenaAtencion = useRef<HTMLElement>(null);
-  const escenaActual = useRef<Escena>("caso");
-  const animando = useRef(false);
-  const irRef = useRef<(nombre: Escena) => void>(() => undefined);
-
   useEffect(() => {
     if (!solicitudId) return;
     let activo = true;
@@ -91,77 +87,6 @@ export function DetalleTrabajoAdmin() {
     };
   }, [solicitudId]);
 
-  function irAEscena(nombre: Escena) {
-    if (animando.current || escenaActual.current === nombre) return;
-    animando.current = true;
-    escenaActual.current = nombre;
-    setEscena(nombre);
-    const destino = nombre === "atencion" ? escenaAtencion.current : escenaCaso.current;
-    if (destino) destino.scrollTop = 0;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.setTimeout(
-      () => {
-        animando.current = false;
-      },
-      reduce ? 0 : 360,
-    );
-  }
-
-  irRef.current = irAEscena;
-
-  useEffect(() => {
-    const nodo = viewport.current;
-    if (!nodo) return;
-
-    function enTope(el: HTMLElement) {
-      return el.scrollTop <= 2;
-    }
-    function enFondo(el: HTMLElement) {
-      return el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
-    }
-    function alRueda(evento: WheelEvent) {
-      const activa =
-        escenaActual.current === "atencion" ? escenaAtencion.current : escenaCaso.current;
-      if (!activa) return;
-      if (animando.current) {
-        evento.preventDefault();
-        return;
-      }
-      if (evento.deltaY > 0 && escenaActual.current === "caso" && enFondo(activa)) {
-        evento.preventDefault();
-        irRef.current("atencion");
-      } else if (evento.deltaY < 0 && escenaActual.current === "atencion" && enTope(activa)) {
-        evento.preventDefault();
-        irRef.current("caso");
-      }
-    }
-
-    let toqueY: number | null = null;
-    function alTocar(evento: TouchEvent) {
-      toqueY = evento.changedTouches[0]?.clientY ?? null;
-    }
-    function alSoltar(evento: TouchEvent) {
-      if (toqueY == null || animando.current) return;
-      const dy = toqueY - (evento.changedTouches[0]?.clientY ?? toqueY);
-      toqueY = null;
-      if (Math.abs(dy) < 40) return;
-      const activa =
-        escenaActual.current === "atencion" ? escenaAtencion.current : escenaCaso.current;
-      if (!activa) return;
-      if (dy > 0 && escenaActual.current === "caso" && enFondo(activa)) irRef.current("atencion");
-      if (dy < 0 && escenaActual.current === "atencion" && enTope(activa)) irRef.current("caso");
-    }
-
-    nodo.addEventListener("wheel", alRueda, { passive: false });
-    nodo.addEventListener("touchstart", alTocar, { passive: true });
-    nodo.addEventListener("touchend", alSoltar, { passive: true });
-    return () => {
-      nodo.removeEventListener("wheel", alRueda);
-      nodo.removeEventListener("touchstart", alTocar);
-      nodo.removeEventListener("touchend", alSoltar);
-    };
-  }, [cargando, expediente]);
-
   const statsCotizaciones = useMemo(() => {
     if (!expediente) return { total: 0, aceptadas: 0, rechazadas: 0, costoAceptada: "—" };
     const total = expediente.cotizaciones.length;
@@ -172,53 +97,70 @@ export function DetalleTrabajoAdmin() {
     return { total, aceptadas, rechazadas, costoAceptada };
   }, [expediente]);
 
+  const titulo = expediente?.solicitud.titulo ?? (cargando ? "Cargando…" : "Caso");
+  const volver = useMemo(
+    () => (
+      <Link to="/admin/trabajos" className="hub-volver">
+        ← Trabajos
+      </Link>
+    ),
+    [],
+  );
+  useAdminTopbarContexto({ volver, titulo });
+
   if (!solicitudId) {
     return (
-      <section className="vista-inicio vista-detalle-caso vista-padron-crm">
+      <section className="hub-page vista-inicio vista-detalle-caso vista-padron-crm">
         <p className="error">Identificador de caso no válido.</p>
-        <Link to="/admin/trabajos" className="volver-trabajos">
-          ← Volver a Trabajos
-        </Link>
       </section>
     );
   }
 
-  const titulo = expediente?.solicitud.titulo ?? (cargando ? "Cargando…" : "Caso");
   const reclamacionAbierta = expediente?.reclamaciones.find((r) => r.estado === "abierta") ?? null;
   const servicio = expediente?.servicio ?? null;
+  const etapa = expediente ? inferirEtapa(expediente) : null;
 
   return (
-    <section className="vista-inicio vista-detalle-caso vista-padron-crm" aria-labelledby="titulo-caso">
-      <header className="cabecera-caso">
-        <h1 id="titulo-caso">{titulo}</h1>
-        <Link to="/admin/trabajos" className="volver-trabajos">
-          ← Volver a Trabajos
-        </Link>
-      </header>
+    <section className="hub-page vista-inicio vista-detalle-caso vista-padron-crm" aria-label={titulo}>
+      {etapa ? (
+        <p>
+          <Badge variant="secondary">{etapa}</Badge>
+        </p>
+      ) : null}
 
       {error ? <p className="error">{error}</p> : null}
 
       {cargando || !expediente ? (
-        <p className="vacio">{cargando ? "Cargando expediente…" : "Sin datos del caso."}</p>
+        <p className="hub-vacio">{cargando ? "Cargando expediente…" : "Sin datos del caso."}</p>
       ) : (
-        <div className="escenas-viewport" ref={viewport}>
-          <EscenaCaso
-            ref={escenaCaso}
-            activa={escena === "caso"}
-            expediente={expediente}
-            stats={statsCotizaciones}
-            onIrAtencion={() => irAEscena("atencion")}
-          />
-          <EscenaAtencion
-            ref={escenaAtencion}
-            activa={escena === "atencion"}
-            expediente={expediente}
-            reclamacionAbierta={reclamacionAbierta}
-            servicio={servicio}
-            onIrCaso={() => irAEscena("caso")}
-            onActualizado={(siguiente) => setExpediente(siguiente)}
-          />
-        </div>
+        <Tabs
+          value={escena}
+          onValueChange={(valor) => setEscena(valor as Escena)}
+          className="hub-tabs-caso"
+        >
+          <TabsList variant="line">
+            <TabsTrigger value="caso">Caso</TabsTrigger>
+            <TabsTrigger value="atencion">Atención</TabsTrigger>
+          </TabsList>
+          <TabsContent value="caso">
+            <EscenaCaso
+              activa
+              expediente={expediente}
+              stats={statsCotizaciones}
+              onIrAtencion={() => setEscena("atencion")}
+            />
+          </TabsContent>
+          <TabsContent value="atencion">
+            <EscenaAtencion
+              activa
+              expediente={expediente}
+              reclamacionAbierta={reclamacionAbierta}
+              servicio={servicio}
+              onIrCaso={() => setEscena("caso")}
+              onActualizado={(siguiente) => setExpediente(siguiente)}
+            />
+          </TabsContent>
+        </Tabs>
       )}
     </section>
   );

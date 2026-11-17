@@ -3,7 +3,15 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from app.api.deps import SessionDep, UsuarioActual
-from app.schemas.flujo import CalificacionIn, CalificacionOut, InformeIn, InformeOut, ServicioOut, TecnicoIn
+from app.schemas.flujo import (
+    CalificacionIn,
+    CalificacionOut,
+    InformeIn,
+    InformeOut,
+    ServicioDetalleOut,
+    ServicioOut,
+    TecnicoIn,
+)
 from app.schemas.trabajos import AbrirReclamacionIn, ReclamacionTrabajoOut
 from app.models.enums import etiqueta_categoria_reclamacion
 from app.services.flujo_servicios import (
@@ -20,8 +28,8 @@ from app.services.reclamaciones import abrir_reclamacion
 router = APIRouter(prefix="/servicios", tags=["servicios"])
 
 
-@router.get("/{servicio_id}", response_model=ServicioOut)
-async def consultar_servicio(servicio_id: UUID, session: SessionDep, actor: UsuarioActual) -> ServicioOut:
+@router.get("/{servicio_id}", response_model=ServicioDetalleOut)
+async def consultar_servicio(servicio_id: UUID, session: SessionDep, actor: UsuarioActual) -> ServicioDetalleOut:
     return await obtener_servicio(session, actor, servicio_id)
 
 

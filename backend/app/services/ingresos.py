@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models.entities import AlquilerEsp32, Cotizacion, DispositivoEsp32, Reporte, Servicio
+from app.models.entities import AlquilerEsp32, Cotizacion, DispositivoEsp32, Reporte, Servicio, Solicitud
 from app.schemas.ingresos import IngresoComisionItemOut, IngresosAlquilerOut, IngresosOut
 from app.services.reportes import registrar_reporte
 from app.services.tarifas import porcentaje_comision
@@ -57,6 +57,7 @@ async def aplicar_cierre(
 async def consultar_ingresos(session: AsyncSession) -> IngresosOut:
     reportes = list((await session.exec(select(Reporte))).all())
     servicios = {item.id: item for item in (await session.exec(select(Servicio))).all()}
+    titulos = {item.id: item.titulo for item in (await session.exec(select(Solicitud))).all()}
 
     por_servicio: dict[str, dict[str, str]] = {}
     for fila in reportes:
@@ -90,6 +91,8 @@ async def consultar_ingresos(session: AsyncSession) -> IngresosOut:
         items.append(
             IngresoComisionItemOut(
                 servicio_id=servicio_id,
+                solicitud_id=servicio.solicitud_id if servicio else None,
+                titulo=titulos.get(servicio.solicitud_id) if servicio else None,
                 cotizacion_id=cotizacion_id,
                 perfil_proveedor_id=servicio.perfil_proveedor_id if servicio else None,
                 costo_mxn=float(costo),

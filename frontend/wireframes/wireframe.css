@@ -1,7 +1,7 @@
 /* Etapa 1 — wireframes en escala de grises, sin marca */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: system-ui, sans-serif;
+  font-family: var(--fuente-cuerpo);
   font-size: 12px;
   color: #333;
   background: #e8e8e8;

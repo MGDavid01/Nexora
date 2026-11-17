@@ -36,6 +36,7 @@ function leerTemaInicial(): Tema {
 
 function aplicarTema(tema: Tema) {
   document.documentElement.dataset.tema = tema;
+  document.documentElement.classList.toggle("dark", tema === "oscuro");
   document.documentElement.style.colorScheme = tema === "oscuro" ? "dark" : "light";
 }
 

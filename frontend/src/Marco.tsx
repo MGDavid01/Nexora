@@ -1,14 +1,20 @@
 import { Outlet } from "react-router-dom";
-import { Barra } from "./Barra";
+import { AdminShell } from "./admin/AdminShell";
 import { useSesion } from "./sesion";
 
 export function Marco() {
   const { usuario, listo } = useSesion();
-  const conBarra = listo && usuario !== null;
+
+  if (listo && usuario !== null) {
+    return (
+      <AdminShell usuario={usuario}>
+        <Outlet />
+      </AdminShell>
+    );
+  }
 
   return (
-    <div className={conBarra ? "marco marco-sesion" : "marco"}>
-      {conBarra ? <Barra usuario={usuario} /> : null}
+    <div className="marco">
       <main>
         <Outlet />
       </main>

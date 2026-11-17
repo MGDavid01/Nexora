@@ -178,11 +178,8 @@ async def mercado(session: AsyncSession, usuario: Usuario) -> list[MercadoSolici
             continue
         if solicitud.dirigida_a_perfil_proveedor_id is not None:
             if solicitud.dirigida_a_perfil_proveedor_id == perfil_proveedor_id:
-                # La comprobación de `propias` arriba evita volver a decidir.
                 pass
             else:
-                # Una solicitud dirigida solo se abre al mercado después de que
-                # el destinatario la rechace, venza o se retire.
                 participacion_destino = next(
                     (
                         item
@@ -203,6 +200,62 @@ async def mercado(session: AsyncSession, usuario: Usuario) -> list[MercadoSolici
         if categoria is not None and ubicacion is not None:
             resultado.append(MercadoSolicitudOut(**_salida(solicitud, categoria, ubicacion).model_dump()))
     resultado.sort(key=lambda item: (item.creado_en is not None, str(item.creado_en or ""), str(item.id)), reverse=True)
+    return resultado
+
+
+async def por_cotizar(session: AsyncSession, usuario: Usuario) -> list[MercadoSolicitudOut]:
+    """Aceptadas sin cotizar (plazo 24 h) y cotizadas en espera de que el cliente elija."""
+    await vencer_aceptadas(session)
+    perfil_proveedor_id = _exigir_proveedor(usuario)
+    solicitudes = {item.id: item for item in (await session.exec(select(Solicitud))).all()}
+    categorias = {item.id: item for item in (await session.exec(select(CategoriaServicio))).all()}
+    ubicaciones = {
+        item.solicitud_id: item
+        for item in (await session.exec(select(Ubicacion))).all()
+        if item.solicitud_id is not None
+    }
+    enviadas = {
+        item.solicitud_id: item
+        for item in (await session.exec(select(Cotizacion))).all()
+        if item.perfil_proveedor_id == perfil_proveedor_id and item.estado == EstadoCotizacion.enviada
+    }
+    resultado: list[MercadoSolicitudOut] = []
+    for participacion in (await session.exec(select(Participacion))).all():
+        if participacion.perfil_proveedor_id != perfil_proveedor_id:
+            continue
+        solicitud = solicitudes.get(participacion.solicitud_id)
+        if solicitud is None or solicitud.estado != EstadoSolicitud.abierta:
+            continue
+        costo = None
+        if participacion.estado == EstadoParticipacion.aceptada:
+            pass
+        elif participacion.estado == EstadoParticipacion.cotizada:
+            cotizacion = enviadas.get(solicitud.id)
+            if cotizacion is None:
+                continue
+            costo = cotizacion.costo_mxn
+        else:
+            continue
+        categoria = categorias.get(solicitud.categoria_id)
+        ubicacion = ubicaciones.get(solicitud.id)
+        if categoria is None or ubicacion is None:
+            continue
+        resultado.append(
+            MercadoSolicitudOut(
+                **_salida(solicitud, categoria, ubicacion).model_dump(),
+                participacion_estado=participacion.estado,
+                aceptada_en=participacion.aceptada_en,
+                costo_mxn=costo,
+            )
+        )
+    resultado.sort(
+        key=lambda item: (
+            item.participacion_estado == EstadoParticipacion.aceptada,
+            item.aceptada_en is not None,
+            str(item.aceptada_en or ""),
+        ),
+        reverse=True,
+    )
     return resultado
 
 

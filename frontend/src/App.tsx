@@ -7,6 +7,7 @@ import { Login } from "./paginas/Login";
 import { TrabajosAdmin } from "./paginas/TrabajosAdmin";
 import { DetalleTrabajoAdmin } from "./paginas/DetalleTrabajoAdmin";
 import { UsuariosAdmin } from "./paginas/UsuariosAdmin";
+import { DetalleUsuarioAdmin } from "./paginas/DetalleUsuarioAdmin";
 import { SolicitudesCliente } from "./paginas/cliente/SolicitudesCliente";
 import {
   EquiposCliente,
@@ -40,6 +41,7 @@ export function App() {
         <Route path="/cliente/servicios" element={<SoloLugar lugares={["cliente"]}><ServiciosCliente /></SoloLugar>} />
         <Route path="/cliente/servicios/:servicioId" element={<SoloLugar lugares={["cliente"]}><ServiciosCliente /></SoloLugar>} />
         <Route path="/cliente/historial" element={<SoloLugar lugares={["cliente"]}><HistorialCliente /></SoloLugar>} />
+        <Route path="/cliente/historial/:servicioId" element={<SoloLugar lugares={["cliente"]}><HistorialCliente /></SoloLugar>} />
         <Route path="/cliente/equipos" element={<SoloLugar lugares={["cliente"]}><EquiposCliente /></SoloLugar>} />
         <Route path="/cliente/reportes" element={<SoloLugar lugares={["cliente"]}><ReportesCliente /></SoloLugar>} />
 
@@ -47,24 +49,50 @@ export function App() {
         <Route path="/proveedor/servicios" element={<SoloLugar lugares={["administrativo", "tecnico"]}><ServiciosProveedor /></SoloLugar>} />
         <Route path="/proveedor/servicios/:servicioId" element={<SoloLugar lugares={["administrativo", "tecnico"]}><ServiciosProveedor /></SoloLugar>} />
         <Route path="/proveedor/historial" element={<SoloLugar lugares={["administrativo"]}><HistorialProveedor /></SoloLugar>} />
+        <Route path="/proveedor/historial/:servicioId" element={<SoloLugar lugares={["administrativo"]}><HistorialProveedor /></SoloLugar>} />
         <Route path="/proveedor/equipo" element={<SoloLugar lugares={["administrativo"]}><EquipoProveedor /></SoloLugar>} />
         <Route path="/proveedor/mapa" element={<SoloLugar lugares={["administrativo"]}><MapaProveedor /></SoloLugar>} />
         <Route path="/proveedor/reportes" element={<SoloLugar lugares={["administrativo"]}><ReportesProveedor /></SoloLugar>} />
         <Route path="/proveedor/captura" element={<SoloLugar lugares={["tecnico"]}><CapturaCampo /></SoloLugar>} />
 
-        <Route path="/admin/clientes" element={<Navigate to="/admin/usuarios" replace />} />
-        <Route path="/admin/proveedores" element={<Navigate to="/admin/usuarios" replace />} />
-        <Route path="/admin/sanciones" element={<Navigate to="/admin/usuarios" replace />} />
+        <Route path="/admin/clientes" element={<Navigate to="/admin/usuarios/clientes" replace />} />
+        <Route path="/admin/proveedores" element={<Navigate to="/admin/usuarios/negocio" replace />} />
+        <Route path="/admin/sanciones" element={<Navigate to="/admin/usuarios/negocio" replace />} />
         <Route path="/admin/solicitudes" element={<Navigate to="/admin/trabajos" replace />} />
         <Route path="/admin/cotizaciones" element={<Navigate to="/admin/trabajos" replace />} />
         <Route path="/admin/servicios" element={<Navigate to="/admin/trabajos" replace />} />
         <Route path="/admin/calificaciones" element={<Navigate to="/admin/trabajos" replace />} />
         <Route path="/admin/reclamaciones" element={<Navigate to="/admin/trabajos" replace />} />
         <Route
-          path="/admin/usuarios"
+          path="/admin/usuarios/clientes"
           element={
             <SoloAdministrador>
               <UsuariosAdmin />
+            </SoloAdministrador>
+          }
+        />
+        <Route
+          path="/admin/usuarios/negocio"
+          element={
+            <SoloAdministrador>
+              <UsuariosAdmin />
+            </SoloAdministrador>
+          }
+        />
+        <Route
+          path="/admin/usuarios/administradores"
+          element={
+            <SoloAdministrador>
+              <UsuariosAdmin />
+            </SoloAdministrador>
+          }
+        />
+        <Route path="/admin/usuarios" element={<Navigate to="/admin/usuarios/clientes" replace />} />
+        <Route
+          path="/admin/usuarios/:usuarioId"
+          element={
+            <SoloAdministrador>
+              <DetalleUsuarioAdmin />
             </SoloAdministrador>
           }
         />

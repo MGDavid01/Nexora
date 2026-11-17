@@ -7,7 +7,7 @@ from app.schemas.flujo import CotizacionOut, HistorialItemOut, ServicioOut
 from app.schemas.solicitudes import MercadoSolicitudOut, ParticipacionOut
 from app.services.cotizaciones import elegir_cotizacion, rechazar_cotizacion
 from app.services.historial import historial_cliente_acotado, historial_propio
-from app.services.solicitudes import mercado, retirar
+from app.services.solicitudes import mercado, por_cotizar, retirar
 
 router = APIRouter(tags=["proveedor"])
 
@@ -15,6 +15,11 @@ router = APIRouter(tags=["proveedor"])
 @router.get("/proveedor/solicitudes", response_model=list[MercadoSolicitudOut])
 async def listar_mercado(session: SessionDep, usuario: UsuarioActual) -> list[MercadoSolicitudOut]:
     return await mercado(session, usuario)
+
+
+@router.get("/proveedor/por-cotizar", response_model=list[MercadoSolicitudOut])
+async def listar_por_cotizar(session: SessionDep, usuario: UsuarioActual) -> list[MercadoSolicitudOut]:
+    return await por_cotizar(session, usuario)
 
 
 @router.post("/participaciones/{participacion_id}/retirar", response_model=ParticipacionOut)

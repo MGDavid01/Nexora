@@ -370,12 +370,14 @@ export type TrabajoLista = {
   solicitud_id: string;
   titulo: string;
   cliente: string;
+  perfil_cliente_id: string;
   categoria: string;
   etapa: EtapaTrabajo;
   estado_solicitud: string;
   cierre: "abierto" | "cerrado";
   estado_servicio: string | null;
   proveedor: string | null;
+  perfil_proveedor_id: string | null;
   reclamacion: "abierta" | "cerrada" | null;
   hay_marca: boolean;
   creado_en: string | null;
@@ -557,7 +559,11 @@ export function registrarMarcaTrabajo(solicitudId: string, datos: MarcaTrabajoIn
 
 /* —— Flujo cliente / proveedor —— */
 
-export type UbicacionSolicitud = Ubicacion & { id: string };
+export type UbicacionSolicitud = Ubicacion & {
+  id: string;
+  latitud?: number | string | null;
+  longitud?: number | string | null;
+};
 
 export type Solicitud = {
   id: string;
@@ -569,6 +575,10 @@ export type Solicitud = {
   datos_cerrados: boolean;
   creado_en: string | null;
   ubicacion: UbicacionSolicitud;
+  /** En mercado / por-cotizar: `aceptada` falta cotizar; `cotizada` espera al cliente. */
+  participacion_estado?: string | null;
+  aceptada_en?: string | null;
+  costo_mxn?: string | null;
 };
 
 export type SolicitudCrearIn = {
@@ -616,6 +626,44 @@ export type ServicioFlujo = {
   creado_en: string | null;
 };
 
+export type CalificacionServicio = {
+  id: string;
+  servicio_id: string;
+  lado: "cliente" | "proveedor";
+  valor: string;
+  comentario: string | null;
+  es_automatica: boolean;
+};
+
+export type ReclamacionServicio = {
+  id: string;
+  categoria: string;
+  categoria_etiqueta: string;
+  motivo: string;
+  estado: string;
+};
+
+export type InformeServicio = {
+  id: string;
+  descripcion: string;
+  tipo: string;
+  detalle_pieza: string | null;
+  fecha: string;
+};
+
+export type ServicioDetalle = ServicioFlujo & {
+  titulo: string;
+  categoria: string;
+  descripcion: string;
+  costo_mxn: string | null;
+  cliente: string;
+  proveedor: string;
+  tecnico: string | null;
+  informe: InformeServicio | null;
+  calificaciones: CalificacionServicio[];
+  reclamacion_abierta: ReclamacionServicio | null;
+};
+
 export type HistorialItem = {
   servicio_id: string;
   solicitud_id: string;
@@ -624,13 +672,11 @@ export type HistorialItem = {
   perfil_proveedor_id: string;
   costo_mxn: string | null;
   creado_en: string | null;
-  informe: {
-    id: string;
-    descripcion: string;
-    tipo: string;
-    detalle_pieza: string | null;
-    fecha: string;
-  } | null;
+  informe: InformeServicio | null;
+  cliente?: string | null;
+  proveedor?: string | null;
+  tecnico?: string | null;
+  categoria?: string | null;
 };
 
 export type InformeIn = {
@@ -689,6 +735,10 @@ export function mercadoProveedor() {
   return api<Solicitud[]>("/api/v1/proveedor/solicitudes");
 }
 
+export function porCotizarProveedor() {
+  return api<Solicitud[]>("/api/v1/proveedor/por-cotizar");
+}
+
 export function aceptarSolicitudProveedor(solicitudId: string) {
   return api<Participacion>(`/api/v1/solicitudes/${solicitudId}/aceptar`, { method: "POST" });
 }
@@ -709,7 +759,7 @@ export function historialPropio() {
 }
 
 export function obtenerServicio(servicioId: string) {
-  return api<ServicioFlujo>(`/api/v1/servicios/${servicioId}`);
+  return api<ServicioDetalle>(`/api/v1/servicios/${servicioId}`);
 }
 
 export function asignarTecnicoServicio(servicioId: string, tecnicoUsuarioId: string) {
@@ -849,6 +899,8 @@ export type IngresosAdmin = {
   cierres: number;
   comisiones: {
     servicio_id: string;
+    solicitud_id: string | null;
+    titulo: string | null;
     costo_mxn: number;
     porcentaje: number;
     comision_mxn: number;
@@ -1001,7 +1053,7 @@ export function procesarBajaPerfilAdmin(id: string) {
   return api<UsuarioDetalle>(`/api/v1/admin/usuarios/${id}/baja`, { method: "POST" });
 }
 
-const ACTIVOS_SERVICIO = new Set(["pendiente", "en_curso", "pendiente_informe"]);
+const ACTIVOS_SERVICIO = new Set(["pendiente", "en_curso", "pendiente_informe", "pendiente_historial"]);
 
 export function servicioEstaActivo(estado: string): boolean {
   return ACTIVOS_SERVICIO.has(estado);

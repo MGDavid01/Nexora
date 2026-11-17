@@ -23,6 +23,7 @@ from app.services.flujo_servicios import (
     asignar_tecnico,
     cancelar_servicio,
     iniciar_servicio,
+    obtener_servicio,
     registrar_informe,
     terminar_trabajo,
 )
@@ -139,6 +140,14 @@ def test_flujo_cotizar_elegir_cerrar_comision() -> None:
     historial = asyncio.run(historial_propio(sesion, cliente))
     assert len(historial) == 1
     assert historial[0].estado == "cerrado"
+    assert historial[0].cliente == "Ana"
+    assert historial[0].proveedor == "Soporte Norte"
+    assert historial[0].tecnico == "Tino"
+    detalle = asyncio.run(obtener_servicio(sesion, cliente, servicio.id))
+    assert detalle.titulo == solicitud.titulo
+    assert detalle.proveedor == "Soporte Norte"
+    assert detalle.tecnico == "Tino"
+    assert detalle.informe is not None
 
 
 def test_cotizar_segunda_vez_409() -> None:

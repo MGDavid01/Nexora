@@ -1,7 +1,8 @@
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.models.enums import EstadoParticipacion, EstadoSolicitud
 from app.schemas.auth import UbicacionIn
@@ -37,6 +38,15 @@ class UbicacionSolicitudOut(BaseModel):
     ciudad: str
     estado: str
     codigo_postal: str
+    latitud: float | None = None
+    longitud: float | None = None
+
+    @field_validator("latitud", "longitud", mode="before")
+    @classmethod
+    def _coord(cls, value: object) -> float | None:
+        if value is None or value == "":
+            return None
+        return float(value)
 
 
 class SolicitudOut(BaseModel):
@@ -60,4 +70,8 @@ class ParticipacionOut(BaseModel):
 
 
 class MercadoSolicitudOut(SolicitudOut):
-    pass
+    """`participacion_estado` es la del perfil actual; `aceptada` = pendiente de cotizar."""
+
+    participacion_estado: EstadoParticipacion | None = None
+    aceptada_en: datetime | None = None
+    costo_mxn: Decimal | None = None

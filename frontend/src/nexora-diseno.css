@@ -1,17 +1,23 @@
 :root,
 [data-tema="claro"] {
+  --fuente-cuerpo: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --fuente-display: "Source Serif 4", Georgia, serif;
-  --fuente-cuerpo: "Manrope", system-ui, sans-serif;
-  --acento-fuerte: #1a5f8c;
-  --acento-suave: #e8f2fa;
-  --senal: #e8b31e;
+  --fuente-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  --acento-fuerte: #306998;
+  --acento-suave: #e4eef6;
+  --senal: #ffd43b;
+  font-family: var(--fuente-cuerpo);
+}
+
+html,
+body {
   font-family: var(--fuente-cuerpo);
 }
 
 [data-tema="oscuro"] {
-  --acento-fuerte: #7ec0ef;
+  --acento-fuerte: #4b8bbe;
   --acento-suave: #152231;
-  --senal: #ffd342;
+  --senal: #ffd43b;
 }
 
 h1,
@@ -172,7 +178,7 @@ h2,
   flex-direction: column;
   justify-content: center;
   padding: clamp(1.5rem, 5vw, 3.5rem);
-  background: linear-gradient(145deg, #0a0a0a 0%, #163a57 55%, #3573a4 100%);
+  background: linear-gradient(145deg, #0a0a0a 0%, #306998 55%, #4b8bbe 100%);
   color: #fbfbfb;
 }
 

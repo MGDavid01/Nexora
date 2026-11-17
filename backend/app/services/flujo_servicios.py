@@ -8,9 +8,13 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models.entities import (
     Calificacion,
+    CategoriaServicio,
     Cotizacion,
     HistorialServicio,
     Participacion,
+    PerfilCliente,
+    PerfilProveedor,
+    Reclamacion,
     Servicio,
     Solicitud,
     Usuario,
@@ -18,18 +22,22 @@ from app.models.entities import (
 from app.models.enums import (
     EstadoCotizacion,
     EstadoParticipacion,
+    EstadoReclamacion,
     EstadoServicio,
     EstadoSolicitud,
     FuncionProveedor,
     LadoCalificacion,
     TipoCuenta,
     estado_servicio_publico,
+    etiqueta_categoria_reclamacion,
 )
 from app.schemas.flujo import (
     CalificacionIn,
     CalificacionOut,
     InformeIn,
     InformeOut,
+    ReclamacionResumenOut,
+    ServicioDetalleOut,
     ServicioOut,
     TecnicoIn,
 )
@@ -55,6 +63,75 @@ def _servicio_out(servicio: Servicio) -> ServicioOut:
     )
 
 
+def nombre_cliente(perfil: PerfilCliente | None, usuario: Usuario | None) -> str:
+    if perfil and perfil.nombre_comercial:
+        return perfil.nombre_comercial
+    if usuario:
+        return usuario.nombre
+    return "Cliente"
+
+
+def nombre_proveedor(perfil: PerfilProveedor | None) -> str:
+    return perfil.nombre_comercial if perfil else "Proveedor"
+
+
+async def _detalle_out(session: AsyncSession, servicio: Servicio, solicitud: Solicitud) -> ServicioDetalleOut:
+    cotizacion = await session.get(Cotizacion, servicio.cotizacion_id)
+    proveedor = await session.get(PerfilProveedor, servicio.perfil_proveedor_id)
+    cliente_perfil = await session.get(PerfilCliente, solicitud.perfil_cliente_id)
+    categoria = await session.get(CategoriaServicio, solicitud.categoria_id)
+    tecnico = await session.get(Usuario, servicio.tecnico_usuario_id) if servicio.tecnico_usuario_id else None
+    usuario_cli = next(
+        (
+            item
+            for item in (await session.exec(select(Usuario))).all()
+            if item.perfil_cliente_id == solicitud.perfil_cliente_id
+        ),
+        None,
+    )
+    informe = next(
+        (item for item in (await session.exec(select(HistorialServicio))).all() if item.servicio_id == servicio.id),
+        None,
+    )
+    calificaciones = [
+        CalificacionOut.model_validate(item, from_attributes=True)
+        for item in (await session.exec(select(Calificacion))).all()
+        if item.servicio_id == servicio.id
+    ]
+    abierta = next(
+        (
+            item
+            for item in (await session.exec(select(Reclamacion))).all()
+            if item.servicio_id == servicio.id and item.estado == EstadoReclamacion.abierta
+        ),
+        None,
+    )
+    base = _servicio_out(servicio)
+    return ServicioDetalleOut(
+        **base.model_dump(),
+        titulo=solicitud.titulo,
+        categoria=categoria.nombre if categoria else "",
+        descripcion=solicitud.descripcion,
+        costo_mxn=cotizacion.costo_mxn if cotizacion else None,
+        cliente=nombre_cliente(cliente_perfil, usuario_cli),
+        proveedor=nombre_proveedor(proveedor),
+        tecnico=tecnico.nombre if tecnico else None,
+        informe=InformeOut.model_validate(informe, from_attributes=True) if informe else None,
+        calificaciones=calificaciones,
+        reclamacion_abierta=(
+            ReclamacionResumenOut(
+                id=abierta.id,
+                categoria=abierta.categoria,
+                categoria_etiqueta=etiqueta_categoria_reclamacion(abierta.categoria),
+                motivo=abierta.motivo,
+                estado=abierta.estado,
+            )
+            if abierta
+            else None
+        ),
+    )
+
+
 async def _cargar(session: AsyncSession, servicio_id: UUID) -> tuple[Servicio, Solicitud]:
     servicio = await session.get(Servicio, servicio_id)
     solicitud = await session.get(Solicitud, servicio.solicitud_id) if servicio else None
@@ -71,11 +148,11 @@ def _lado_proveedor(usuario: Usuario, servicio: Servicio) -> bool:
     return es_proveedor(usuario) and usuario.perfil_proveedor_id == servicio.perfil_proveedor_id
 
 
-async def obtener_servicio(session: AsyncSession, usuario: Usuario, servicio_id: UUID) -> ServicioOut:
+async def obtener_servicio(session: AsyncSession, usuario: Usuario, servicio_id: UUID) -> ServicioDetalleOut:
     servicio, solicitud = await _cargar(session, servicio_id)
     if not _lado_cliente(usuario, solicitud) and not _lado_proveedor(usuario, servicio):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe ese servicio")
-    return _servicio_out(servicio)
+    return await _detalle_out(session, servicio, solicitud)
 
 
 async def asignar_tecnico(

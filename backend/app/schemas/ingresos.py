@@ -6,6 +6,8 @@ from pydantic import BaseModel
 
 class IngresoComisionItemOut(BaseModel):
     servicio_id: UUID
+    solicitud_id: UUID | None = None
+    titulo: str | None = None
     cotizacion_id: UUID | None = None
     perfil_proveedor_id: UUID | None
     costo_mxn: float

@@ -4,11 +4,20 @@ from fastapi import HTTPException, status
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models.entities import Cotizacion, HistorialServicio, Servicio, Solicitud, Usuario
+from app.models.entities import (
+    CategoriaServicio,
+    Cotizacion,
+    HistorialServicio,
+    PerfilCliente,
+    PerfilProveedor,
+    Servicio,
+    Solicitud,
+    Usuario,
+)
 from app.models.enums import EstadoServicio, TipoCuenta, estado_servicio_publico
 from app.schemas.flujo import HistorialItemOut, InformeOut
 from app.services.auditoria import registrar_evento
-from app.services.flujo_servicios import ACTIVOS
+from app.services.flujo_servicios import ACTIVOS, nombre_cliente, nombre_proveedor
 from app.services.perfiles import es_lado_administrativo, es_proveedor
 
 
@@ -17,6 +26,11 @@ def _item(
     solicitud: Solicitud,
     cotizacion: Cotizacion | None,
     informe: HistorialServicio | None,
+    *,
+    cliente: str | None,
+    proveedor: str | None,
+    tecnico: str | None,
+    categoria: str | None,
 ) -> HistorialItemOut:
     return HistorialItemOut(
         servicio_id=servicio.id,
@@ -27,6 +41,10 @@ def _item(
         costo_mxn=cotizacion.costo_mxn if cotizacion else None,
         creado_en=servicio.creado_en,
         informe=InformeOut.model_validate(informe, from_attributes=True) if informe else None,
+        cliente=cliente,
+        proveedor=proveedor,
+        tecnico=tecnico,
+        categoria=categoria,
     )
 
 
@@ -34,6 +52,7 @@ async def historial_propio(session: AsyncSession, usuario: Usuario) -> list[Hist
     solicitudes = {item.id: item for item in (await session.exec(select(Solicitud))).all()}
     cotizaciones = {item.id: item for item in (await session.exec(select(Cotizacion))).all()}
     informes = {item.servicio_id: item for item in (await session.exec(select(HistorialServicio))).all()}
+    nombres = await _nombres(session)
     salida: list[HistorialItemOut] = []
     for servicio in (await session.exec(select(Servicio))).all():
         solicitud = solicitudes.get(servicio.solicitud_id)
@@ -49,7 +68,15 @@ async def historial_propio(session: AsyncSession, usuario: Usuario) -> list[Hist
                 continue
         else:
             continue
-        salida.append(_item(servicio, solicitud, cotizaciones.get(servicio.cotizacion_id), informes.get(servicio.id)))
+        salida.append(
+            _item(
+                servicio,
+                solicitud,
+                cotizaciones.get(servicio.cotizacion_id),
+                informes.get(servicio.id),
+                **nombres.para(servicio, solicitud),
+            )
+        )
     salida.sort(key=lambda item: (item.creado_en is not None, str(item.creado_en or "")), reverse=True)
     return salida
 
@@ -80,6 +107,7 @@ async def historial_cliente_acotado(
         )
     cotizaciones = {item.id: item for item in (await session.exec(select(Cotizacion))).all()}
     informes = {item.servicio_id: item for item in (await session.exec(select(HistorialServicio))).all()}
+    nombres = await _nombres(session)
     salida: list[HistorialItemOut] = []
     for servicio in (await session.exec(select(Servicio))).all():
         solicitud = solicitudes.get(servicio.solicitud_id)
@@ -87,7 +115,15 @@ async def historial_cliente_acotado(
             continue
         if servicio.estado != EstadoServicio.cerrado:
             continue
-        salida.append(_item(servicio, solicitud, cotizaciones.get(servicio.cotizacion_id), informes.get(servicio.id)))
+        salida.append(
+            _item(
+                servicio,
+                solicitud,
+                cotizaciones.get(servicio.cotizacion_id),
+                informes.get(servicio.id),
+                **nombres.para(servicio, solicitud),
+            )
+        )
     await registrar_evento(
         session,
         actor_usuario_id=usuario.id,
@@ -98,3 +134,43 @@ async def historial_cliente_acotado(
     )
     salida.sort(key=lambda item: (item.creado_en is not None, str(item.creado_en or "")), reverse=True)
     return salida
+
+
+class _Nombres:
+    def __init__(
+        self,
+        clientes: dict,
+        proveedores: dict,
+        usuarios: dict,
+        usuario_cliente: dict,
+        categorias: dict,
+    ) -> None:
+        self.clientes = clientes
+        self.proveedores = proveedores
+        self.usuarios = usuarios
+        self.usuario_cliente = usuario_cliente
+        self.categorias = categorias
+
+    def para(self, servicio: Servicio, solicitud: Solicitud) -> dict[str, str | None]:
+        tecnico = self.usuarios.get(servicio.tecnico_usuario_id) if servicio.tecnico_usuario_id else None
+        categoria = self.categorias.get(solicitud.categoria_id)
+        return {
+            "cliente": nombre_cliente(
+                self.clientes.get(solicitud.perfil_cliente_id),
+                self.usuario_cliente.get(solicitud.perfil_cliente_id),
+            ),
+            "proveedor": nombre_proveedor(self.proveedores.get(servicio.perfil_proveedor_id)),
+            "tecnico": tecnico.nombre if tecnico else None,
+            "categoria": categoria.nombre if categoria else None,
+        }
+
+
+async def _nombres(session: AsyncSession) -> _Nombres:
+    usuarios = {item.id: item for item in (await session.exec(select(Usuario))).all()}
+    return _Nombres(
+        clientes={item.id: item for item in (await session.exec(select(PerfilCliente))).all()},
+        proveedores={item.id: item for item in (await session.exec(select(PerfilProveedor))).all()},
+        usuarios=usuarios,
+        usuario_cliente={item.perfil_cliente_id: item for item in usuarios.values() if item.perfil_cliente_id},
+        categorias={item.id: item for item in (await session.exec(select(CategoriaServicio))).all()},
+    )
