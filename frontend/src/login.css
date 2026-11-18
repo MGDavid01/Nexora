@@ -182,7 +182,7 @@
   box-shadow: 0 0 0 3px rgb(53 115 164 / 16%);
 }
 
-.login-entrada input {
+.login .login-entrada input {
   width: 100%;
   border: 0;
   border-radius: 0;
@@ -191,12 +191,12 @@
   color: var(--texto);
 }
 
-.login-entrada input:focus {
+.login .login-entrada input:focus {
   outline: none;
   box-shadow: none;
 }
 
-.login-ojo {
+.login .login-ojo {
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -209,7 +209,7 @@
   color: var(--texto-suave);
 }
 
-.login-ojo:hover {
+.login .login-ojo:hover {
   color: var(--cerulean);
   background: rgb(53 115 164 / 10%);
 }
@@ -218,7 +218,7 @@
   margin: 0;
 }
 
-.login-boton {
+.login .login-boton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,16 +235,32 @@
   transition: background 0.15s ease;
 }
 
-.login-boton:hover:not(:disabled) {
+.login .login-boton:hover:not(:disabled) {
   background: #2c5e86;
 }
 
-.login-boton svg {
+.login .login-boton svg {
   transition: transform 0.15s ease;
 }
 
-.login-boton:hover:not(:disabled) svg {
+.login .login-boton:hover:not(:disabled) svg {
   transform: translateX(2px);
+}
+
+.login-pie {
+  margin: 0;
+  text-align: center;
+  font-size: 0.88rem;
+}
+
+.login-pie a {
+  color: var(--cerulean);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-pie a:hover {
+  text-decoration: underline;
 }
 
 /* ---- Responsive ---- */

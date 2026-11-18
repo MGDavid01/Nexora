@@ -544,6 +544,27 @@
   color: var(--muted);
   font-weight: 400;
 }
+.vista-usuarios-v2 .marcas-celda[data-marcas="1"] .marca-llena {
+  background: var(--pollen, #ffd43b);
+}
+.vista-usuarios-v2 .marcas-celda[data-marcas="2"] .marca-llena {
+  background: #f59e0b;
+}
+.vista-usuarios-v2 .marcas-celda[data-marcas="3"] .marca-llena {
+  background: var(--hub-crit, #c23934);
+}
+.vista-usuarios-v2 .marcas-celda[data-marcas="1"] .marcas-razon {
+  color: #8a6d00;
+  font-weight: 700;
+}
+.vista-usuarios-v2 .marcas-celda[data-marcas="2"] .marcas-razon {
+  color: var(--hub-warn, #b45309);
+  font-weight: 700;
+}
+.vista-usuarios-v2 .marcas-celda[data-marcas="3"] .marcas-razon {
+  color: var(--hub-crit, #c23934);
+  font-weight: 700;
+}
 
 /* Pastillas y etiquetas de la escalera de acento */
 .vista-usuarios-v2 .pastilla {
@@ -575,6 +596,10 @@
   background: var(--pill-warning-bg);
   color: var(--pill-warning-ink);
   border: 1px solid #fde68a;
+}
+.vista-usuarios-v2 .pastilla-bloqueada,
+.vista-usuarios-v2 .pastilla-baja {
+  font-weight: 700;
 }
 
 /* ---------- Riel derecho (384px): títulos de 16px fuera de sus tarjetas ---------- */

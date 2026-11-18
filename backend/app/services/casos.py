@@ -215,28 +215,44 @@ async def armar_caso(
     if marca_codigo is not None:
         if servicio is None:
             raise ValueError("La marca del caso requiere un servicio")
-        marca = Sancion(
-            tipo=TipoMarca.advertencia,
-            codigo=marca_codigo,
-            descripcion="Marca originada en el expediente de Trabajos",
-            perfil_cliente_id=cliente.perfil_cliente_id if marca_lado == "cliente" else None,
-            perfil_proveedor_id=proveedor.perfil_proveedor_id if marca_lado == "proveedor" else None,
-            servicio_id=servicio.id,
-            reclamacion_id=reclamacion_obj.id if marca_via_reclamacion and reclamacion_obj else None,
+        perfil_id = (
+            proveedor.perfil_proveedor_id
+            if marca_lado == "proveedor"
+            else cliente.perfil_cliente_id
         )
-        session.add(marca)
-        if marca_lado == "proveedor":
-            from app.models.entities import PerfilProveedor
+        filtro_perfil = (
+            Sancion.perfil_proveedor_id == perfil_id
+            if marca_lado == "proveedor"
+            else Sancion.perfil_cliente_id == perfil_id
+        )
+        # Una marca es única por código y perfil (ADR-036). Al reejecutar el seed,
+        # se reutiliza la existente en vez de violar sancion_codigo_*_unico.
+        marca = (
+            await session.exec(select(Sancion).where(Sancion.codigo == marca_codigo, filtro_perfil))
+        ).first()
+        if marca is None:
+            marca = Sancion(
+                tipo=TipoMarca.advertencia,
+                codigo=marca_codigo,
+                descripcion="Marca originada en el expediente de Trabajos",
+                perfil_cliente_id=cliente.perfil_cliente_id if marca_lado == "cliente" else None,
+                perfil_proveedor_id=proveedor.perfil_proveedor_id if marca_lado == "proveedor" else None,
+                servicio_id=servicio.id,
+                reclamacion_id=reclamacion_obj.id if marca_via_reclamacion and reclamacion_obj else None,
+            )
+            session.add(marca)
+            if marca_lado == "proveedor":
+                from app.models.entities import PerfilProveedor
 
-            perfil = await session.get(PerfilProveedor, proveedor.perfil_proveedor_id)
-        else:
-            from app.models.entities import PerfilCliente
+                perfil = await session.get(PerfilProveedor, proveedor.perfil_proveedor_id)
+            else:
+                from app.models.entities import PerfilCliente
 
-            perfil = await session.get(PerfilCliente, cliente.perfil_cliente_id)
-        if perfil is not None:
-            perfil.conteo_marcas += 1
-            if perfil.conteo_marcas >= 3:
-                perfil.bloqueado = True
+                perfil = await session.get(PerfilCliente, cliente.perfil_cliente_id)
+            if perfil is not None:
+                perfil.conteo_marcas += 1
+                if perfil.conteo_marcas >= 3:
+                    perfil.bloqueado = True
 
     await session.flush()
     return CasoArmado(

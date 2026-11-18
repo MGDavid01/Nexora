@@ -89,6 +89,7 @@
 .admin-topbar-volver {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .admin-topbar-volver + .admin-topbar-lugar::before {
@@ -108,7 +109,14 @@
 .marco-admin [data-collapsible="icon"] .admin-sidebar-pie {
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+}
+
+.marco-admin [data-collapsible="icon"] .admin-sidebar-pie-item {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .marco-admin .admin-tema-sidebar {
@@ -136,8 +144,10 @@
 .marco-admin [data-collapsible="icon"] .admin-cuenta-sidebar {
   flex: none;
   width: 2rem;
+  height: 2rem;
   min-height: 2rem;
   padding: 0;
+  gap: 0;
   justify-content: center;
 }
 
@@ -242,10 +252,56 @@
   letter-spacing: -0.04em;
 }
 
+.admin-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 2px 4px;
+}
+
+.admin-brand-fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+[data-collapsible="icon"] .admin-brand {
+  align-items: center;
+  padding: 0;
+}
+
+[data-collapsible="icon"] .admin-logo img {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-logo {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.admin-logo img {
+  display: block;
+}
+
 .admin-wordmark {
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  font-size: 0.92rem;
+  line-height: 1.1;
+  color: var(--hub-ink);
+}
+
+.admin-wordmark-sub {
+  padding-left: 38px;
+  color: var(--hub-muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
 }
 
 /* ── Página ─────────────────────────────────────────── */

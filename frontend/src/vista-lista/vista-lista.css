@@ -548,6 +548,11 @@
   color: var(--vl-crit);
 }
 
+.vl-pastilla-alerta,
+.vl-pastilla-negativa {
+  font-weight: 700;
+}
+
 /* ── Estados, pie y KPIs ── */
 
 .vl-vacio a {
@@ -653,6 +658,10 @@
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.03em;
+}
+
+.vl-kpi:first-child .vl-kpi-valor {
+  font-size: 1.65rem;
 }
 
 .vl-kpi-nota {

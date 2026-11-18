@@ -190,3 +190,34 @@
     white-space: normal;
   }
 }
+
+.aviso-detalle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--hub-warn);
+  border-radius: 8px;
+  background: var(--hub-warn-bg);
+  color: var(--hub-warn);
+  font-size: 13px;
+}
+
+.aviso-detalle svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.aviso-detalle strong {
+  display: block;
+  font-weight: 700;
+}
+
+.aviso-detalle span {
+  display: block;
+  margin-top: 2px;
+  opacity: 0.9;
+}

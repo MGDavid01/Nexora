@@ -18,12 +18,13 @@ import {
   type TonoPastilla,
 } from "../vista-lista/VistaLista";
 import { marcaTiempo, ordenarPor, useOrden } from "../vista-lista/orden";
+import { tituloEstado } from "../utilidades/formato";
 
 type FiltroEtapa = "todas" | "solicitud" | "cotizacion" | "servicio";
 type FiltroReclamacion = "todas" | "abierta" | "cerrada";
 type FiltroCierre = "todos" | "abierto" | "cerrado";
 type FiltroMarca = "todas" | "con" | "sin";
-type ColTrabajo = "caso" | "etapa" | "cliente" | "categoria" | "creado" | "reclamacion";
+type ColTrabajo = "caso" | "etapa" | "estado" | "marca" | "cliente" | "creado" | "reclamacion";
 
 const fechaCorta = new Intl.DateTimeFormat("es-MX", {
   day: "2-digit",
@@ -32,12 +33,13 @@ const fechaCorta = new Intl.DateTimeFormat("es-MX", {
 });
 
 const COLUMNAS: ColumnaLista<ColTrabajo>[] = [
-  { id: "caso", etiqueta: "Caso", ancho: "28%" },
-  { id: "etapa", etiqueta: "Etapa", ancho: "12%" },
-  { id: "cliente", etiqueta: "Cliente", ancho: "16%" },
-  { id: "categoria", etiqueta: "Categoría", ancho: "16%" },
-  { id: "creado", etiqueta: "Creado", ancho: "14%", alinear: "derecha" },
-  { id: "reclamacion", etiqueta: "Reclamación", ancho: "14%" },
+  { id: "caso", etiqueta: "Caso", ancho: "21%" },
+  { id: "etapa", etiqueta: "Etapa", ancho: "10%" },
+  { id: "estado", etiqueta: "Estado", ancho: "16%" },
+  { id: "marca", etiqueta: "Marca", ancho: "12%" },
+  { id: "cliente", etiqueta: "Cliente", ancho: "14%" },
+  { id: "creado", etiqueta: "Creado", ancho: "12%", alinear: "derecha" },
+  { id: "reclamacion", etiqueta: "Reclamación", ancho: "15%" },
 ];
 
 const OPCIONES_ETAPA: { valor: FiltroEtapa; etiqueta: string }[] = [
@@ -69,6 +71,24 @@ function etiquetaEtapa(etapa: TrabajoLista["etapa"]): string {
   if (etapa === "solicitud") return "Solicitud";
   if (etapa === "cotizacion") return "Cotización";
   return "Servicio";
+}
+
+function estadoReal(c: TrabajoLista): string {
+  return c.etapa === "servicio" && c.estado_servicio ? c.estado_servicio : c.estado_solicitud;
+}
+
+function etiquetaEstadoTrabajo(c: TrabajoLista): string {
+  return tituloEstado(estadoReal(c));
+}
+
+function tonoEstadoTrabajo(c: TrabajoLista): TonoPastilla {
+  const estado = estadoReal(c).toLowerCase();
+  if (estado === "vencida" || estado === "vencido") return "negativa";
+  if (estado === "pendiente_informe" || estado === "pendiente_historial") return "alerta";
+  if (estado === "por_cotizar" || estado === "pendiente") return "alerta";
+  if (estado === "cerrado" || estado === "cerrada" || estado === "aceptada") return "positiva";
+  if (estado === "cancelado" || estado === "cancelada") return "neutra";
+  return "acento";
 }
 
 function tonoEtapa(etapa: TrabajoLista["etapa"]): TonoPastilla {
@@ -160,8 +180,9 @@ export function TrabajosAdmin() {
       ordenarPor(casos, orden, {
         caso: (c) => c.titulo,
         etapa: (c) => etiquetaEtapa(c.etapa),
+        estado: (c) => etiquetaEstadoTrabajo(c),
+        marca: (c) => (c.hay_marca ? "Con marca" : "Sin marca"),
         cliente: (c) => c.cliente,
-        categoria: (c) => c.categoria,
         creado: (c) => marcaTiempo(c.creado_en),
         reclamacion: (c) => etiquetaReclamacion(c.reclamacion),
       }),
@@ -242,8 +263,11 @@ export function TrabajosAdmin() {
                 <td>
                   <Pastilla tono={tonoEtapa(c.etapa)}>{etiquetaEtapa(c.etapa)}</Pastilla>
                 </td>
+                <td>
+                  <Pastilla tono={tonoEstadoTrabajo(c)}>{etiquetaEstadoTrabajo(c)}</Pastilla>
+                </td>
+                <td>{c.hay_marca ? <Pastilla tono="alerta">Con marca</Pastilla> : <Ausente />}</td>
                 <td>{c.cliente}</td>
-                <td>{c.categoria}</td>
                 <td className="vl-derecha">
                   {formatearFecha(c.creado_en) || <Ausente />}
                 </td>

@@ -66,11 +66,13 @@ function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administr
   const activos = servicios.length;
   const cerrados = historial.filter((h) => servicioEstaCerrado(h.estado)).length;
 
-  const metricas =
+  const porInforme = servicios.filter((s) => s.estado === "pendiente_informe").length;
+
+  const metricas: { etiqueta: string; valor: number; tono?: "alerta" }[] =
     lugar === "cliente"
       ? [
           { etiqueta: "Solicitudes abiertas", valor: abiertas },
-          { etiqueta: "Cotizaciones por elegir", valor: cotizaciones },
+          { etiqueta: "Cotizaciones por elegir", valor: cotizaciones, tono: cotizaciones > 0 ? "alerta" : undefined },
           { etiqueta: "Servicios activos", valor: activos },
           { etiqueta: "Historial", valor: cerrados },
         ]
@@ -78,7 +80,7 @@ function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administr
           { etiqueta: "Mercado visible", valor: mercadoCount },
           { etiqueta: "Servicios activos", valor: activos },
           { etiqueta: "En curso", valor: servicios.filter((s) => s.estado === "en_curso").length },
-          { etiqueta: "Por informe", valor: servicios.filter((s) => s.estado === "pendiente_informe").length },
+          { etiqueta: "Por informe", valor: porInforme, tono: porInforme > 0 ? "alerta" : undefined },
         ];
 
   const enlaceRapido =
@@ -94,7 +96,7 @@ function TableroRol({ lugar, nombre, fecha }: { lugar: Exclude<Lugar, "administr
     <section className="hub-page tablero">
       <div className="metricas">
         {metricas.map((m) => (
-          <article key={m.etiqueta} className="metrica">
+          <article key={m.etiqueta} className="metrica" data-tono={m.tono}>
             <span>{m.etiqueta}</span>
             <strong>{m.valor}</strong>
           </article>

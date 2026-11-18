@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   LuArrowRight,
   LuClipboardList,
@@ -148,6 +148,10 @@ export function Login() {
               {enviando ? null : <LuArrowRight size={18} aria-hidden />}
             </button>
           </form>
+
+          <p className="login-pie">
+            <Link to="/recuperar">¿Olvidaste tu contraseña?</Link>
+          </p>
         </section>
       </div>
     </div>

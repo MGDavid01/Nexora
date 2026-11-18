@@ -1,0 +1,212 @@
+/* Capa responsiva global de Nexora.
+   Se importa al final para ajustar tablet/móvil sin tocar el diseño base. */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ---------- Barra superior del admin ---------- */
+@media (max-width: 900px) {
+  .admin-topbar {
+    height: auto;
+    min-height: 52px;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 8px 12px;
+  }
+
+  .admin-topbar-izq {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .admin-topbar-der {
+    flex: 1 1 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .admin-topbar-lugar {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 12px;
+  }
+
+  .admin-topbar-volver {
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------- Página admin (hub) ---------- */
+@media (max-width: 760px) {
+  .hub-head {
+    padding: 12px 16px 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .hub-acciones {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .hub-toolbar {
+    padding: 8px 16px;
+    gap: 6px;
+  }
+
+  .hub-scroll {
+    padding: 12px 16px 20px;
+  }
+
+  .hub-rail {
+    padding: 14px 16px 20px;
+  }
+
+  .hub-page h1 {
+    font-size: 1.15rem;
+  }
+
+  .marco-admin .vista-usuarios-v2 {
+    padding: 0 16px 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hub-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .hub-kpi + .hub-kpi {
+    border-left: 0;
+    border-top: 1px solid var(--hub-line);
+  }
+}
+
+/* ---------- Tablas: scroll interno, sin romper la página ---------- */
+@media (max-width: 900px) {
+  .vl-scroll,
+  .hub-scroll.hub-tabla,
+  .lista-scroll,
+  .tabla-wrap,
+  .ficha-crm-tabla-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .vl-tabla,
+  .hub-scroll.hub-tabla table,
+  .vista-usuarios-v2 .lista-scroll table,
+  .ficha-crm-tabla {
+    min-width: 640px;
+  }
+
+  .vl-tabla {
+    min-width: 760px;
+  }
+}
+
+/* ---------- Listas (VistaLista) ---------- */
+@media (max-width: 760px) {
+  .vl-barra {
+    flex-wrap: wrap;
+  }
+
+  .vl-cabecera-acciones {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .vl-buscar {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---------- Usuarios ---------- */
+@media (max-width: 1024px) {
+  .vista-usuarios-v2 .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vista-usuarios-v2 .kpi + .kpi {
+    border-left: 0;
+  }
+
+  .vista-usuarios-v2 .kpi:nth-child(2n) {
+    border-left: 1px solid var(--border);
+  }
+
+  .vista-usuarios-v2 .kpi:nth-child(n + 3) {
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 560px) {
+  .vista-usuarios-v2 .kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .vista-usuarios-v2 .kpi,
+  .vista-usuarios-v2 .kpi + .kpi,
+  .vista-usuarios-v2 .kpi:nth-child(2n) {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .vista-usuarios-v2 .kpi:first-child {
+    border-top: 0;
+  }
+
+  .vista-usuarios-v2 .pestanias,
+  .vista-usuarios-v2 .pestanias-filtro {
+    flex-wrap: wrap;
+  }
+
+  .vista-usuarios-v2 .buscar {
+    width: 100%;
+  }
+}
+
+/* ---------- Tablero (Inicio) ---------- */
+@media (max-width: 520px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .card-franja {
+    grid-template-columns: 1fr;
+  }
+
+  .anillo {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .hero-total {
+    font-size: 1.7rem;
+  }
+}
+
+/* ---------- Login / recuperar ---------- */
+@media (max-width: 420px) {
+  .login-brand {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .login-acceso {
+    padding: 1.25rem 1rem;
+  }
+
+  .login-titulo {
+    font-size: 1.6rem;
+  }
+
+  .login-tarjeta {
+    width: 100%;
+  }
+}

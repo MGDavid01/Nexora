@@ -3,7 +3,8 @@ import { esPendienteInforme } from "../../utilidades/formato";
 
 export function tonoEstadoServicio(estado: string): TonoPastilla {
   const k = estado.toLowerCase();
-  if (k === "por_cotizar" || k === "pendiente" || esPendienteInforme(k)) return "alerta";
+  if (esPendienteInforme(k)) return "negativa";
+  if (k === "por_cotizar" || k === "pendiente") return "alerta";
   if (k === "cotizada" || k === "en_curso") return "acento";
   if (k === "cerrado") return "positiva";
   if (k === "cancelado") return "neutra";

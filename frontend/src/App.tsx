@@ -4,6 +4,7 @@ import { SoloAdministrador } from "./SoloAdministrador";
 import { SoloLugar } from "./SoloLugar";
 import { Inicio } from "./paginas/Inicio";
 import { Login } from "./paginas/Login";
+import { RecuperarContrasena } from "./paginas/RecuperarContrasena";
 import { TrabajosAdmin } from "./paginas/TrabajosAdmin";
 import { DetalleTrabajoAdmin } from "./paginas/DetalleTrabajoAdmin";
 import { UsuariosAdmin } from "./paginas/UsuariosAdmin";
@@ -35,6 +36,7 @@ export function App() {
     <Routes>
       <Route element={<Marco />}>
         <Route path="/" element={<Login />} />
+        <Route path="/recuperar" element={<RecuperarContrasena />} />
         <Route path="/inicio" element={<Inicio />} />
 
         <Route path="/cliente/solicitudes" element={<SoloLugar lugares={["cliente"]}><SolicitudesCliente /></SoloLugar>} />

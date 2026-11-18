@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { Usuario } from "../api";
+import { Logo } from "../Logo";
 import { herramientasDe, lugarDe } from "../herramientas";
 import { useSesion } from "../sesion";
 import { useTema } from "../tema";
@@ -204,14 +205,16 @@ export function AdminShell({
         <SidebarProvider className="h-full min-h-0 overflow-hidden">
           <Sidebar collapsible="icon">
             <SidebarHeader>
-              <div className="flex items-center gap-2 px-2 py-1">
-                <span className="admin-mark" aria-hidden>
-                  N
-                </span>
-                <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-                  <span className="admin-wordmark">Nexora</span>
-                  <span className="text-muted-foreground text-[11px]">{subtituloWordmark(usuario)}</span>
+              <div className="admin-brand">
+                <div className="admin-brand-fila">
+                  <span className="admin-logo" aria-hidden>
+                    <Logo size={30} />
+                  </span>
+                  <span className="admin-wordmark group-data-[collapsible=icon]:hidden">NEXORA</span>
                 </div>
+                <span className="admin-wordmark-sub group-data-[collapsible=icon]:hidden">
+                  {subtituloWordmark(usuario)}
+                </span>
               </div>
             </SidebarHeader>
             <SidebarContent>

@@ -25,6 +25,9 @@
   --error-texto: #3a2e00;
   --sombra-panel: rgb(48 105 152 / 8%);
 
+  --scroll-thumb: #8fb0c9;
+  --scroll-thumb-hover: #6b9cbd;
+
   color: var(--texto);
   background: var(--fondo);
   color-scheme: light;
@@ -52,6 +55,9 @@
   --error-texto: #ffe8a0;
   --sombra-panel: rgb(0 0 0 / 35%);
 
+  --scroll-thumb: #4b8bbe;
+  --scroll-thumb-hover: #6aa8d4;
+
   color: var(--texto);
   background: var(--fondo);
   color-scheme: dark;
@@ -72,6 +78,38 @@ body {
   min-height: 100%;
   background: var(--fondo);
   color: var(--texto);
+}
+
+/* Barras de scroll integradas en claro y oscuro.
+   En Chromium usamos ::-webkit-scrollbar; si además se define
+   scrollbar-color/width, el navegador ignora el estilo y pinta la barra nativa. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) transparent;
+  }
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--scroll-thumb);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 a {
@@ -477,6 +515,14 @@ button.no-disponible:disabled {
 
 .metrica:nth-child(4n + 4) {
   border-top-color: var(--mustard);
+}
+
+.metrica[data-tono="alerta"] {
+  border-top-color: #f59e0b;
+}
+
+.metrica[data-tono="alerta"] strong {
+  color: var(--hub-warn, #b45309);
 }
 
 .metrica span,

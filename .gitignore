@@ -3,6 +3,8 @@ node_modules/
 dist/
 .vite/
 *.local
+*.tsbuildinfo
+.pnpm-store/
 
 # Python
 .venv/
@@ -12,6 +14,8 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
+backend/.piptmp/
+backend/pip-*/
 
 # Env & secrets
 .env

@@ -46,7 +46,7 @@ export function MarcasCelda({ cuenta }: { cuenta: UsuarioLista }) {
     return <span key={indice} className={clase} />;
   });
   return (
-    <span className="marcas-celda">
+    <span className="marcas-celda" data-marcas={cuenta.conteo_marcas}>
       <span className="marcas">{celdas}</span>
       <span className="marcas-razon num">
         {cuenta.conteo_marcas}

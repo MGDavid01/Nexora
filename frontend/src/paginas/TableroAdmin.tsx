@@ -19,7 +19,7 @@ import {
 } from "react-icons/lu";
 import { Link } from "react-router-dom";
 import { useAdminTopbarAcciones, useAdminTopbarTitulo } from "../admin/AdminTopbar";
-import { obtenerTableroAdmin, type InicioAdmin, type SerieAltas, type SerieComision } from "../api";
+import { obtenerTableroAdmin, type InicioAdmin, type SerieAltas, type SerieComision, type VigilanciaPerfilItem } from "../api";
 import "../tablero-admin.css";
 
 type Escena = "operacion" | "comunidad";
@@ -144,6 +144,7 @@ function trayectoriaSuave(pts: readonly (readonly [number, number])[]): string {
 
 export function TableroAdmin() {
   const [datos, setDatos] = useState<InicioAdmin>(VACIO);
+  const [vigilancia, setVigilancia] = useState<VigilanciaPerfilItem[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [categoria, setCategoria] = useState<string | null>(null);
@@ -154,12 +155,15 @@ export function TableroAdmin() {
     let activo = true;
     const demo = import.meta.env.DEV && new URLSearchParams(window.location.search).has("demo");
     const fuente = demo
-      ? new Promise<{ inicio: InicioAdmin }>((resuelve) => window.setTimeout(() => resuelve({ inicio: datosDemo() }), 500))
+      ? new Promise<{ inicio: InicioAdmin; vigilancia?: VigilanciaPerfilItem[] }>((resuelve) =>
+          window.setTimeout(() => resuelve({ inicio: datosDemo(), vigilancia: [] }), 500),
+        )
       : obtenerTableroAdmin();
     fuente
       .then((respuesta) => {
         if (!activo) return;
         setDatos(respuesta.inicio);
+        setVigilancia(respuesta.vigilancia ?? []);
         setCargando(false);
       })
       .catch((causa: unknown) => {
@@ -229,8 +233,28 @@ export function TableroAdmin() {
     alertas.push({ tono: "alto", texto: `${n(datos.plazos_hasta_6h, "vence", "vencen")} en menos de 6 h`, a: "/admin/trabajos" });
   if (datos.reincidentes_24h > 0)
     alertas.push({ tono: "alto", texto: `${n(datos.reincidentes_24h, "reincidencia", "reincidencias")} en 24 h`, a: "/admin/usuarios" });
-  if (datos.en_riesgo > 0)
-    alertas.push({ tono: "medio", texto: `${n(datos.en_riesgo, "perfil", "perfiles")} en riesgo 2/3`, a: "/admin/usuarios" });
+  if (datos.en_riesgo > 0) {
+    const enRiesgo = vigilancia.filter((perfil) => !perfil.bloqueado && perfil.conteo_marcas === 2);
+    const tiposCompletos = enRiesgo.length === datos.en_riesgo;
+    const soloProveedores =
+      tiposCompletos && enRiesgo.length > 0 && enRiesgo.every((perfil) => perfil.tipo_perfil.startsWith("Proveedor"));
+    const soloClientes =
+      tiposCompletos && enRiesgo.length > 0 && enRiesgo.every((perfil) => perfil.tipo_perfil.startsWith("Cliente"));
+    const texto =
+      tiposCompletos && enRiesgo.length === 1
+        ? `${enRiesgo[0].nombre} en riesgo 2/3`
+        : soloProveedores
+          ? `${n(datos.en_riesgo, "empresa", "empresas")} en riesgo 2/3`
+          : soloClientes
+            ? `${n(datos.en_riesgo, "cliente", "clientes")} en riesgo 2/3`
+            : `${n(datos.en_riesgo, "perfil", "perfiles")} en riesgo 2/3`;
+    const a = soloProveedores
+      ? "/admin/usuarios/negocio?tab=marca"
+      : soloClientes
+        ? "/admin/usuarios/clientes?tab=marca"
+        : "/admin/usuarios";
+    alertas.push({ tono: "alto", texto, a });
+  }
   if (datos.calificaciones_menores_2 > 0)
     alertas.push({ tono: "medio", texto: `${n(datos.calificaciones_menores_2, "servicio", "servicios")} bajo 2 ★`, a: "/admin/trabajos" });
 
@@ -422,7 +446,6 @@ export function TableroAdmin() {
                   segmentos={[
                     { tono: "ok", valor: datos.cotizaciones_aceptadas },
                     { tono: "critico", valor: datos.cotizaciones_rechazadas },
-                    { tono: "info", valor: Math.max(0, datos.cotizaciones_total - decididas) },
                   ]}
                 />
                 <div className="franja-stats">

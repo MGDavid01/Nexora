@@ -110,6 +110,21 @@
   background: var(--negative);
 }
 
+.vista-usuarios-v2 .casillas-marcas[data-marcas="1"] .casilla.llena,
+.vista-usuarios-v2 .casillas-marcas[data-marcas="1"] .casilla.sancion {
+  background: var(--pollen, #ffd43b);
+}
+
+.vista-usuarios-v2 .casillas-marcas[data-marcas="2"] .casilla.llena,
+.vista-usuarios-v2 .casillas-marcas[data-marcas="2"] .casilla.sancion {
+  background: #f59e0b;
+}
+
+.vista-usuarios-v2 .casillas-marcas[data-marcas="3"] .casilla.llena,
+.vista-usuarios-v2 .casillas-marcas[data-marcas="3"] .casilla.sancion {
+  background: var(--hub-crit, #c23934);
+}
+
 .vista-usuarios-v2 .marca-item {
   padding: 10px 12px;
   border: 1px solid var(--border);

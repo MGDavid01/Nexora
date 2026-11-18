@@ -6,6 +6,7 @@ import { SesionProvider } from "./sesion";
 import { TemaProvider } from "./tema";
 import "./index.css";
 import "./nexora-diseno.css";
+import "./responsive.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

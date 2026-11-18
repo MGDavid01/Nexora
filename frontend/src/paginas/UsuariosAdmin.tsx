@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { listarUsuariosAdmin, type UsuarioLista } from "../api";
 import { AltaUsuarioDialog, type FamiliaAlta } from "./AltaUsuarioDialog";
 import { agruparPerfiles, type PerfilGrupo } from "./usuarios-ficha";
@@ -27,6 +27,10 @@ import "../usuarios-v2.css";
 type TabAcceso = "todas" | "operan" | "marca" | "bloqueadas" | "baja";
 type LugarFiltro = "todos" | "cliente" | "proveedor" | "administrador" | "negocio";
 
+function esTabAcceso(valor: string | null): valor is TabAcceso {
+  return valor === "todas" || valor === "operan" || valor === "marca" || valor === "bloqueadas" || valor === "baja";
+}
+
 function lugarFiltroDesdeRuta(pathname: string): LugarFiltro {
   if (pathname.startsWith("/admin/usuarios/clientes")) return "cliente";
   if (pathname.startsWith("/admin/usuarios/negocio")) return "negocio";
@@ -53,13 +57,21 @@ export function UsuariosAdmin() {
   const [cargando, setCargando] = useState(true);
   const [errorGlobal, setErrorGlobal] = useState("");
 
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const [busqueda, setBusqueda] = useState("");
-  const [tabAcceso, setTabAcceso] = useState<TabAcceso>("todas");
+  const [tabAcceso, setTabAcceso] = useState<TabAcceso>(() =>
+    esTabAcceso(tabParam) ? tabParam : "todas",
+  );
   const [lugarFiltro, setLugarFiltro] = useState<LugarFiltro>(lugarDesdeRuta);
   const [columnaOrden, setColumnaOrden] = useState<ColumnaOrden>("marcas");
   const [direccionOrden, setDireccionOrden] = useState<DireccionOrden>("desc");
   const [avisoLista, setAvisoLista] = useState("");
   const [estadoRefresh, setEstadoRefresh] = useState<"idle" | "cargando" | "listo">("idle");
+
+  useEffect(() => {
+    if (esTabAcceso(tabParam)) setTabAcceso(tabParam);
+  }, [tabParam]);
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [altaAbierta, setAltaAbierta] = useState(false);

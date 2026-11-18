@@ -36,21 +36,28 @@ export function borrarToken(): void {
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
-  if (options.body && !headers.has("content-type")) {
+  if (options.body && !(options.body instanceof FormData) && !headers.has("content-type")) {
     headers.set("content-type", "application/json");
   }
   const token = leerToken();
   if (token) headers.set("authorization", `Bearer ${token}`);
 
-  const respuesta = await fetch(path, { ...options, headers });
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(path, { ...options, headers });
+  } catch {
+    throw new Error(
+      "No se pudo conectar con el servidor. Revisa que la API esté corriendo en el puerto 8000.",
+    );
+  }
   if (!respuesta.ok) {
-    throw new Error(await leerError(respuesta));
+    throw new Error(await leerError(respuesta, respuesta.status));
   }
   if (respuesta.status === 204) return undefined as T;
   return (await respuesta.json()) as T;
 }
 
-async function leerError(respuesta: Response): Promise<string> {
+async function leerError(respuesta: Response, status: number): Promise<string> {
   try {
     const data = (await respuesta.json()) as { detail?: unknown };
     if (typeof data.detail === "string") return data.detail;
@@ -61,7 +68,9 @@ async function leerError(respuesta: Response): Promise<string> {
   } catch {
     /* la respuesta no traía JSON */
   }
-  return "No se pudo completar la solicitud";
+  return status >= 500
+    ? `El servidor falló (HTTP ${status}). Revisa que la base de datos esté encendida.`
+    : `No se pudo completar la solicitud (HTTP ${status}).`;
 }
 
 export function login(correo: string, contrasena: string) {
@@ -77,6 +86,34 @@ export function yo() {
 
 export function baja() {
   return api<void>("/api/v1/auth/baja", { method: "POST" });
+}
+
+export function solicitarRecuperacion(correo: string) {
+  return api<void>("/api/v1/auth/recuperar", {
+    method: "POST",
+    body: JSON.stringify({ correo }),
+  });
+}
+
+export function confirmarRecuperacion(token: string, contrasena: string) {
+  return api<void>("/api/v1/auth/recuperar/confirmar", {
+    method: "POST",
+    body: JSON.stringify({ token, contrasena }),
+  });
+}
+
+export type ArchivoSubido = {
+  estado: string;
+  detalle: string;
+  referencia: string | null;
+};
+
+/** D7 — sube un archivo a Cloudinary. Sin credencial responde estado "omitido". */
+export function subirArchivoAdmin(archivo: File, carpeta = "nexora") {
+  const datos = new FormData();
+  datos.append("archivo", archivo);
+  datos.append("carpeta", carpeta);
+  return api<ArchivoSubido>("/api/v1/admin/archivos", { method: "POST", body: datos });
 }
 
 export type KpisTableroAdmin = {

@@ -425,7 +425,7 @@ function VisualMarcas({
 }) {
   return (
     <>
-      <div className="casillas-marcas" aria-label={`${marcas.length} de 3 marcas`}>
+      <div className="casillas-marcas" data-marcas={marcas.length} aria-label={`${marcas.length} de 3 marcas`}>
         {[0, 1, 2].map((i) => {
           const m = marcas[i];
           const cls = m ? `casilla llena${m.tipo === "sancion" ? " sancion" : ""}` : "casilla";

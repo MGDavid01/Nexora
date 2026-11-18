@@ -181,7 +181,7 @@ export function ServicioDetalle({ servicioId, tecnicos = [], volverA }: Props) {
                 </Alert>
               ) : null}
               {detalle.reclamacion_abierta ? (
-                <Alert>
+                <Alert variant="destructive">
                   <AlertDescription>
                     Reclamación abierta: {detalle.reclamacion_abierta.categoria_etiqueta}. {detalle.reclamacion_abierta.motivo}
                   </AlertDescription>

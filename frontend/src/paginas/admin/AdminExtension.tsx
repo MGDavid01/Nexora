@@ -486,7 +486,7 @@ export function DispositivosAdmin() {
                   <Pastilla tono={tonoEstatus(d.estatus)}>{etiquetaEstatus(d.estatus)}</Pastilla>
                 </td>
                 <td>
-                  <Pastilla tono={d.online ? "positiva" : "neutra"}>
+                  <Pastilla tono={d.online ? "positiva" : "alerta"}>
                     {d.online ? "En línea" : "Fuera de línea"}
                   </Pastilla>
                 </td>

@@ -1,7 +1,9 @@
 import { forwardRef, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { LuTriangleAlert } from "react-icons/lu";
 import { useAdminTopbarContexto } from "../admin/AdminTopbar";
 import { obtenerTrabajoAdmin, type ExpedienteTrabajo } from "../api";
+import { esPendienteInforme, tituloEstado } from "../utilidades/formato";
 import { FormCerrarReclamacion, FormMarcaCaso } from "../trabajos-expediente-formularios";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +30,7 @@ const fechaHora = new Intl.DateTimeFormat("es-MX", {
 });
 
 function etiquetaEstado(valor: string): string {
-  return valor.replaceAll("_", " ");
+  return tituloEstado(valor);
 }
 
 function formatearFecha(iso: string | null | undefined): string {
@@ -98,13 +100,17 @@ export function DetalleTrabajoAdmin() {
   }, [expediente]);
 
   const titulo = expediente?.solicitud.titulo ?? (cargando ? "Cargando…" : "Caso");
+  const etapa = expediente ? inferirEtapa(expediente) : null;
   const volver = useMemo(
     () => (
-      <Link to="/admin/trabajos" className="hub-volver">
-        ← Trabajos
-      </Link>
+      <>
+        <Link to="/admin/trabajos" className="hub-volver">
+          ← Trabajos
+        </Link>
+        {etapa ? <Badge variant="secondary">{etapa}</Badge> : null}
+      </>
     ),
-    [],
+    [etapa],
   );
   useAdminTopbarContexto({ volver, titulo });
 
@@ -118,17 +124,30 @@ export function DetalleTrabajoAdmin() {
 
   const reclamacionAbierta = expediente?.reclamaciones.find((r) => r.estado === "abierta") ?? null;
   const servicio = expediente?.servicio ?? null;
-  const etapa = expediente ? inferirEtapa(expediente) : null;
 
   return (
     <section className="hub-page vista-inicio vista-detalle-caso vista-padron-crm" aria-label={titulo}>
-      {etapa ? (
-        <p>
-          <Badge variant="secondary">{etapa}</Badge>
-        </p>
+      {error ? <p className="error">{error}</p> : null}
+
+      {reclamacionAbierta ? (
+        <div className="aviso-detalle" role="status">
+          <LuTriangleAlert aria-hidden />
+          <div>
+            <strong>Reclamación abierta</strong>
+            <span>Revisa la pestaña Atención para resolverla.</span>
+          </div>
+        </div>
       ) : null}
 
-      {error ? <p className="error">{error}</p> : null}
+      {servicio && esPendienteInforme(servicio.estado) ? (
+        <div className="aviso-detalle" role="status">
+          <LuTriangleAlert aria-hidden />
+          <div>
+            <strong>Servicio pendiente de informe</strong>
+            <span>El proveedor debe registrar el informe para cerrar el servicio.</span>
+          </div>
+        </div>
+      ) : null}
 
       {cargando || !expediente ? (
         <p className="hub-vacio">{cargando ? "Cargando expediente…" : "Sin datos del caso."}</p>
@@ -243,7 +262,7 @@ const EscenaCaso = forwardRef<
           <div className="riesgos-grid" data-cols="4">
             <Tile nivel="info" etiqueta="Total" valor={stats.total} />
             <Tile nivel="ok" etiqueta="Aceptada" valor={stats.aceptadas} />
-            <Tile nivel="alto" etiqueta="Rechazadas" valor={stats.rechazadas} />
+            <Tile nivel={stats.rechazadas > 0 ? "alto" : "info"} etiqueta="Rechazadas" valor={stats.rechazadas} />
             <Tile nivel="info" etiqueta="Costo aceptada" valor={stats.costoAceptada} />
           </div>
         </section>
