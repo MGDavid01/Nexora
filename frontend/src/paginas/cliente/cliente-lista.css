@@ -39,3 +39,50 @@
   gap: 8px;
   margin-top: 4px;
 }
+
+.mapa-ubicacion-envoltura {
+  position: relative;
+}
+
+.mapa-ubicacion {
+  height: 260px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mapa-ubicacion .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.mapa-ubicacion-acciones {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 800;
+  display: flex;
+  gap: 6px;
+}
+
+.mapa-ubicacion-acciones button {
+  padding: 5px 9px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 15%);
+}
+
+.mapa-ubicacion-acciones button:hover {
+  background: var(--superficie-suave);
+}
+
+.mapa-ubicacion-pie {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--texto-suave);
+}

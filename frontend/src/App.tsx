@@ -10,6 +10,7 @@ import { DetalleTrabajoAdmin } from "./paginas/DetalleTrabajoAdmin";
 import { UsuariosAdmin } from "./paginas/UsuariosAdmin";
 import { DetalleUsuarioAdmin } from "./paginas/DetalleUsuarioAdmin";
 import { SolicitudesCliente } from "./paginas/cliente/SolicitudesCliente";
+import { DetalleSolicitudCliente } from "./paginas/cliente/DetalleSolicitudCliente";
 import {
   EquiposCliente,
   HistorialCliente,
@@ -40,6 +41,7 @@ export function App() {
         <Route path="/inicio" element={<Inicio />} />
 
         <Route path="/cliente/solicitudes" element={<SoloLugar lugares={["cliente"]}><SolicitudesCliente /></SoloLugar>} />
+        <Route path="/cliente/solicitudes/:solicitudId" element={<SoloLugar lugares={["cliente"]}><DetalleSolicitudCliente /></SoloLugar>} />
         <Route path="/cliente/servicios" element={<SoloLugar lugares={["cliente"]}><ServiciosCliente /></SoloLugar>} />
         <Route path="/cliente/servicios/:servicioId" element={<SoloLugar lugares={["cliente"]}><ServiciosCliente /></SoloLugar>} />
         <Route path="/cliente/historial" element={<SoloLugar lugares={["cliente"]}><HistorialCliente /></SoloLugar>} />

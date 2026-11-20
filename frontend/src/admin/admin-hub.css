@@ -1435,6 +1435,7 @@
 }
 
 .marco-admin .vista-detalle-caso .fila-arriba,
+.marco-admin .vista-detalle-caso .fila-media,
 .marco-admin .vista-detalle-caso .fila-abajo {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1560,6 +1561,7 @@
 
 @media (max-width: 960px) {
   .marco-admin .vista-detalle-caso .fila-arriba,
+  .marco-admin .vista-detalle-caso .fila-media,
   .marco-admin .vista-detalle-caso .fila-abajo,
   .marco-admin .vista-detalle-caso .kpis,
   .marco-admin .vista-detalle-caso .riesgos-grid[data-cols="4"] {

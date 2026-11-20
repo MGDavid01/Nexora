@@ -17,7 +17,7 @@ import {
   VistaLista,
 } from "../../vista-lista/VistaLista";
 import { coincideBusqueda, marcaTiempo, ordenarPor, useOrden } from "../../vista-lista/orden";
-import { fechaDia, horaCorta } from "../../utilidades/formato";
+import { fechaDia, horaCorta, tituloEstado } from "../../utilidades/formato";
 import { MapaSolicitudes, type PinSolicitud } from "./MapaSolicitudes";
 import "./proveedor-listas.css";
 
@@ -204,6 +204,57 @@ export function SolicitudesProveedor() {
                         Denegar
                       </BotonTexto>
                     </AccionesFila>
+                    {s.id === seleccionada ? (
+                      <div className="sol-mapa-detalle">
+                        <dl>
+                          <div>
+                            <dt>Dirección</dt>
+                            <dd>
+                              {[
+                                s.ubicacion?.calle_numero,
+                                s.ubicacion?.colonia,
+                                s.ubicacion?.ciudad,
+                                s.ubicacion?.estado,
+                                s.ubicacion?.codigo_postal,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Coordenadas</dt>
+                            <dd>
+                              {s.ubicacion?.latitud != null && s.ubicacion?.longitud != null
+                                ? `${s.ubicacion.latitud}, ${s.ubicacion.longitud}`
+                                : "—"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Categoría</dt>
+                            <dd>{s.categoria || "—"}</dd>
+                          </div>
+                          <div>
+                            <dt>Creada</dt>
+                            <dd>
+                              {fechaDia(s.creado_en)}
+                              {horaCorta(s.creado_en) ? ` · ${horaCorta(s.creado_en)}` : ""}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Datos</dt>
+                            <dd>{s.datos_cerrados ? "Cerrados" : "Abiertos"}</dd>
+                          </div>
+                          <div>
+                            <dt>Tu participación</dt>
+                            <dd>
+                              {s.participacion_estado
+                                ? tituloEstado(s.participacion_estado)
+                                : "Sin participación"}
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
+                    ) : null}
                   </article>
                 </li>
               ))}

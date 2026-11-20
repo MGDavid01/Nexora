@@ -4,8 +4,12 @@ import { LuTriangleAlert } from "react-icons/lu";
 import { useAdminTopbarContexto } from "../admin/AdminTopbar";
 import { obtenerTrabajoAdmin, type ExpedienteTrabajo } from "../api";
 import { esPendienteInforme, tituloEstado } from "../utilidades/formato";
+import { Pastilla, type TonoPastilla } from "../vista-lista/VistaLista";
+import { tonoEstadoServicio } from "./flujo/servicio-ui";
 import { FormCerrarReclamacion, FormMarcaCaso } from "../trabajos-expediente-formularios";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import "../tablero-admin.css";
 import "../detalle-trabajo-admin.css";
@@ -194,9 +198,28 @@ const EscenaCaso = forwardRef<
     onIrAtencion: () => void;
   }
 >(function EscenaCaso({ activa, expediente, stats, onIrAtencion }, ref) {
-  const { solicitud, participaciones } = expediente;
+  const { solicitud, participaciones, cotizaciones, servicio } = expediente;
   const reclTexto = textoReclamacion(expediente);
   const ubicacion = solicitud.ubicacion;
+  const direccion = ubicacion
+    ? [ubicacion.calle_numero, ubicacion.colonia, ubicacion.ciudad, ubicacion.estado, ubicacion.codigo_postal]
+        .filter(Boolean)
+        .join(", ")
+    : "Sin ubicación registrada";
+  const dirigidaId = solicitud.dirigida_a_perfil_proveedor_id;
+  const dirigidaNombre = dirigidaId
+    ? participaciones.find((p) => p.perfil_proveedor_id === dirigidaId)?.proveedor ??
+      cotizaciones.find((c) => c.perfil_proveedor_id === dirigidaId)?.proveedor ??
+      "Proveedor específico"
+    : "Todos los proveedores";
+  const cotizacionAceptada = servicio
+    ? cotizaciones.find((c) => c.id === servicio.cotizacion_id) ?? null
+    : null;
+  const costoAceptado = cotizacionAceptada ? mxn.format(Number(cotizacionAceptada.costo_mxn)) : "—";
+  const [indiceCot, setIndiceCot] = useState(0);
+  const indiceActual =
+    cotizaciones.length === 0 ? 0 : Math.min(Math.max(indiceCot, 0), cotizaciones.length - 1);
+  const cotizacionActual = cotizaciones[indiceActual] ?? null;
 
   return (
     <section
@@ -236,26 +259,95 @@ const EscenaCaso = forwardRef<
         </section>
       </div>
 
-      <div className="fila-abajo">
-        <section className="card" aria-labelledby="titulo-participaciones">
+      <div className="fila-media">
+        <section className="card" aria-labelledby="titulo-solicitante">
           <div className="card-cab">
-            <h2 id="titulo-participaciones">Participaciones</h2>
+            <h2 id="titulo-solicitante">Solicitante</h2>
           </div>
-          {participaciones.length === 0 ? (
-            <p className="vacio">Sin participaciones aún.</p>
-          ) : (
-            <div className="riesgos-grid" data-cols="2">
-              <Tile nivel="info" etiqueta="Proveedores" valor={participaciones.length} />
-              <Tile
-                nivel="ok"
-                etiqueta="Aceptaron"
-                valor={participaciones.filter((p) => p.estado === "aceptada").length}
-              />
+          <dl className="detalle-datos">
+            <div>
+              <dt>Cliente</dt>
+              <dd>{solicitud.cliente}</dd>
             </div>
-          )}
+            <div>
+              <dt>Creada</dt>
+              <dd>{formatearFechaHora(solicitud.creado_en)}</dd>
+            </div>
+            <div>
+              <dt>Categoría</dt>
+              <dd>{solicitud.categoria || "—"}</dd>
+            </div>
+            <div>
+              <dt>Dirigida a</dt>
+              <dd>{dirigidaNombre}</dd>
+            </div>
+            <div>
+              <dt>Datos</dt>
+              <dd>{solicitud.datos_cerrados ? "Cerrados" : "Abiertos"}</dd>
+            </div>
+            <div className="detalle-datos-ancho">
+              <dt>Dirección</dt>
+              <dd>{direccion}</dd>
+            </div>
+          </dl>
         </section>
 
-        <section className="card" aria-labelledby="titulo-cotiz-resumen">
+        <section className="card" aria-labelledby="titulo-servicio-caso">
+          <div className="card-cab">
+            <h2 id="titulo-servicio-caso">Servicio</h2>
+            {servicio ? (
+              <Pastilla tono={tonoEstadoServicio(servicio.estado)}>{etiquetaEstado(servicio.estado)}</Pastilla>
+            ) : null}
+          </div>
+          {servicio ? (
+            <>
+              <dl className="detalle-datos">
+                <div>
+                  <dt>Proveedor</dt>
+                  <dd>{servicio.proveedor || "—"}</dd>
+                </div>
+                <div>
+                  <dt>Técnico</dt>
+                  <dd>{servicio.tecnico ?? "Sin asignar"}</dd>
+                </div>
+                <div>
+                  <dt>Costo aceptado</dt>
+                  <dd>{costoAceptado}</dd>
+                </div>
+                <div>
+                  <dt>Inicio</dt>
+                  <dd>{formatearFechaHora(servicio.creado_en)}</dd>
+                </div>
+              </dl>
+              {servicio.informe ? (
+                <p className="problema-meta">
+                  Informe ({etiquetaEstado(servicio.informe.tipo)}): {servicio.informe.descripcion}
+                  {servicio.informe.detalle_pieza ? ` · ${servicio.informe.detalle_pieza}` : ""} ·{" "}
+                  {formatearFecha(servicio.informe.fecha)}
+                </p>
+              ) : (
+                <p className="problema-meta">Sin informe registrado.</p>
+              )}
+              {servicio.calificaciones.length > 0 ? (
+                <p className="problema-meta">
+                  Calificaciones:{" "}
+                  {servicio.calificaciones
+                    .map(
+                      (c) =>
+                        `${c.lado === "cliente" ? "Cliente" : "Proveedor"} ${c.valor}${c.es_automatica ? " (auto)" : ""}`,
+                    )
+                    .join(" · ")}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="vacio">Aún no hay servicio: no se ha aceptado una cotización.</p>
+          )}
+        </section>
+      </div>
+
+      <div className="fila-abajo">
+        <section className="card card-ancho" aria-labelledby="titulo-cotiz-resumen">
           <div className="card-cab">
             <h2 id="titulo-cotiz-resumen">Cotizaciones</h2>
           </div>
@@ -265,6 +357,86 @@ const EscenaCaso = forwardRef<
             <Tile nivel={stats.rechazadas > 0 ? "alto" : "info"} etiqueta="Rechazadas" valor={stats.rechazadas} />
             <Tile nivel="info" etiqueta="Costo aceptada" valor={stats.costoAceptada} />
           </div>
+          {cotizaciones.length === 0 ? (
+            <p className="vacio">Sin cotizaciones aún.</p>
+          ) : (
+            <>
+              <div className="cotizacion-selector">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={indiceActual <= 0}
+                  onClick={() => setIndiceCot((i) => Math.max(0, i - 1))}
+                >
+                  Anterior
+                </Button>
+                <div className="cotizacion-selector-centro">
+                  <span className="problema-meta">
+                    Cotización {indiceActual + 1} de {cotizaciones.length}
+                  </span>
+                  <Select
+                    value={cotizacionActual?.id}
+                    onValueChange={(id) => setIndiceCot(cotizaciones.findIndex((c) => c.id === id))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cotizaciones.map((c, i) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {`Cotización ${i + 1} · ${c.proveedor || "Proveedor"} · ${mxn.format(
+                            Number(c.costo_mxn),
+                          )}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={indiceActual >= cotizaciones.length - 1}
+                  onClick={() => setIndiceCot((i) => Math.min(cotizaciones.length - 1, i + 1))}
+                >
+                  Siguiente
+                </Button>
+              </div>
+              {cotizacionActual ? (
+                <div className="cotizacion-detalle">
+                  <dl className="detalle-datos">
+                    <div>
+                      <dt>Proveedor</dt>
+                      <dd>{cotizacionActual.proveedor || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Estado</dt>
+                      <dd>
+                        <Pastilla tono={tonoCotizacion(cotizacionActual.estado)}>
+                          {etiquetaEstado(cotizacionActual.estado)}
+                        </Pastilla>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Costo</dt>
+                      <dd>{mxn.format(Number(cotizacionActual.costo_mxn))}</dd>
+                    </div>
+                    <div>
+                      <dt>Creada</dt>
+                      <dd>{formatearFechaHora(cotizacionActual.creado_en)}</dd>
+                    </div>
+                  </dl>
+                  {cotizacionActual.descripcion ? (
+                    <p className="problema-meta">{cotizacionActual.descripcion}</p>
+                  ) : null}
+                  {cotizacionActual.condiciones ? (
+                    <p className="problema-meta">Condiciones: {cotizacionActual.condiciones}</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
+          )}
         </section>
       </div>
     </section>
@@ -457,6 +629,14 @@ const EscenaAtencion = forwardRef<
     </section>
   );
 });
+
+function tonoCotizacion(estado: string): TonoPastilla {
+  const k = estado.toLowerCase();
+  if (k === "aceptada" || k === "elegida") return "positiva";
+  if (k === "rechazada" || k === "vencida") return "negativa";
+  if (k === "enviada") return "acento";
+  return "neutra";
+}
 
 function Kpi({ etiqueta, valor }: { etiqueta: string; valor: string | number }) {
   return (

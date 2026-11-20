@@ -112,7 +112,7 @@ body {
   background: transparent;
 }
 
-a {
+a:not([data-slot="button"]) {
   color: var(--cerulean);
 }
 

@@ -1,20 +1,16 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { PlusIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   cancelarSolicitud,
-  cotizacionesSolicitud,
-  type Cotizacion,
-  elegirCotizacion,
   historialPropio,
   listarSolicitudes,
   publicarSolicitud,
-  rechazarCotizacion,
-  retirarParticipacion,
   type Solicitud,
   servicioEstaCerrado,
 } from "../../api";
 import { digitos, texto } from "../../validarAlta";
-import { dineroMxn, tituloEstado } from "../../utilidades/formato";
+import { tituloEstado } from "../../utilidades/formato";
 import {
   AvisoLista,
   BarraLista,
@@ -31,8 +27,9 @@ import {
   TablaLista,
   VistaLista,
   type ColumnaLista,
-  type TonoPastilla,
 } from "../../vista-lista/VistaLista";
+import { tonoEstadoSolicitud } from "./estado-tonos";
+import { MapaUbicacion, type DireccionMapa, type PuntoMapa } from "./MapaUbicacion";
 import { coincideBusqueda, marcaTiempo, ordenarPor, useOrden } from "../../vista-lista/orden";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -69,6 +66,7 @@ const COLUMNAS: ColumnaLista<ColSolicitud>[] = [
 ];
 
 export function SolicitudesCliente() {
+  const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [proveedoresCerrados, setProveedoresCerrados] = useState<{ id: string; titulo: string }[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -76,10 +74,6 @@ export function SolicitudesCliente() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("todas");
   const [filtroCategoria, setFiltroCategoria] = useState("todas");
-  const [expandida, setExpandida] = useState<string | null>(null);
-  const [cotizaciones, setCotizaciones] = useState<Record<string, Cotizacion[]>>({});
-  const [cargandoCot, setCargandoCot] = useState(false);
-  const [errorCot, setErrorCot] = useState("");
   const [publicar, setPublicar] = useState(false);
   const orden = useOrden<ColSolicitud>("creada", "desc", ["creada"]);
 
@@ -136,8 +130,6 @@ export function SolicitudesCliente() {
     [solicitudes, filtroEstado, filtroCategoria, busqueda, orden],
   );
 
-  const solicitudExpandida = expandida ? solicitudes.find((s) => s.id === expandida) : undefined;
-
   const acciones = useMemo(
     () => (
       <Button type="button" size="sm" onClick={() => setPublicar(true)}>
@@ -152,26 +144,6 @@ export function SolicitudesCliente() {
     setBusqueda("");
     setFiltroEstado("todas");
     setFiltroCategoria("todas");
-  }
-
-  async function abrirCotizaciones(id: string) {
-    setExpandida(id);
-    setErrorCot("");
-    if (cotizaciones[id]) return;
-    setCargandoCot(true);
-    try {
-      const lista = await cotizacionesSolicitud(id);
-      setCotizaciones((prev) => ({ ...prev, [id]: lista }));
-    } catch (causa) {
-      setErrorCot(causa instanceof Error ? causa.message : "No se pudieron cargar las cotizaciones");
-    } finally {
-      setCargandoCot(false);
-    }
-  }
-
-  async function refrescarCotizaciones(id: string) {
-    const lista = await cotizacionesSolicitud(id);
-    setCotizaciones((prev) => ({ ...prev, [id]: lista }));
   }
 
   return (
@@ -222,7 +194,7 @@ export function SolicitudesCliente() {
               {visibles.map((s) => {
                 const abierta = s.estado === "abierta";
                 return (
-                  <FilaLista key={s.id} onAbrir={() => void abrirCotizaciones(s.id)}>
+                  <FilaLista key={s.id} onAbrir={() => navigate(`/cliente/solicitudes/${s.id}`)}>
                     <td>
                       <CeldaPrincipal titulo={s.titulo} meta={recortar(s.descripcion)} />
                     </td>
@@ -234,7 +206,7 @@ export function SolicitudesCliente() {
                     <td>
                       {abierta ? (
                         <AccionesFila>
-                          <BotonTexto onClick={() => void abrirCotizaciones(s.id)}>Cotizaciones</BotonTexto>
+                          <BotonTexto onClick={() => navigate(`/cliente/solicitudes/${s.id}`)}>Cotizaciones</BotonTexto>
                           <BotonTexto
                             peligro
                             onClick={() => {
@@ -242,7 +214,6 @@ export function SolicitudesCliente() {
                                 if (!window.confirm("¿Cancelar esta solicitud?")) return;
                                 try {
                                   await cancelarSolicitud(s.id);
-                                  if (expandida === s.id) setExpandida(null);
                                   await recargar();
                                 } catch (causa) {
                                   setError(causa instanceof Error ? causa.message : "No se pudo cancelar");
@@ -273,42 +244,6 @@ export function SolicitudesCliente() {
           await recargar();
         }}
       />
-
-      <DialogCotizaciones
-        abierto={expandida !== null}
-        solicitud={solicitudExpandida}
-        items={expandida ? (cotizaciones[expandida] ?? []) : []}
-        cargando={cargandoCot}
-        error={errorCot}
-        onCerrar={() => setExpandida(null)}
-        onElegir={async (c) => {
-          try {
-            await elegirCotizacion(c.id);
-            setExpandida(null);
-            await recargar();
-          } catch (causa) {
-            setErrorCot(causa instanceof Error ? causa.message : "No se pudo elegir");
-          }
-        }}
-        onRechazar={async (c) => {
-          if (!expandida) return;
-          try {
-            await rechazarCotizacion(c.id);
-            await refrescarCotizaciones(expandida);
-          } catch (causa) {
-            setErrorCot(causa instanceof Error ? causa.message : "No se pudo rechazar");
-          }
-        }}
-        onRetirar={async (c) => {
-          if (!expandida) return;
-          try {
-            await retirarParticipacion(c.participacion_id);
-            await refrescarCotizaciones(expandida);
-          } catch (causa) {
-            setErrorCot(causa instanceof Error ? causa.message : "No se pudo retirar");
-          }
-        }}
-      />
     </>
   );
 }
@@ -327,14 +262,33 @@ function PublicarSolicitudDialog({
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [dirigida, setDirigida] = useState("");
+  const [calle, setCalle] = useState("");
+  const [colonia, setColonia] = useState("");
+  const [ciudad, setCiudad] = useState("Tijuana");
+  const [estado, setEstado] = useState("Baja California");
+  const [cp, setCp] = useState("");
 
   useEffect(() => {
     if (!abierto) {
       setError("");
       setEnviando(false);
       setDirigida("");
+      setCalle("");
+      setColonia("");
+      setCiudad("Tijuana");
+      setEstado("Baja California");
+      setCp("");
     }
   }, [abierto]);
+
+  function aplicarDireccion(_punto: PuntoMapa, direccion: DireccionMapa | null) {
+    if (!direccion) return;
+    setCalle(direccion.calle);
+    setColonia(direccion.colonia);
+    setCiudad(direccion.ciudad || "Tijuana");
+    setEstado(direccion.estado || "Baja California");
+    setCp(direccion.cp.replace(/\D/g, "").slice(0, 5));
+  }
 
   async function onSubmit(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -414,21 +368,57 @@ function PublicarSolicitudDialog({
               <FieldSet>
                 <FieldLegend>Ubicación del servicio</FieldLegend>
                 <Field>
+                  <FieldLabel>Ubicación en el mapa</FieldLabel>
+                  <MapaUbicacion onSeleccionar={aplicarDireccion} />
+                  <p className="ayuda">
+                    Toca cualquier punto o usa “Mi ubicación”. Puedes arrastrar el pin; la dirección se autocompleta y
+                    puedes ajustarla.
+                  </p>
+                </Field>
+                <Field>
                   <FieldLabel htmlFor="sol-calle">Calle y número</FieldLabel>
-                  <Input id="sol-calle" name="calle_numero" required autoComplete="off" />
+                  <Input
+                    id="sol-calle"
+                    name="calle_numero"
+                    required
+                    autoComplete="off"
+                    value={calle}
+                    onChange={(e) => setCalle(e.target.value)}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="sol-colonia">Colonia</FieldLabel>
-                  <Input id="sol-colonia" name="colonia" required autoComplete="off" />
+                  <Input
+                    id="sol-colonia"
+                    name="colonia"
+                    required
+                    autoComplete="off"
+                    value={colonia}
+                    onChange={(e) => setColonia(e.target.value)}
+                  />
                 </Field>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field>
                     <FieldLabel htmlFor="sol-ciudad">Ciudad</FieldLabel>
-                    <Input id="sol-ciudad" name="ciudad" required autoComplete="off" />
+                    <Input
+                      id="sol-ciudad"
+                      name="ciudad"
+                      required
+                      autoComplete="off"
+                      value={ciudad}
+                      onChange={(e) => setCiudad(e.target.value)}
+                    />
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="sol-estado">Estado</FieldLabel>
-                    <Input id="sol-estado" name="estado" required autoComplete="off" />
+                    <Input
+                      id="sol-estado"
+                      name="estado"
+                      required
+                      autoComplete="off"
+                      value={estado}
+                      onChange={(e) => setEstado(e.target.value)}
+                    />
                   </Field>
                 </div>
                 <Field>
@@ -441,6 +431,8 @@ function PublicarSolicitudDialog({
                     maxLength={5}
                     placeholder="22000"
                     autoComplete="off"
+                    value={cp}
+                    onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))}
                   />
                 </Field>
               </FieldSet>
@@ -465,77 +457,6 @@ function PublicarSolicitudDialog({
   );
 }
 
-function DialogCotizaciones({
-  abierto,
-  solicitud,
-  items,
-  cargando,
-  error,
-  onCerrar,
-  onElegir,
-  onRechazar,
-  onRetirar,
-}: {
-  abierto: boolean;
-  solicitud: Solicitud | undefined;
-  items: Cotizacion[];
-  cargando: boolean;
-  error: string;
-  onCerrar: () => void;
-  onElegir: (c: Cotizacion) => void;
-  onRechazar: (c: Cotizacion) => void;
-  onRetirar: (c: Cotizacion) => void;
-}) {
-  return (
-    <Dialog open={abierto} onOpenChange={(siguiente) => (!siguiente ? onCerrar() : undefined)}>
-      <DialogContent className="vista-lista flex max-h-[min(720px,calc(100svh-2rem))] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
-        <DialogHeader className="gap-1 border-b px-6 py-5">
-          <DialogTitle>{solicitud?.titulo ?? "Cotizaciones"}</DialogTitle>
-          <DialogDescription>Cotizaciones enviadas para esta solicitud.</DialogDescription>
-        </DialogHeader>
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-          {error ? (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : null}
-          {cargando ? (
-            <p className="text-muted-foreground text-sm">Cargando cotizaciones…</p>
-          ) : items.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Todavía no hay cotizaciones enviadas.</p>
-          ) : (
-            <ul className="cl-cotizaciones">
-              {items.map((c) => (
-                <li key={c.id} className="cl-cotizacion">
-                  <div className="cl-cotizacion-cabeza">
-                    <strong>{dineroMxn(c.costo_mxn)}</strong>
-                    <Pastilla tono={tonoEstadoCotizacion(c.estado)}>{tituloEstado(c.estado)}</Pastilla>
-                  </div>
-                  <p>{c.descripcion}</p>
-                  {c.condiciones ? <p className="cl-cotizacion-condiciones">{c.condiciones}</p> : null}
-                  {c.estado === "enviada" ? (
-                    <div className="cl-cotizacion-acciones">
-                      <Button type="button" size="sm" onClick={() => onElegir(c)}>
-                        Elegir cotización
-                      </Button>
-                      <Button type="button" size="sm" variant="outline" onClick={() => onRechazar(c)}>
-                        Rechazar
-                      </Button>
-                      <Button type="button" size="sm" variant="outline" onClick={() => onRetirar(c)}>
-                        Retirar proveedor
-                      </Button>
-                    </div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 function opcionesConPresentes(
   valores: string[],
   actual: string,
@@ -544,23 +465,6 @@ function opcionesConPresentes(
   const presentes = [...new Set(valores.filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
   if (actual !== "todas" && !presentes.includes(actual)) presentes.unshift(actual);
   return [{ valor: "todas", etiqueta: "Todas" }, ...presentes.map((v) => ({ valor: v, etiqueta: etiqueta(v) }))];
-}
-
-function tonoEstadoSolicitud(estado: string): TonoPastilla {
-  const k = estado.toLowerCase();
-  if (k === "abierta") return "acento";
-  if (k === "asignada") return "alerta";
-  if (k === "cerrada") return "positiva";
-  return "neutra";
-}
-
-function tonoEstadoCotizacion(estado: string): TonoPastilla {
-  const k = estado.toLowerCase();
-  if (k === "enviada") return "acento";
-  if (k === "elegida" || k === "aceptada") return "positiva";
-  if (k === "rechazada" || k === "vencida") return "negativa";
-  if (k === "descartada" || k === "retirada") return "neutra";
-  return "neutra";
 }
 
 function recortar(texto: string, max = 90): string {

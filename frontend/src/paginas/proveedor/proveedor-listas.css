@@ -230,3 +230,36 @@
     border-top: 1px solid var(--vl-line, var(--borde));
   }
 }
+
+.sol-mapa-detalle {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--vl-line, var(--borde));
+}
+
+.sol-mapa-detalle dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.sol-mapa-detalle dt {
+  color: var(--vl-muted, var(--texto-suave));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sol-mapa-detalle dd {
+  margin: 1px 0 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .sol-mapa-detalle dl {
+    grid-template-columns: 1fr;
+  }
+}
